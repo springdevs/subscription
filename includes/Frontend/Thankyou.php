@@ -53,102 +53,105 @@ class Thankyou
         }
         $cart_items = $order->get_items();
         foreach ($cart_items as $cart_item) {
-            $conditional_key = apply_filters('subscrpt_filter_checkout_conditional_key', $cart_item['product_id'], $cart_item);
-            $post_meta = get_post_meta($conditional_key, 'subscrpt_general', true);
-            if (is_array($post_meta) && $post_meta['enable']) :
-                $is_renew = isset($cart_item['_renew_subscrpt']);
-                $time = $post_meta['time'] == 1 ? null : $post_meta['time'];
-                $type = Helper::get_typos($post_meta['time'], $post_meta["type"]);
-                $subtotal_price_html = wc_price($cart_item['subtotal']) . " / " . $time . " " . $type;
-                $total_price_html = wc_price($cart_item['total']) . " / " . $time . " " . $type;
-                $start_date = time();
-                $trial = null;
-                $has_trial = Helper::Check_Trial($conditional_key);
-                $signup_fee = 0;
-                if (!empty($post_meta['trial_time']) && $post_meta['trial_time'] > 0 && !$is_renew && $has_trial) {
-                    $trial = $post_meta['trial_time'] . " " . Helper::get_typos($post_meta['trial_time'], $post_meta['trial_type']);
-                    if (isset($post_meta['signup_fee'])) $signup_fee = $post_meta['signup_fee'];
-                    $start_date = strtotime($trial);
-                }
-                $_subscrpt_order_general = [
-                    "order_id" => $order_id,
-                    "stats" => "Parent Order",
-                    "product_id" => $cart_item['product_id'],
-                    "qty" => $cart_item->get_quantity(),
-                    "subtotal" => $cart_item['subtotal'],
-                    "total" => $cart_item['total'],
-                    "subtotal_price_html" => $subtotal_price_html,
-                    "total_price_html" => $total_price_html,
-                    "trial" => $trial,
-                    "signup_fee" => $signup_fee,
-                    "start_date" => $start_date,
-                    "next_date" => strtotime($post_meta['time'] . " " . $type, $start_date)
-                ];
-                $args = [
-                    "post_title" => "Subscription",
-                    "post_type" => "subscrpt_order",
-                    "post_status" => $post_status
-                ];
-                $post_id = 0;
-                $unexpire_data = ["post" => $post_id, "product" => $cart_item['product_id']];
-                $unexpire_data = apply_filters('subscrpt_filter_checkout_all_ids', $unexpire_data, $conditional_key);
-                if ($is_renew && $post_status != "cancelled") {
-                    $expired_items = get_user_meta(get_current_user_id(), '_subscrpt_expired_items', true);
-                    if (!is_array($expired_items)) $expired_items = [];
-                    foreach ($expired_items as $expired_item) {
-                        if ($expired_item['product'] == $cart_item['product_id']) {
-                            $unexpire_data['post'] = $expired_item['post'];
-                            $comment_id = wp_insert_comment([
-                                "comment_agent" => "simple-subscriptions",
-                                "comment_author" => "simple-subscriptions",
-                                "comment_content" => __('The order ' . $order_id . ' has been created for the subscription', 'sdevs_wea'),
-                                "comment_post_ID" => $unexpire_data['post'],
-                                "comment_type" => "order_note"
-                            ]);
-                            update_comment_meta($comment_id, 'subscrpt_activity', __('Renewal Order', 'sdevs_wea'));
+            $product = wc_get_product($cart_item['product_id']);
+            if (!$product->is_type('variable') || sdevs_is_pro_module_activate('subscription-pro')) :
+                $conditional_key = apply_filters('subscrpt_filter_checkout_conditional_key', $cart_item['product_id'], $cart_item);
+                $post_meta = get_post_meta($conditional_key, 'subscrpt_general', true);
+                if (is_array($post_meta) && $post_meta['enable']) :
+                    $is_renew = isset($cart_item['_renew_subscrpt']);
+                    $time = $post_meta['time'] == 1 ? null : $post_meta['time'];
+                    $type = Helper::get_typos($post_meta['time'], $post_meta["type"]);
+                    $subtotal_price_html = wc_price($cart_item['subtotal']) . " / " . $time . " " . $type;
+                    $total_price_html = wc_price($cart_item['total']) . " / " . $time . " " . $type;
+                    $start_date = time();
+                    $trial = null;
+                    $has_trial = Helper::Check_Trial($conditional_key);
+                    $signup_fee = 0;
+                    if (!empty($post_meta['trial_time']) && $post_meta['trial_time'] > 0 && !$is_renew && $has_trial) {
+                        $trial = $post_meta['trial_time'] . " " . Helper::get_typos($post_meta['trial_time'], $post_meta['trial_type']);
+                        if (isset($post_meta['signup_fee'])) $signup_fee = $post_meta['signup_fee'];
+                        $start_date = strtotime($trial);
+                    }
+                    $_subscrpt_order_general = [
+                        "order_id" => $order_id,
+                        "stats" => "Parent Order",
+                        "product_id" => $cart_item['product_id'],
+                        "qty" => $cart_item->get_quantity(),
+                        "subtotal" => $cart_item['subtotal'],
+                        "total" => $cart_item['total'],
+                        "subtotal_price_html" => $subtotal_price_html,
+                        "total_price_html" => $total_price_html,
+                        "trial" => $trial,
+                        "signup_fee" => $signup_fee,
+                        "start_date" => $start_date,
+                        "next_date" => strtotime($post_meta['time'] . " " . $type, $start_date)
+                    ];
+                    $args = [
+                        "post_title" => "Subscription",
+                        "post_type" => "subscrpt_order",
+                        "post_status" => $post_status
+                    ];
+                    $post_id = 0;
+                    $unexpire_data = ["post" => $post_id, "product" => $cart_item['product_id']];
+                    $unexpire_data = apply_filters('subscrpt_filter_checkout_all_ids', $unexpire_data, $conditional_key);
+                    if ($is_renew && $post_status != "cancelled") {
+                        $expired_items = get_user_meta(get_current_user_id(), '_subscrpt_expired_items', true);
+                        if (!is_array($expired_items)) $expired_items = [];
+                        foreach ($expired_items as $expired_item) {
+                            if ($expired_item['product'] == $cart_item['product_id']) {
+                                $unexpire_data['post'] = $expired_item['post'];
+                                $comment_id = wp_insert_comment([
+                                    "comment_agent" => "simple-subscriptions",
+                                    "comment_author" => "simple-subscriptions",
+                                    "comment_content" => __('The order ' . $order_id . ' has been created for the subscription', 'sdevs_wea'),
+                                    "comment_post_ID" => $unexpire_data['post'],
+                                    "comment_type" => "order_note"
+                                ]);
+                                update_comment_meta($comment_id, 'subscrpt_activity', __('Renewal Order', 'sdevs_wea'));
+                            }
                         }
                     }
-                }
-                if ($unexpire_data['post'] == 0 || !$is_renew || get_the_title($unexpire_data['post']) == "") {
-                    $post_id = wp_insert_post($args);
-                    $comment_id = wp_insert_comment([
-                        "comment_agent" => "simple-subscriptions",
-                        "comment_author" => "simple-subscriptions",
-                        "comment_content" => __('Subscription successfully created.	order is ' . $order_id, 'sdevs_wea'),
-                        "comment_post_ID" => $post_id,
-                        "comment_type" => "order_note"
-                    ]);
-                    update_comment_meta($comment_id, 'subscrpt_activity', __('New Subscription', 'sdevs_wea'));
-                    $unexpire_data['post'] = $post_id;
-                }
-                $post_id = $unexpire_data['post'];
-                $args["post_title"] = "Subscription #{$post_id}";
-                $args["ID"] = $unexpire_data['post'];
-                $_subscrpt_order_general['post_id'] = $post_id;
-                if ($is_renew) $_subscrpt_order_general['stats'] = 'Renew Order';
-                $_subscrpt_order_general = apply_filters('subscrpt_filter_checkout_data', $_subscrpt_order_general, $conditional_key, $cart_item);
-                if ($order->get_payment_method() == 'stripe') {
-                    update_post_meta($post_id, "_subscrpt_auto_renew", 1);
-                } else {
-                    update_post_meta($post_id, "_subscrpt_auto_renew", 0);
-                }
-                update_post_meta($unexpire_data['post'], "_subscrpt_order_general", $_subscrpt_order_general);
-                $order_history = get_post_meta($unexpire_data['post'], '_subscrpt_order_history', true);
-                if (!is_array($order_history)) $order_history = [];
-                array_push($order_history, $_subscrpt_order_general);
-                update_post_meta($unexpire_data['post'], '_subscrpt_order_history', $order_history);
-                Action::status($post_status, get_current_user_id(), $unexpire_data);
-                array_push($order_subscrpt_products, $post_id);
-                array_push($order_subscrpt_full_data, $_subscrpt_order_general);
-                wp_update_post($args);
+                    if ($unexpire_data['post'] == 0 || !$is_renew || get_the_title($unexpire_data['post']) == "") {
+                        $post_id = wp_insert_post($args);
+                        $comment_id = wp_insert_comment([
+                            "comment_agent" => "simple-subscriptions",
+                            "comment_author" => "simple-subscriptions",
+                            "comment_content" => __('Subscription successfully created.	order is ' . $order_id, 'sdevs_wea'),
+                            "comment_post_ID" => $post_id,
+                            "comment_type" => "order_note"
+                        ]);
+                        update_comment_meta($comment_id, 'subscrpt_activity', __('New Subscription', 'sdevs_wea'));
+                        $unexpire_data['post'] = $post_id;
+                    }
+                    $post_id = $unexpire_data['post'];
+                    $args["post_title"] = "Subscription #{$post_id}";
+                    $args["ID"] = $unexpire_data['post'];
+                    $_subscrpt_order_general['post_id'] = $post_id;
+                    if ($is_renew) $_subscrpt_order_general['stats'] = 'Renew Order';
+                    $_subscrpt_order_general = apply_filters('subscrpt_filter_checkout_data', $_subscrpt_order_general, $conditional_key, $cart_item);
+                    if ($order->get_payment_method() == 'stripe') {
+                        update_post_meta($post_id, "_subscrpt_auto_renew", 1);
+                    } else {
+                        update_post_meta($post_id, "_subscrpt_auto_renew", 0);
+                    }
+                    update_post_meta($unexpire_data['post'], "_subscrpt_order_general", $_subscrpt_order_general);
+                    $order_history = get_post_meta($unexpire_data['post'], '_subscrpt_order_history', true);
+                    if (!is_array($order_history)) $order_history = [];
+                    array_push($order_history, $_subscrpt_order_general);
+                    update_post_meta($unexpire_data['post'], '_subscrpt_order_history', $order_history);
+                    Action::status($post_status, get_current_user_id(), $unexpire_data);
+                    array_push($order_subscrpt_products, $post_id);
+                    array_push($order_subscrpt_full_data, $_subscrpt_order_general);
+                    wp_update_post($args);
+                endif;
             endif;
         }
         $order_subscrpt = [
             "status" => true,
             "posts" => $order_subscrpt_products
         ];
-        update_post_meta($order_id, "_order_subscrpt_data", $order_subscrpt);
-        update_post_meta($order_id, "_order_subscrpt_full_data", $order_subscrpt_full_data);
+        if (count($order_subscrpt_products) > 0) update_post_meta($order_id, "_order_subscrpt_data", $order_subscrpt);
+        if (count($order_subscrpt_full_data) > 0) update_post_meta($order_id, "_order_subscrpt_full_data", $order_subscrpt_full_data);
     }
 
     public function display_subscrpt_details($order)
