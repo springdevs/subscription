@@ -56,7 +56,7 @@ class Product
             $post_meta = get_post_meta($conditional_key, 'subscrpt_general', true);
             if (is_array($post_meta) && $post_meta['enable']) :
                 $has_trial = Helper::Check_Trial($conditional_key);
-                if ($has_trial) $signup_fee += $post_meta['signup_fee'];
+                if ($has_trial && isset($post_meta['signup_fee'])) $signup_fee += $post_meta['signup_fee'];
             endif;
         }
         if ($signup_fee > 0) $cart->add_fee("SignUp Fee", $signup_fee);

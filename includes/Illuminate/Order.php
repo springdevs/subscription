@@ -94,7 +94,7 @@ class Order
             endif;
         }
     ?>
-        <td class="item_recurring" width="1%" data-sort-value="<?php echo esc_attr($subtotal); ?>">
+        <td class="item_recurring" width="15%">
             <div class="view">
                 <?php echo $subtotal; ?>
             </div>
@@ -104,6 +104,7 @@ class Order
 
     public function add_order_item_data($item_id, $item, $product)
     {
+        if (!$product) return;
         $order_data = get_post_meta($item->get_order_id(), '_order_subscrpt_full_data', true);
         if (!is_array($order_data)) $order_data = [];
         foreach ($order_data as $post_meta) {
