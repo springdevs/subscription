@@ -10,7 +10,7 @@ require_once __DIR__ . '/vendor/autoload.php';
 /**
  * Sdevs_Wc_Subscription class
  *
- * @class Sdevs_Wc_Subscription The class that holds the entire Sdevs_Wc_Subscription plugin
+ * @class Sdevs_Wc_Subscription The class that holds the entire plugin
  */
 final class Sdevs_Wc_Subscription
 {
