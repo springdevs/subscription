@@ -168,8 +168,10 @@ class Subscriptions
                     <tr>
                         <td><a href="<?php echo get_edit_post_link($order_history['order_id']); ?>" target="_blank"><?php echo $order_history['order_id']; ?></a></td>
                         <td><?php echo $order_history['stats']; ?></td>
-                        <td><?php echo date('F d, Y', strtotime($order->get_date_created())); ?></td>
-                        <td><?php echo $order->get_status(); ?></td>
+                        <td>
+                            <?php if ($order) echo date('F d, Y', strtotime($order->get_date_created())); ?>
+                        </td>
+                        <td><?php if ($order) echo $order->get_status(); ?></td>
                         <td><?php echo $order_history['subtotal_price_html']; ?></td>
                     </tr>
                 <?php endforeach; ?>
@@ -221,6 +223,7 @@ class Subscriptions
     {
         $post_meta = get_post_meta(get_the_ID(), "_subscrpt_order_general", true);
         $order = wc_get_order($post_meta["order_id"]);
+        if (!$order) return;
     ?>
         <table class="booking-customer-details" style="width: 100%;">
             <tbody>
@@ -254,6 +257,7 @@ class Subscriptions
         $post_meta = get_post_meta(get_the_ID(), "_subscrpt_order_general", true);
         $order_item = null;
         $order = wc_get_order($post_meta["order_id"]);
+        if (!$order) return;
         foreach ($order->get_items() as $cart_item) {
             if ($cart_item["product_id"] == $post_meta["product_id"]) {
                 $order_item = $cart_item;

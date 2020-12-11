@@ -21,7 +21,7 @@ class AutoRenewal
         if (empty($post_meta) && !is_array($post_meta)) return;
         $original_order_id = $post_meta['order_id'];
         $old_order = wc_get_order($post_meta['order_id']);
-        if ($old_order->get_status() != 'completed') return;
+        if (!$old_order || $old_order->get_status() != 'completed') return;
         $new_order = wc_create_order([
             'customer_id'   => $old_order->get_user_id(),
             'parent'        => $post_meta['order_id']
