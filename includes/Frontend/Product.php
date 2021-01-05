@@ -129,6 +129,7 @@ class Product
     public function change_single_add_to_cart_text($text)
     {
         global $product;
+        if (!$product) return $text;
         if ($product->is_type('variable')) return $text;
         $post_meta = get_post_meta($product->get_id(), 'subscrpt_general', true);
         if (is_array($post_meta) && isset($post_meta['limit']) && $post_meta['limit'] == "unlimited") return $post_meta['cart_txt'];
