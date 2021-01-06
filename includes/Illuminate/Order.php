@@ -57,7 +57,7 @@ class Order
     public function format_order_price($subtotal, $item, $order)
     {
         $product = wc_get_product($item['product_id']);
-        if (!$product->is_type('simple')) return $subtotal;
+        if ($product->is_type('variable')) return $subtotal;
         $order_data = get_post_meta($order->get_id(), '_order_subscrpt_full_data', true);
         if (!is_array($order_data)) $order_data = [];
         foreach ($order_data as $post_meta) {

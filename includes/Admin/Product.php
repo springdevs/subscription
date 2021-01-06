@@ -30,9 +30,10 @@ class Product
             $value = !empty($post_meta) && $post_meta["enable"] ? "yes" : "no";
         }
 
+        $wrapper_class = apply_filters("subscrpt_simple_enable_checkbox_classes", "show_if_simple");
         $product_type_options["subscrpt_enable"] = [
             "id"            => "subscrpt_enable",
-            "wrapper_class" => "show_if_simple",
+            "wrapper_class" => $wrapper_class,
             "label"         => __("Subscription", "sdevs_wea"),
             "description"   => __("Enable Subscriptions", "sdevs_wea"),
             "default"       => $value,

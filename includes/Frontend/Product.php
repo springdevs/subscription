@@ -56,7 +56,7 @@ class Product
             $post_meta = get_post_meta($conditional_key, 'subscrpt_general', true);
             if (is_array($post_meta) && $post_meta['enable']) :
                 $has_trial = Helper::Check_Trial($conditional_key);
-                if ($has_trial && isset($post_meta['signup_fee'])) $signup_fee += $post_meta['signup_fee'];
+                if ($has_trial && isset($post_meta['signup_fee'])) $signup_fee += (int)$post_meta['signup_fee'];
             endif;
         }
         if ($signup_fee > 0) $cart->add_fee("SignUp Fee", $signup_fee);
@@ -70,7 +70,7 @@ class Product
     public function text_if_active()
     {
         global $product;
-        if (!$product->is_type('simple')) return;
+        if ($product->is_type('variable')) return;
         $post_meta = get_post_meta($product->get_id(), 'subscrpt_general', true);
         $unexpired = Helper::Check_un_expired($product->get_id());
         if (is_array($post_meta) && isset($post_meta['limit'])) {
@@ -87,7 +87,7 @@ class Product
 
     public function remove_button_active_products($button, $product)
     {
-        if (!$product->is_type('simple') && !sdevs_is_pro_module_activate('subscription-pro')) return $button;
+        if ($product->is_type('variable') && !sdevs_is_pro_module_activate('subscription-pro')) return $button;
         $unexpired = Helper::Check_un_expired($product->get_id());
         if ($unexpired) return;
         return $button;
@@ -95,7 +95,7 @@ class Product
 
     public function check_if_purchasable($is_purchasable, $product)
     {
-        if (!$product->is_type('simple')) return $is_purchasable;
+        if ($product->is_type('variable')) return $is_purchasable;
         $unexpired = Helper::Check_un_expired($product->get_id());
         if ($unexpired) return false;
         return $is_purchasable;
@@ -144,7 +144,7 @@ class Product
 
     public function change_price_html($price, $product)
     {
-        if (!$product->is_type('simple')) return $price;
+        if ($product->is_type('variable')) return $price;
         $post_meta = get_post_meta($product->get_id(), 'subscrpt_general', true);
         if (is_array($post_meta) && $post_meta['enable']) :
             $time = $post_meta['time'] == 1 ? null : $post_meta['time'];
@@ -166,7 +166,7 @@ class Product
     public function change_price_cart_html($price, $cart_item, $cart_item_key)
     {
         $product = wc_get_product($cart_item['product_id']);
-        if (!$product->is_type('simple')) return $price;
+        if ($product->is_type('variable')) return $price;
         $post_meta = get_post_meta($cart_item['product_id'], 'subscrpt_general', true);
         if (is_array($post_meta) && $post_meta['enable']) :
             $time = $post_meta['time'] == 1 ? null : $post_meta['time'];
@@ -192,7 +192,7 @@ class Product
         foreach ($cart_items as $cart_item) {
             $post_meta = get_post_meta($cart_item['product_id'], 'subscrpt_general', true);
             $product = wc_get_product($cart_item['product_id']);
-            if ($product->is_type('simple') && is_array($post_meta) && $post_meta['enable']) :
+            if (!$product->is_type('variable') && is_array($post_meta) && $post_meta['enable']) :
                 $time = $post_meta['time'] == 1 ? null : $post_meta['time'];
                 $type = Helper::get_typos($post_meta['time'], $post_meta["type"]);
                 $price_html = get_woocommerce_currency_symbol() . $cart_item['line_subtotal'] . " / " . $time . " " . $type;
