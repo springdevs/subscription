@@ -170,7 +170,8 @@ class Product
         $post_meta = get_post_meta($cart_item['product_id'], 'subscrpt_general', true);
         if (is_array($post_meta) && $post_meta['enable']) :
             $time = $post_meta['time'] == 1 ? null : $post_meta['time'];
-            $type = Helper::get_typos($post_meta['time'], $post_meta["type"]);
+            $price_type = apply_filters("subscrpt_single_item_cart_price_type", $post_meta["type"], $cart_item);
+            $type = Helper::get_typos($post_meta['time'], $price_type);
             $trial = null;
             $signup_fee_html = null;
             $has_trial = Helper::Check_Trial($cart_item['product_id']);
@@ -179,7 +180,7 @@ class Product
                 if (isset($post_meta['signup_fee'])) $signup_fee_html = "<br/><small> + Signup fee of " . wc_price($post_meta['signup_fee']) . "</small>";
             }
             $price_html = $price . " / " . $time . " " . $type . $signup_fee_html . $trial;
-            return $price_html;
+            return apply_filters("subscrpt_single_item_cart_price_html", $price_html, $cart_item);
         else :
             return $price;
         endif;
@@ -194,7 +195,8 @@ class Product
             $product = wc_get_product($cart_item['product_id']);
             if (!$product->is_type('variable') && is_array($post_meta) && $post_meta['enable']) :
                 $time = $post_meta['time'] == 1 ? null : $post_meta['time'];
-                $type = Helper::get_typos($post_meta['time'], $post_meta["type"]);
+                $price_type = apply_filters("subscrpt_single_item_cart_price_type", $post_meta["type"], $cart_item);
+                $type = Helper::get_typos($post_meta['time'], $price_type);
                 $price_html = get_woocommerce_currency_symbol() . $cart_item['line_subtotal'] . " / " . $time . " " . $type;
                 $trial = null;
                 $start_date = null;

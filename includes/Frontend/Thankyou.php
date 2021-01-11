@@ -60,7 +60,8 @@ class Thankyou
                 if (is_array($post_meta) && $post_meta['enable']) :
                     $is_renew = isset($cart_item['_renew_subscrpt']);
                     $time = $post_meta['time'] == 1 ? null : $post_meta['time'];
-                    $type = Helper::get_typos($post_meta['time'], $post_meta["type"]);
+                    $price_type = apply_filters("subscrpt_order_item_price_type", $post_meta["type"], $cart_item);
+                    $type = Helper::get_typos($post_meta['time'], $price_type);
                     $subtotal_price_html = wc_price($cart_item['subtotal']) . " / " . $time . " " . $type;
                     $total_price_html = wc_price($cart_item['total']) . " / " . $time . " " . $type;
                     $start_date = time();

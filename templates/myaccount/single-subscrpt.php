@@ -92,29 +92,25 @@ $status = get_post_status($id);
         $product_link = apply_filters('subscrpt_filter_product_permalink', $product->get_permalink(), $post_meta);
         $time = $product_meta['time'] == 1 ? null : $product_meta['time'];
         $type = subscrpt_get_typos($product_meta['time'], $product_meta["type"]);
-        $product_price_html = wc_price($product->get_price() * $post_meta['qty']) . " / " . $time . " " . $type;
+        $product_price_html = apply_filters("subscrpt_price_single", wc_price($product->get_price()) . " / " . $time . " " . $type, $product, $order);
+        $recurring_price_html = apply_filters("subscrpt_price_recurring", wc_price($product->get_price() * $post_meta['qty']) . " / " . $time . " " . $type, $product, $order, $post_meta['qty']);
         ?>
         <tr class="order_item">
             <td class="product-name">
                 <a href="<?php echo $product_link; ?>"><?php echo $product_name; ?></a>
-                <strong class="product-quantity">× <?php echo $post_meta['qty']; ?></strong> </td>
+                <strong class="product-quantity">× <?php echo $post_meta['qty']; ?></strong>
+            </td>
             <td class="product-total">
-                <span class="woocommerce-Price-amount amount"><?php echo wc_price($product->get_price()) . " / " . $time . " " . $type; ?></span>
+                <span class="woocommerce-Price-amount amount"><?php echo $product_price_html; ?></span>
             </td>
         </tr>
     </tbody>
     <tfoot>
         <tr>
-            <th scope="row"><?php _e('Subtotal', 'sdevs_wea'); ?>:</th>
-            <td>
-                <span class="woocommerce-Price-amount amount"><?php echo wc_price($product->get_price() * $post_meta['qty']); ?></span>
-            </td>
-        </tr>
-        <tr>
             <th scope="row"><?php _e('Renew', 'sdevs_wea'); ?>:</th>
             <td>
                 <span class="woocommerce-Price-amount amount">
-                    <?php echo $product_price_html; ?>
+                    <?php echo $recurring_price_html; ?>
                 </span>
             </td>
         </tr>

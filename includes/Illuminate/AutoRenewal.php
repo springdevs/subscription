@@ -34,10 +34,12 @@ class AutoRenewal
             $variation = new \WC_Product_Variation($variation_id);
             $product_name = $variation->get_formatted_name();
         }
+        $order_args = ['name' => $product_name, 'variation_id' => $variation_id];
+        $order_args = apply_filters("subscrpt_renew_order_product_args", $order_args, $product, $old_order);
         $new_order->add_product(
             $product,
             $post_meta['qty'],
-            ['name' => $product_name, 'variation_id' => $variation_id]
+            $order_args
         );
 
         update_post_meta($order_id, '_order_shipping',         get_post_meta($original_order_id, '_order_shipping', true));
@@ -89,6 +91,7 @@ class AutoRenewal
         // $new_order->add_coupon('Fresher', '10', '2'); // accepted $couponcode, $couponamount,$coupon_tax
         $new_order->set_payment_method($old_order->get_payment_method()); // stripe
         $new_order->set_payment_method_title($old_order->get_payment_method_title()); // Credit Card (Stripe)
+        do_action('subscrpt_before_renewal_order_calculate', $new_order, $old_order, $product);
         $new_order->calculate_totals();
 
         $value_id = isset($post_meta['variation_id']) ? $post_meta['variation_id'] : $post_meta['product_id'];
