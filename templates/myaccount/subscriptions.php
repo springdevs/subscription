@@ -49,6 +49,7 @@ $postslist = new WP_Query($args);
                 $time = $product_meta['time'] == 1 ? null : $product_meta['time'];
                 $type = subscrpt_get_typos($product_meta['time'], $product_meta["type"]);
                 $product_price_html = wc_price($product->get_price() * $post_meta['qty']) . " / " . $time . " " . $type;
+                $product_price_html = apply_filters("subscrpt_price_recurring", $product_price_html, $product, wc_get_order($post_meta['order_id']), $post_meta['qty']);
         ?>
                 <tr>
                     <td><?php the_ID(); ?></td>

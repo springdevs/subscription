@@ -209,6 +209,7 @@ class Product
                     $post_meta['time'] . " " . $type,
                     $trial
                 );
+                $next_date = apply_filters("subscrpt_next_date_single_cart", $next_date,  $cart_item, $trial);
                 array_push($recurrs, [
                     "trial" => $trial_status,
                     "price_html" => $price_html,
