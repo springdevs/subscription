@@ -98,6 +98,7 @@ class AutoRenewal
         $product_meta = get_post_meta($value_id, 'subscrpt_general', true);
         $type = subscrpt_get_typos($product_meta['time'], $product_meta["type"]);
         $post_meta['order_id'] = $new_order->get_id();
+        $post_meta['stats'] = 'Renew Order';
         if (!$early_renew) {
             if (time() <= $post_meta['next_date']) {
                 $post_meta['next_date'] = strtotime($product_meta['time'] . " " . $type, $post_meta['next_date']);
@@ -105,7 +106,8 @@ class AutoRenewal
                 $post_meta['next_date'] = strtotime($product_meta['time'] . " " . $type);
             }
         }
-        $post_meta['stats'] = 'Renew Order';
+        $post_meta = apply_filters('subscrpt_filter_renewal_meta_data', $post_meta, $product_id, $old_order, $early_renew);
+        update_option("sdevs_helps", $post_meta['next_date']);
         update_post_meta($subscription_id, "_subscrpt_order_general", $post_meta);
         update_post_meta($order_id, "_order_subscrpt_data", ["status" => true, "posts" => [$subscription_id]]);
         $order_history = get_post_meta($subscription_id, '_subscrpt_order_history', true);
