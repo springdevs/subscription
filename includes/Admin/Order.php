@@ -15,14 +15,19 @@ class Order
 
     public function add_meta_boxes()
     {
-        add_meta_box(
-            'subscrpt_order_related',
-            __('Related Subscriptions', 'sdevs_wea'),
-            [$this, 'subscrpt_order_related'],
-            'shop_order',
-            'normal',
-            'default'
-        );
+        $order_id = get_the_ID();
+        var_dump(get_the_ID());
+        $order_meta = get_post_meta($order_id, "_order_subscrpt_data", true);
+        if (!empty($order_meta) && is_array($order_meta) && isset($order_meta['status'])) {
+            add_meta_box(
+                'subscrpt_order_related',
+                __('Related Subscriptions', 'sdevs_wea'),
+                [$this, 'subscrpt_order_related'],
+                'shop_order',
+                'normal',
+                'default'
+            );
+        }
     }
 
     public function subscrpt_order_related()
