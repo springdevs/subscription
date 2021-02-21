@@ -372,6 +372,10 @@ class Subscriptions
         ]);
 
         $post_meta = get_post_meta($post_id, "_subscrpt_order_general", true);
+        if ($action === "active") {
+            $order = wc_get_order($post_meta['order_id']);
+            $order->update_status('completed');
+        }
         $data = ["post" => $post_id, "product" => $post_meta['product_id']];
         if (isset($post_meta['variation_id'])) $data['variation'] = $post_meta['variation_id'];
         Action::status($action, $_POST['post_author'], $data);
