@@ -1,10 +1,10 @@
 <?php
 
-namespace SpringDevs\WcSubscription\Admin;
+namespace SpringDevs\Subscription\Admin;
 
 /**
  * Product class
- * @package SpringDevs\WcSubscription\Admin
+ * @package SpringDevs\Subscription\Admin
  */
 class Product
 {
@@ -34,8 +34,8 @@ class Product
         $product_type_options["subscrpt_enable"] = [
             "id"            => "subscrpt_enable",
             "wrapper_class" => $wrapper_class,
-            "label"         => __("Subscription", "sdevs_wea"),
-            "description"   => __("Enable Subscriptions", "sdevs_wea"),
+            "label"         => __("Subscription", "sdevs_subscrpt"),
+            "description"   => __("Enable Subscriptions", "sdevs_subscrpt"),
             "default"       => $value,
         ];
 
@@ -69,36 +69,36 @@ class Product
                 }
 ?>
                 <div class="option_group sdevs-form sdevs_panel show_if_subscription hide" style="padding: 10px;">
-                    <strong style="margin: 10px;"><?php _e("Subscription Settings", "sdevs_wea"); ?></strong>
+                    <strong style="margin: 10px;"><?php _e("Subscription Settings", "sdevs_subscrpt"); ?></strong>
                     <?php
 
                     woocommerce_wp_select([
                         "id" => "subscrpt_timing",
-                        "label" => __('Users will pay', 'sdevs_wea'),
+                        "label" => __('Users will pay', 'sdevs_subscrpt'),
                         "value" => $subscrpt_timing,
                         "options" => $timing_types,
-                        "description" => __('Set the length of each recurring subscription period to daily, weekly, monthly or annually.', 'sdevs_wea'),
+                        "description" => __('Set the length of each recurring subscription period to daily, weekly, monthly or annually.', 'sdevs_subscrpt'),
                         "desc_tip" => true
                     ]);
 
                     woocommerce_wp_text_input([
                         "id" => "subscrpt_cart_txt",
-                        "label" => __('Add to Cart Text', 'sdevs_wea'),
+                        "label" => __('Add to Cart Text', 'sdevs_subscrpt'),
                         "type" => "text",
                         "value" => $subscrpt_cart_txt,
-                        "description" => __('change Add to Cart Text default is "subscribe"', 'sdevs_wea'),
+                        "description" => __('change Add to Cart Text default is "subscribe"', 'sdevs_subscrpt'),
                         "desc_tip" => true
                     ]);
 
                     woocommerce_wp_select([
                         "id" => "subscrpt_user_cancell",
-                        "label" => __('Can User Cancell', 'sdevs_wea'),
+                        "label" => __('Can User Cancell', 'sdevs_subscrpt'),
                         "value" => $subscrpt_user_cancell,
                         "options" => [
-                            'yes' => __('Yes', 'sdevs_wea'),
-                            'no' => __('No', 'sdevs_wea'),
+                            'yes' => __('Yes', 'sdevs_subscrpt'),
+                            'no' => __('No', 'sdevs_subscrpt'),
                         ],
-                        "description" => __('if "Yes",then user can be cancelled."No" means cannot do this !!', 'sdevs_wea'),
+                        "description" => __('if "Yes",then user can be cancelled."No" means cannot do this !!', 'sdevs_subscrpt'),
                         "desc_tip" => true
                     ]);
                     ?>

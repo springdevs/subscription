@@ -1,10 +1,10 @@
 <?php
 
-namespace SpringDevs\WcSubscription\Illuminate;
+namespace SpringDevs\Subscription\Illuminate;
 
 /**
  * Class Comments
- * @package SpringDevs\WcSubscription\Illuminate
+ * @package SpringDevs\Subscription\Illuminate
  */
 class Comments
 {

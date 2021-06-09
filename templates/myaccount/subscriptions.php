@@ -23,11 +23,11 @@ $postslist = new WP_Query($args);
 <table class="shop_table my_account_subscrpt">
     <thead>
         <tr>
-            <th scope="col" class="subscrpt-id"><?php esc_html_e('Subscription', 'sdevs_wea'); ?></th>
-            <th scope="col" class="order-status"><?php esc_html_e('Status', 'sdevs_wea'); ?></th>
-            <th scope="col" class="order-product"><?php esc_html_e('Product', 'sdevs_wea'); ?></th>
-            <th scope="col" class="subscrpt-next-date"><?php esc_html_e('Next Payment', 'sdevs_wea'); ?></th>
-            <th scope="col" class="subscrpt-total"><?php esc_html_e('Total', 'sdevs_wea'); ?></th>
+            <th scope="col" class="subscrpt-id"><?php esc_html_e('Subscription', 'sdevs_subscrpt'); ?></th>
+            <th scope="col" class="order-status"><?php esc_html_e('Status', 'sdevs_subscrpt'); ?></th>
+            <th scope="col" class="order-product"><?php esc_html_e('Product', 'sdevs_subscrpt'); ?></th>
+            <th scope="col" class="subscrpt-next-date"><?php esc_html_e('Next Payment', 'sdevs_subscrpt'); ?></th>
+            <th scope="col" class="subscrpt-total"><?php esc_html_e('Total', 'sdevs_subscrpt'); ?></th>
             <th scope="col" class="subscrpt-action"></th>
         </tr>
     </thead>

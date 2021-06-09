@@ -1,10 +1,10 @@
 <?php
 
-namespace SpringDevs\WcSubscription;
+namespace SpringDevs\Subscription;
 
 /**
  * Class Installer
- * @package SpringDevs\WcSubscription
+ * @package SpringDevs\Subscription
  */
 class Installer
 {

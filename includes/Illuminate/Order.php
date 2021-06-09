@@ -1,10 +1,10 @@
 <?php
 
-namespace SpringDevs\WcSubscription\Illuminate;
+namespace SpringDevs\Subscription\Illuminate;
 
 /**
  * Class Order
- * @package SpringDevs\WcSubscription\Illuminate
+ * @package SpringDevs\Subscription\Illuminate
  */
 class Order
 {
@@ -79,7 +79,7 @@ class Order
     public function admin_order_item_header($order)
     {
 ?>
-        <th class="item_recurring sortable" data-sort="float"><?php esc_html_e('Recurring', 'sdevs_wea'); ?></th>
+        <th class="item_recurring sortable" data-sort="float"><?php esc_html_e('Recurring', 'sdevs_subscrpt'); ?></th>
     <?php
     }
 

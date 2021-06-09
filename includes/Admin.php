@@ -1,18 +1,18 @@
 <?php
 
-namespace SpringDevs\WcSubscription;
+namespace SpringDevs\Subscription;
 
-use SpringDevs\WcSubscription\Admin\Menu;
-use SpringDevs\WcSubscription\Admin\Order as AdminOrder;
-use SpringDevs\WcSubscription\Admin\Product;
-use SpringDevs\WcSubscription\Admin\Settings;
-use SpringDevs\WcSubscription\Admin\Subscriptions;
-use SpringDevs\WcSubscription\Illuminate\Comments;
-use SpringDevs\WcSubscription\Illuminate\Cron;
-use SpringDevs\WcSubscription\Illuminate\Email;
-use SpringDevs\WcSubscription\Illuminate\Order;
-use SpringDevs\WcSubscription\Illuminate\RegisterPostStatus;
-use SpringDevs\WcSubscription\Illuminate\Subscriptions as IlluminateSubscriptions;
+use SpringDevs\Subscription\Admin\Menu;
+use SpringDevs\Subscription\Admin\Order as AdminOrder;
+use SpringDevs\Subscription\Admin\Product;
+use SpringDevs\Subscription\Admin\Settings;
+use SpringDevs\Subscription\Admin\Subscriptions;
+use SpringDevs\Subscription\Illuminate\Comments;
+use SpringDevs\Subscription\Illuminate\Cron;
+use SpringDevs\Subscription\Illuminate\Email;
+use SpringDevs\Subscription\Illuminate\Order;
+use SpringDevs\Subscription\Illuminate\RegisterPostStatus;
+use SpringDevs\Subscription\Illuminate\Subscriptions as IlluminateSubscriptions;
 
 /**
  * The admin class

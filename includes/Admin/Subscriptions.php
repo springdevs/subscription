@@ -1,12 +1,12 @@
 <?php
 
-namespace SpringDevs\WcSubscription\Admin;
+namespace SpringDevs\Subscription\Admin;
 
-use SpringDevs\WcSubscription\Illuminate\Action;
+use SpringDevs\Subscription\Illuminate\Action;
 
 /**
  * Subscriptions class
- * @package SpringDevs\WcSubscription\Admin
+ * @package SpringDevs\Subscription\Admin
  */
 class Subscriptions
 {
@@ -62,10 +62,10 @@ class Subscriptions
 
     public function add_custom_columns($columns)
     {
-        $columns['subscrpt_start_date'] = __('Start Date', 'sdevs_wea');
-        $columns['subscrpt_customer'] = __('Customer', 'sdevs_wea');
-        $columns['subscrpt_next_date'] = __('Next Date', 'sdevs_wea');
-        $columns['subscrpt_status'] = __('Status', 'sdevs_wea');
+        $columns['subscrpt_start_date'] = __('Start Date', 'sdevs_subscrpt');
+        $columns['subscrpt_customer'] = __('Customer', 'sdevs_subscrpt');
+        $columns['subscrpt_next_date'] = __('Next Date', 'sdevs_subscrpt');
+        $columns['subscrpt_status'] = __('Status', 'sdevs_subscrpt');
         unset($columns['date']);
         return $columns;
     }
@@ -91,7 +91,7 @@ class Subscriptions
                 echo get_post_status($post_id);
             }
         } else {
-            _e("Order not found !!", "sdevs_wea");
+            _e("Order not found !!", "sdevs_subscrpt");
         }
     }
 
@@ -101,7 +101,7 @@ class Subscriptions
         // Save Data
         add_meta_box(
             'subscrpt_order_save_post',
-            __('Subscription Action', 'sdevs_wea'),
+            __('Subscription Action', 'sdevs_subscrpt'),
             [$this, 'subscrpt_order_save_post'],
             'subscrpt_order',
             'side',
@@ -110,7 +110,7 @@ class Subscriptions
 
         add_meta_box(
             'subscrpt_customer_info',
-            __('Customer Info', 'sdevs_wea'),
+            __('Customer Info', 'sdevs_subscrpt'),
             [$this, 'subscrpt_customer_info'],
             'subscrpt_order',
             'side',
@@ -119,7 +119,7 @@ class Subscriptions
 
         add_meta_box(
             'subscrpt_order_info',
-            __('Subscription Info', 'sdevs_wea'),
+            __('Subscription Info', 'sdevs_subscrpt'),
             [$this, 'subscrpt_order_info'],
             'subscrpt_order',
             'normal',
@@ -128,7 +128,7 @@ class Subscriptions
 
         add_meta_box(
             'subscrpt_order_history',
-            __('Subscription History', 'sdevs_wea'),
+            __('Subscription History', 'sdevs_subscrpt'),
             [$this, 'subscrpt_order_history'],
             'subscrpt_order',
             'normal',
@@ -137,7 +137,7 @@ class Subscriptions
 
         add_meta_box(
             'subscrpt_order_activities',
-            __('Subscription Activities', 'sdevs_wea'),
+            __('Subscription Activities', 'sdevs_subscrpt'),
             [$this, 'subscrpt_order_activities'],
             'subscrpt_order',
             'normal',
@@ -153,11 +153,11 @@ class Subscriptions
         <table class="widefat striped">
             <thead>
                 <tr>
-                    <th><?php _e('Order', 'sdevs_wea'); ?></th>
+                    <th><?php _e('Order', 'sdevs_subscrpt'); ?></th>
                     <th></th>
-                    <th><?php _e('Date', 'sdevs_wea'); ?></th>
-                    <th><?php _e('Status', 'sdevs_wea'); ?></th>
-                    <th><?php _e('Amount', 'sdevs_wea'); ?></th>
+                    <th><?php _e('Date', 'sdevs_subscrpt'); ?></th>
+                    <th><?php _e('Status', 'sdevs_subscrpt'); ?></th>
+                    <th><?php _e('Amount', 'sdevs_subscrpt'); ?></th>
                 </tr>
             </thead>
             <tbody>
@@ -198,16 +198,16 @@ class Subscriptions
     public function subscrpt_order_save_post()
     {
         $actions = [
-            ["label" => __('Activate Subscription', 'sdevs_wea'), "value" => 'active'],
-            ["label" => __('Pending Subscription', 'sdevs_wea'),  "value" => 'pending'],
-            ["label" => __('Expire Subscription', 'sdevs_wea'),   "value" => 'expired'],
-            ["label" => __('Cancel Subscription', 'sdevs_wea'),   "value" => 'cancelled'],
+            ["label" => __('Activate Subscription', 'sdevs_subscrpt'), "value" => 'active'],
+            ["label" => __('Pending Subscription', 'sdevs_subscrpt'),  "value" => 'pending'],
+            ["label" => __('Expire Subscription', 'sdevs_subscrpt'),   "value" => 'expired'],
+            ["label" => __('Cancel Subscription', 'sdevs_subscrpt'),   "value" => 'cancelled'],
         ];
         $status = get_post_status(get_the_ID());
         ?>
         <p class="subscrpt_sub_box">
             <select id="subscrpt_order_type" name="subscrpt_order_action">
-                <option value=""><?php _e('choose action', 'sdevs_wea'); ?></option>
+                <option value=""><?php _e('choose action', 'sdevs_subscrpt'); ?></option>
                 <?php foreach ($actions as $action) : ?>
                     <option value="<?php echo $action["value"]; ?>" <?php if ($action["value"] == $status) echo "selected"; ?>><?php echo $action["label"]; ?></option>
                 <?php endforeach; ?>

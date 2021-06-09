@@ -1,13 +1,13 @@
 <?php
 
 
-namespace SpringDevs\WcSubscription\Frontend;
+namespace SpringDevs\Subscription\Frontend;
 
-use SpringDevs\WcSubscription\Illuminate\Action;
+use SpringDevs\Subscription\Illuminate\Action;
 
 /**
  * Class ActionController
- * @package SpringDevs\WcSubscription\Frontend
+ * @package SpringDevs\Subscription\Frontend
  */
 class ActionController
 {
@@ -22,7 +22,7 @@ class ActionController
         $subscrpt_id = $_GET['subscrpt_id'];
         $action = $_GET['action'];
         $wpnonce = $_GET['wpnonce'];
-        if (!wp_verify_nonce($wpnonce, "subscrpt_nonce")) wp_die(__('Sorry !! You cannot permit to access.', 'sdevs_wea'));
+        if (!wp_verify_nonce($wpnonce, "subscrpt_nonce")) wp_die(__('Sorry !! You cannot permit to access.', 'sdevs_subscrpt'));
         if ($action == 'renew') {
             $this->RenewProduct($subscrpt_id);
         } elseif ($action == 'early-renew') {
@@ -63,7 +63,7 @@ class ActionController
             [],
             ['renew_subscrpt' => true]
         );
-        wc_add_notice(__('Product added to cart', 'sdevs_wea'), 'success');
+        wc_add_notice(__('Product added to cart', 'sdevs_subscrpt'), 'success');
         $this->redirect(wc_get_cart_url());
     }
 

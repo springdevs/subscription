@@ -1,10 +1,10 @@
 <?php
 
-namespace SpringDevs\WcSubscription\Illuminate;
+namespace SpringDevs\Subscription\Illuminate;
 
 /**
  * AutoRenewal [ helper class ]
- * @package SpringDevs\WcSubscription\Illuminate
+ * @package SpringDevs\Subscription\Illuminate
  */
 class AutoRenewal
 {
@@ -124,11 +124,11 @@ class AutoRenewal
         $comment_id = wp_insert_comment([
             "comment_agent"   => "simple-subscriptions",
             "comment_author"  => "simple-subscriptions",
-            "comment_content" => __('The order ' . $new_order->get_id() . ' has been created for the subscription', 'sdevs_wea'),
+            "comment_content" => __('The order ' . $new_order->get_id() . ' has been created for the subscription', 'sdevs_subscrpt'),
             "comment_post_ID" => $subscription_id,
             "comment_type"    => "order_note",
         ]);
-        update_comment_meta($comment_id, 'subscrpt_activity', __('Renewal Order', 'sdevs_wea'));
+        update_comment_meta($comment_id, 'subscrpt_activity', __('Renewal Order', 'sdevs_subscrpt'));
         wc_add_notice("Renewal Order(#" . $order_id . ") Created . Please Pay now", "success");
         do_action("subscrpt_after_create_renew_order", $new_order, $old_order, $subscription_id, $post_meta, $product_meta, $early_renew);
     }

@@ -1,10 +1,10 @@
 <?php
 
-namespace SpringDevs\WcSubscription\Admin;
+namespace SpringDevs\Subscription\Admin;
 
 /**
  * Order class
- * @package SpringDevs\WcSubscription\Admin
+ * @package SpringDevs\Subscription\Admin
  */
 class Order
 {
@@ -20,7 +20,7 @@ class Order
         if (!empty($order_meta) && is_array($order_meta) && isset($order_meta['status'])) {
             add_meta_box(
                 'subscrpt_order_related',
-                __('Related Subscriptions', 'sdevs_wea'),
+                __('Related Subscriptions', 'sdevs_subscrpt'),
                 [$this, 'subscrpt_order_related'],
                 'shop_order',
                 'normal',
@@ -39,10 +39,10 @@ class Order
             <thead>
                 <tr>
                     <th></th>
-                    <th><?php _e('Started on', 'sdevs_wea'); ?></th>
-                    <th><?php _e('Recurring', 'sdevs_wea'); ?></th>
-                    <th><?php _e('Expiry date', 'sdevs_wea'); ?></th>
-                    <th><?php _e('Status', 'sdevs_wea'); ?></th>
+                    <th><?php _e('Started on', 'sdevs_subscrpt'); ?></th>
+                    <th><?php _e('Recurring', 'sdevs_subscrpt'); ?></th>
+                    <th><?php _e('Expiry date', 'sdevs_subscrpt'); ?></th>
+                    <th><?php _e('Status', 'sdevs_subscrpt'); ?></th>
                 </tr>
             </thead>
             <tbody>
@@ -56,7 +56,7 @@ class Order
                                 <a href="<?php echo get_edit_post_link($post); ?>" target="_blank">#<?php echo $post; ?> - <?php echo get_the_title($post_meta['product_id']); ?></a>
                             </td>
                             <td>
-                                <?php echo $post_meta['trial'] == null ? date('F d, Y', $post_meta['start_date']) : "+" . $post_meta['trial'] . " " . __('free trial', 'sdevs_wea'); ?>
+                                <?php echo $post_meta['trial'] == null ? date('F d, Y', $post_meta['start_date']) : "+" . $post_meta['trial'] . " " . __('free trial', 'sdevs_subscrpt'); ?>
                             </td>
                             <td><?php echo $post_meta['total_price_html']; ?></td>
                             <td><?php echo $post_meta['trial'] == null ? date('F d, Y', $post_meta['next_date']) : date('F d, Y', $post_meta['start_date']); ?></td>

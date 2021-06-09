@@ -1,10 +1,10 @@
 <?php
 
-namespace SpringDevs\WcSubscription\Illuminate;
+namespace SpringDevs\Subscription\Illuminate;
 
 /**
  * Class Subscriptions
- * @package SpringDevs\WcSubscription\Illuminate
+ * @package SpringDevs\Subscription\Illuminate
  */
 class Subscriptions
 {
@@ -19,25 +19,25 @@ class Subscriptions
     public function create_post_type()
     {
         $labels = array(
-            "name" => __("Subscriptions", "sdevs_wea"),
-            "singular_name" => __("Subscription", "sdevs_wea"),
-            'name_admin_bar'        => __('Subscription\'s', 'sdevs_wea'),
-            'archives'              => __('Item Archives', 'sdevs_wea'),
-            'attributes'            => __('Item Attributes', 'sdevs_wea'),
-            'parent_item_colon'     => __('Parent :', 'sdevs_wea'),
-            'all_items'             => __('Subscriptions', 'sdevs_wea'),
-            'add_new_item'          => __('Add New Subscription', 'sdevs_wea'),
-            'add_new'               => __('Add Subscription', 'sdevs_wea'),
-            'new_item'              => __('New Subscription', 'sdevs_wea'),
-            'edit_item'             => __('Edit Subscription', 'sdevs_wea'),
-            'update_item'           => __('Update Subscription', 'sdevs_wea'),
-            'view_item'             => __('View Subscription', 'sdevs_wea'),
-            'view_items'            => __('View Subscription', 'sdevs_wea'),
-            'search_items'          => __('Search Subscription', 'sdevs_wea'),
+            "name" => __("Subscriptions", "sdevs_subscrpt"),
+            "singular_name" => __("Subscription", "sdevs_subscrpt"),
+            'name_admin_bar'        => __('Subscription\'s', 'sdevs_subscrpt'),
+            'archives'              => __('Item Archives', 'sdevs_subscrpt'),
+            'attributes'            => __('Item Attributes', 'sdevs_subscrpt'),
+            'parent_item_colon'     => __('Parent :', 'sdevs_subscrpt'),
+            'all_items'             => __('Subscriptions', 'sdevs_subscrpt'),
+            'add_new_item'          => __('Add New Subscription', 'sdevs_subscrpt'),
+            'add_new'               => __('Add Subscription', 'sdevs_subscrpt'),
+            'new_item'              => __('New Subscription', 'sdevs_subscrpt'),
+            'edit_item'             => __('Edit Subscription', 'sdevs_subscrpt'),
+            'update_item'           => __('Update Subscription', 'sdevs_subscrpt'),
+            'view_item'             => __('View Subscription', 'sdevs_subscrpt'),
+            'view_items'            => __('View Subscription', 'sdevs_subscrpt'),
+            'search_items'          => __('Search Subscription', 'sdevs_subscrpt'),
         );
 
         $args = array(
-            "label" => __("Subscriptions", "sdevs_wea"),
+            "label" => __("Subscriptions", "sdevs_subscrpt"),
             "labels" => $labels,
             "description" => "",
             "public" => false,
