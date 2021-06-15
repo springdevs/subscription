@@ -81,3 +81,8 @@ function subscrpt_check_unexpired($product_id)
     if ($product->is_type('simple')) return false;
     return apply_filters('subscrpt_filter_check_unexpired', false, $product_id, $active_items, $pending_items);
 }
+
+function subscrpt_pro_activated()
+{
+    return class_exists('Sdevs_Wc_Subscription_Pro');
+}

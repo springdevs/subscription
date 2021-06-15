@@ -16,7 +16,7 @@ class AutoRenewal
     public function product_expired_action($subscription_id, $product_id, $all_data, $early_renew)
     {
         $is_auto_renew = get_post_meta($subscription_id, '_subscrpt_auto_renew', true);
-        if (sdevs_has_pro_version() && get_option('subscrpt_manual_renew', '1') != '1' && $is_auto_renew == 0) {
+        if (get_option('subscrpt_manual_renew', '1') != '1' && $is_auto_renew == 0) {
             return;
         }
 

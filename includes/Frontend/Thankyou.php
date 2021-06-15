@@ -54,7 +54,7 @@ class Thankyou
         $cart_items = $order->get_items();
         foreach ($cart_items as $cart_item) {
             $product = wc_get_product($cart_item['product_id']);
-            if (!$product->is_type('variable') || sdevs_is_pro_module_activate('subscription-pro')) :
+            if (!$product->is_type('variable') || subscrpt_pro_activated()) :
                 $conditional_key = apply_filters('subscrpt_filter_checkout_conditional_key', $cart_item['product_id'], $cart_item);
                 $post_meta = get_post_meta($conditional_key, 'subscrpt_general', true);
                 if (is_array($post_meta) && $post_meta['enable']) :

@@ -182,8 +182,8 @@ class Subscriptions
 
     public function subscrpt_order_activities()
     {
-        if (function_exists('sdevs_is_pro_module_activate')) :
-            if (sdevs_is_pro_module_activate('subscription-pro')) :
+        if (function_exists('subscrpt_pro_activated')) :
+            if (subscrpt_pro_activated()) :
                 do_action('subscrpt_order_activities', get_the_ID());
             else :
         ?>

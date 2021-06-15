@@ -87,7 +87,7 @@ class Product
 
     public function remove_button_active_products($button, $product)
     {
-        if ($product->is_type('variable') && !sdevs_is_pro_module_activate('subscription-pro')) return $button;
+        if ($product->is_type('variable') && !subscrpt_pro_activated()) return $button;
         $unexpired = Helper::Check_un_expired($product->get_id());
         if ($unexpired) return;
         return $button;

@@ -44,8 +44,8 @@ class Product
 
     public function subscription_forms()
     {
-        if (function_exists('sdevs_is_pro_module_activate')) {
-            if (sdevs_is_pro_module_activate('subscription-pro')) {
+        if (function_exists('subscrpt_pro_activated')) {
+            if (subscrpt_pro_activated()) {
                 do_action('subscrpt_simple_pro_fields', get_the_ID());
             } else {
                 $timing_types = [
@@ -111,8 +111,8 @@ class Product
     public function save_subscrpt_data($post_id)
     {
         if (!isset($_POST['subscrpt_enable'])) return;
-        if (function_exists('sdevs_is_pro_module_activate')) {
-            if (sdevs_is_pro_module_activate('subscription-pro')) return;
+        if (function_exists('subscrpt_pro_activated')) {
+            if (subscrpt_pro_activated()) return;
         }
         $subscrpt_enable = $_POST["subscrpt_enable"] ? true : false;
         $subscrpt_time = 1;
