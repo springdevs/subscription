@@ -188,7 +188,7 @@ class Subscriptions
             else :
         ?>
                 <a href="https://springdevs.com" target="_blank">
-                    <img style="width: 100%;" src="<?php echo WCSUBSCRIPTION_ASSETS_ASSETS . '/images/subscrpt-ads.png'; ?>" />
+                    <img style="width: 100%;" src="<?php echo SUBSCRPT_ASSETS . '/images/subscrpt-ads.png'; ?>" />
                 </a>
         <?php
             endif;
