@@ -49,6 +49,20 @@ A powerfull plugin that allow to enable subscription on woocommerce products.
         2. Visit 'Plugins'.
         3. Activate the `WooCommerce Subscription` plugin.
 
+
+== Screenshots ==
+
+1. Create product with subscription
+2. Subscription product view
+3. Cart page
+4. Checkout Page
+5. Thank you Page
+6. My Account subscription lists
+7. Manage subscription from user
+8. Subscription lists from wp-admin
+9. Manage subscription from wp-admin
+
+
 == Changelog ==
 
     = 1.0.0 =
