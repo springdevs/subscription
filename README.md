@@ -1,3 +1,9 @@
 # Subscription
 
-> A module of [Missing Addons for WooCommerce](https://github.com/springdevs/wc-essential-addons)
+Allow your customers to order once and get their products and services every month/week.
+
+## changelog
+
+### v1.0.0
+
+- Initial release
