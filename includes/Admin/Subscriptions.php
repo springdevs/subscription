@@ -378,6 +378,6 @@ class Subscriptions
         }
         $data = ["post" => $post_id, "product" => $post_meta['product_id']];
         if (isset($post_meta['variation_id'])) $data['variation'] = $post_meta['variation_id'];
-        Action::status($action, $_POST['post_author'], $data);
+        Action::status($action, sanitize_text_field($_POST['post_author']), $data);
     }
 }
