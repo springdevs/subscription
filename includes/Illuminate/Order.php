@@ -63,7 +63,7 @@ class Order
         foreach ($order_data as $post_meta) {
             if (is_array($post_meta) && isset($post_meta['stats']) && $item['product_id'] == $post_meta['product_id']) :
                 $trial = null;
-                $has_trial = isset($post_meta['trial']) && strlen($post_meta['trial']) > 2 ? true : false;
+                $has_trial = isset($post_meta['trial']) && strlen($post_meta['trial']) > 2;
                 $signup_fee_html = null;
                 if ($has_trial) {
                     $trial = "<br/><small> + Get " . $post_meta['trial'] . " " . " free trial!</small>";
@@ -124,27 +124,14 @@ class Order
         $post_status = "active";
 
         switch ($order->get_status()) {
+            case "on-hold":
             case "pending";
                 $post_status = "pending";
                 break;
 
-            case "on-hold";
-                $post_status = "pending";
-                break;
-
-            case "completed";
-                $post_status = "active";
-                break;
-
+            case "refunded":
+            case "failed":
             case "cancelled";
-                $post_status = "cancelled";
-                break;
-
-            case "refunded";
-                $post_status = "cancelled";
-                break;
-
-            case "failed";
                 $post_status = "cancelled";
                 break;
 
