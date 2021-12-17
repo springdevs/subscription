@@ -227,13 +227,13 @@ class Product
                 <?php foreach ($recurrs as $recurr) : ?>
                     <?php if ($recurr['trial']) : ?>
                         <p>
-                            <span><?php echo $recurr['price_html']; ?></span><br />
-                            <small><?php _e('First billing on', 'sdevs_subscrpt'); ?>: <?php echo date('F d, Y', $recurr['start_date']); ?></small>
+                            <span><?php echo esc_js($recurr['price_html']); ?></span><br />
+                            <small><?php echo esc_html_e('First billing on', 'sdevs_subscrpt'); ?>: <?php echo esc_html(date('F d, Y', $recurr['start_date'])); ?></small>
                         </p>
                     <?php else : ?>
                         <p>
-                            <span><?php echo $recurr['price_html']; ?></span><br />
-                            <small><?php _e('Next billing on', 'sdevs_subscrpt'); ?>: <?php echo $recurr['next_date']; ?></small>
+                            <span><?php echo esc_js($recurr['price_html']); ?></span><br />
+                            <small><?php echo esc_html_e('Next billing on', 'sdevs_subscrpt'); ?>: <?php echo esc_js($recurr['next_date']); ?></small>
                         </p>
                     <?php endif; ?>
                 <?php endforeach; ?>

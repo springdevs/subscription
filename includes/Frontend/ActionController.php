@@ -19,9 +19,9 @@ class ActionController
     public function control_action_subscrpt()
     {
         if (!(isset($_GET['subscrpt_id']) && isset($_GET['action']) && isset($_GET['wpnonce']))) return;
-        $subscrpt_id = $_GET['subscrpt_id'];
-        $action = $_GET['action'];
-        $wpnonce = $_GET['wpnonce'];
+        $subscrpt_id = esc_url($_GET['subscrpt_id']);
+        $action = esc_url($_GET['action']);
+        $wpnonce = esc_url($_GET['wpnonce']);
         if (!wp_verify_nonce($wpnonce, "subscrpt_nonce")) wp_die(__('Sorry !! You cannot permit to access.', 'sdevs_subscrpt'));
         if ($action == 'renew') {
             $this->RenewProduct($subscrpt_id);
@@ -48,7 +48,7 @@ class ActionController
             if (isset($post_meta['variation_id'])) $data['variation'] = $post_meta['variation_id'];
             Action::status($action, get_current_user_id(), $data);
         }
-        echo "<script>location.href = '" . get_permalink(wc_get_page_id('myaccount')) . "view-subscrpt/" . $subscrpt_id . "';</script>";
+        echo esc_sql("<script>location.href = '" . get_permalink(wc_get_page_id('myaccount')) . "view-subscrpt/" . $subscrpt_id . "';</script>");
     }
 
     public function RenewProduct($subscrpt_id)

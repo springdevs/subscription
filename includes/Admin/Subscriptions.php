@@ -283,16 +283,16 @@ class Subscriptions
                 </tr>
                 <tr>
                     <th scope="row">Qty : </th>
-                    <td>x<?php echo $post_meta['qty']; ?></td>
+                    <td>x<?php echo esc_html($post_meta['qty']); ?></td>
                 </tr>
                 <tr>
                     <th scope="row">Amount : </th>
-                    <td><strong><?php echo $post_meta['subtotal_price_html']; ?></strong></td>
+                    <td><strong><?php echo esc_js($post_meta['subtotal_price_html']); ?></strong></td>
                 </tr>
                 <?php if (!empty($post_meta['trial'])) : ?>
                     <tr>
                         <th scope="row">Trial</th>
-                        <td><?php echo $post_meta['trial']; ?></td>
+                        <td><?php echo esc_html($post_meta['trial']); ?></td>
                     </tr>
                     <tr>
                         <th scope="row">Trial Date</th>
