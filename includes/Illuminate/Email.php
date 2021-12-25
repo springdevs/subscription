@@ -51,7 +51,7 @@ class Email
                                 <tr>
                                     <th class="td" scope="row" colspan="2" style="color: #636363; border: 1px solid #e5e5e5; vertical-align: middle; padding: 12px; text-align: left;">
                                         <?php _e('Recurring amount:', 'sdevs_subscrpt'); ?> </th>
-                                    <td class="td" style="color: #636363; border: 1px solid #e5e5e5; vertical-align: middle; padding: 12px; text-align: left;"><?php echo esc_js($subscrpt_meta['subtotal_price_html']); ?></td>
+                                    <td class="td" style="color: #636363; border: 1px solid #e5e5e5; vertical-align: middle; padding: 12px; text-align: left;"><?php echo esc_sql($subscrpt_meta['subtotal_price_html']); ?></td>
                                 </tr>
                                 <?php if ($trial_status == null) { ?>
                                     <tr>

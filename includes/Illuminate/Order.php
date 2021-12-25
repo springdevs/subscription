@@ -96,7 +96,7 @@ class Order
     ?>
         <td class="item_recurring" width="15%">
             <div class="view">
-                <?php echo esc_js($subtotal); ?>
+                <?php echo esc_sql($subtotal); ?>
             </div>
         </td>
 <?php
