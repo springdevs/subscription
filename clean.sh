@@ -1,7 +1,7 @@
 rm -r composer.json
 rm -r composer.lock
 
-rm -r readme.md
+rm -r README.md
 
 rm -rf .git/
 rm -r .editorconfig

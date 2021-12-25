@@ -84,7 +84,7 @@ class Subscriptions
                 <a href="mailto:<?php echo $order->get_billing_email(); ?>"><?php echo $order->get_billing_email(); ?></a>
                 <br />
                 Phone : <a href="tel:<?php echo $order->get_billing_phone(); ?>"><?php echo $order->get_billing_phone(); ?></a>
-        <?php
+            <?php
             } elseif ($column == "subscrpt_next_date") {
                 echo date('F d, Y', $post_meta['next_date']);
             } elseif ($column == "subscrpt_status") {
@@ -149,35 +149,7 @@ class Subscriptions
     {
         $order_histories = get_post_meta(get_the_ID(), '_subscrpt_order_history', true);
         rsort($order_histories);
-        ?>
-        <table class="widefat striped">
-            <thead>
-                <tr>
-                    <th><?php _e('Order', 'sdevs_subscrpt'); ?></th>
-                    <th></th>
-                    <th><?php _e('Date', 'sdevs_subscrpt'); ?></th>
-                    <th><?php _e('Status', 'sdevs_subscrpt'); ?></th>
-                    <th><?php _e('Amount', 'sdevs_subscrpt'); ?></th>
-                </tr>
-            </thead>
-            <tbody>
-                <?php foreach ($order_histories as $order_history) : ?>
-                    <?php
-                    $order = wc_get_order($order_history['order_id']);
-                    ?>
-                    <tr>
-                        <td><a href="<?php echo get_edit_post_link($order_history['order_id']); ?>" target="_blank"><?php echo $order_history['order_id']; ?></a></td>
-                        <td><?php echo $order_history['stats']; ?></td>
-                        <td>
-                            <?php if ($order) echo date('F d, Y', strtotime($order->get_date_created())); ?>
-                        </td>
-                        <td><?php if ($order) echo $order->get_status(); ?></td>
-                        <td><?php echo $order_history['subtotal_price_html']; ?></td>
-                    </tr>
-                <?php endforeach; ?>
-            </tbody>
-        </table>
-        <?php
+        include 'views/order-history.php';
     }
 
     public function subscrpt_order_activities()
@@ -186,11 +158,11 @@ class Subscriptions
             if (subscrpt_pro_activated()) :
                 do_action('subscrpt_order_activities', get_the_ID());
             else :
-        ?>
+            ?>
                 <a href="https://springdevs.com" target="_blank">
                     <img style="width: 100%;" src="<?php echo SUBSCRPT_ASSETS . '/images/subscrpt-ads.png'; ?>" />
                 </a>
-        <?php
+            <?php
             endif;
         endif;
     }
@@ -204,19 +176,7 @@ class Subscriptions
             ["label" => __('Cancel Subscription', 'sdevs_subscrpt'),   "value" => 'cancelled'],
         ];
         $status = get_post_status(get_the_ID());
-        ?>
-        <p class="subscrpt_sub_box">
-            <select id="subscrpt_order_type" name="subscrpt_order_action">
-                <option value=""><?php _e('choose action', 'sdevs_subscrpt'); ?></option>
-                <?php foreach ($actions as $action) : ?>
-                    <option value="<?php echo $action["value"]; ?>" <?php if ($action["value"] == $status) echo "selected"; ?>><?php echo $action["label"]; ?></option>
-                <?php endforeach; ?>
-            </select>
-        </p>
-        <div class="submitbox">
-            <input type="submit" class="button save_order button-primary tips" name="save" value="Process">
-        </div>
-    <?php
+        include 'views/subscription-save-meta.php';
     }
 
     public function subscrpt_customer_info()
@@ -224,32 +184,7 @@ class Subscriptions
         $post_meta = get_post_meta(get_the_ID(), "_subscrpt_order_general", true);
         $order = wc_get_order($post_meta["order_id"]);
         if (!$order) return;
-    ?>
-        <table class="booking-customer-details" style="width: 100%;">
-            <tbody>
-                <tr>
-                    <th>Name:</th>
-                    <td><?php echo $order->get_formatted_billing_full_name(); ?></td>
-                </tr>
-                <tr>
-                    <th>Email:</th>
-                    <td><a href="mailto:<?php echo $order->get_billing_email(); ?>"><?php echo $order->get_billing_email(); ?></a></td>
-                </tr>
-                <tr>
-                    <th>Address:</th>
-                    <td><?php echo $order->get_formatted_billing_address(); ?></td>
-                </tr>
-                <tr>
-                    <th>Phone:</th>
-                    <td><?php echo $order->get_billing_phone(); ?></td>
-                </tr>
-                <tr class="view">
-                    <th>&nbsp;</th>
-                    <td><a class="button button-small" target="_blank" href="<?php echo get_edit_post_link($post_meta['order_id']); ?>">View Order</a></td>
-                </tr>
-            </tbody>
-        </table>
-    <?php
+        include 'views/subscription-customer.php';
     }
 
     public function subscrpt_order_info()
@@ -264,71 +199,14 @@ class Subscriptions
                 break;
             }
         }
-    ?>
-        <table class="form-table">
-            <tbody>
-                <tr>
-                    <?php
-                    $product_name = apply_filters('subscrpt_filter_product_name', get_the_title($post_meta['product_id']), $post_meta);
-                    $product_link = apply_filters('subscrpt_filter_product_permalink', get_the_permalink($post_meta['product_id']), $post_meta);
-                    ?>
-                    <th scope="row">Product : </th>
-                    <td>
-                        <a href="<?php echo $product_link; ?>" target="_blank"><?php echo $product_name; ?></a>
-                    </td>
-                </tr>
-                <tr>
-                    <th scope="row">Cost : </th>
-                    <td><?php echo wc_price($order->get_item_subtotal($order_item, false, true), array('currency' => $order->get_currency())); ?></td>
-                </tr>
-                <tr>
-                    <th scope="row">Qty : </th>
-                    <td>x<?php echo esc_html($post_meta['qty']); ?></td>
-                </tr>
-                <tr>
-                    <th scope="row">Amount : </th>
-                    <td><strong><?php echo esc_js($post_meta['subtotal_price_html']); ?></strong></td>
-                </tr>
-                <?php if (!empty($post_meta['trial'])) : ?>
-                    <tr>
-                        <th scope="row">Trial</th>
-                        <td><?php echo esc_html($post_meta['trial']); ?></td>
-                    </tr>
-                    <tr>
-                        <th scope="row">Trial Date</th>
-                        <td><?php echo " [ " . date('F d, Y', strtotime($order->get_date_created())) . " - " . date('F d, Y', strtotime($post_meta['trial'], strtotime($order->get_date_created()))) . " ] "; ?></td>
-                    </tr>
-                <?php endif; ?>
-                <tr>
-                    <th scope="row">Started date:</th>
-                    <td><?php echo date('F d, Y', $post_meta['start_date']); ?></td>
-                </tr>
-                <tr>
-                    <th scope="row">Payment due date:</th>
-                    <td><?php echo date('F d, Y', $post_meta['next_date']); ?></td>
-                </tr>
-                <tr>
-                    <th scope="row">Payment Method:</th>
-                    <td><?php echo $order->get_payment_method_title(); ?></td>
-                </tr>
-                <tr>
-                    <th scope="row">Billing:</th>
-                    <td><?php echo $order->get_formatted_billing_address(); ?></td>
-                </tr>
-                <tr>
-                    <th scope="row">Shipping:</th>
-                    <td><?php echo $order->get_formatted_shipping_address() ? $order->get_formatted_shipping_address() : "No shipping address set."; ?></td>
-                </tr>
-            </tbody>
-        </table>
-        <?php
+        include 'views/subscription-order-info.php';
     }
 
     public function some_styles()
     {
         global $post;
         if ($post->post_type == "subscrpt_order") :
-        ?>
+            ?>
             <style>
                 .submitbox {
                     display: flex;

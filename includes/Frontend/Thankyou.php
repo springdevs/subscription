@@ -181,8 +181,8 @@ class Thankyou
                         <tbody>
                             <tr class="woocommerce-table__line-item order_item">
                                 <td class="woocommerce-table__product-name product-name">
-                                    <a href="<?php echo $product_link; ?>"><?php echo $product_name; ?></a>
-                                    <strong class="product-quantity">×&nbsp;<?php echo $subscrpt_meta['qty']; ?></strong>
+                                    <a href="<?php echo esc_html($product_link); ?>"><?php echo esc_html($product_name); ?></a>
+                                    <strong class="product-quantity">×&nbsp;<?php echo esc_html($subscrpt_meta['qty']); ?></strong>
                                 </td>
                                 <td class="woocommerce-table__product-total product-total"></td>
                             </tr>
@@ -195,22 +195,22 @@ class Thankyou
                             <tr>
                                 <th scope="row"><?php _e('Recurring amount', 'sdevs_subscrpt'); ?>:</th>
                                 <td class="woocommerce-table__product-total product-total">
-                                    <?php echo $subscrpt_meta['subtotal_price_html']; ?>
+                                    <?php echo esc_js($subscrpt_meta['subtotal_price_html']); ?>
                                 </td>
                             </tr>
                             <?php if ($trial_status == null) { ?>
                                 <tr>
                                     <th scope="row"><?php _e('Next billing on', 'sdevs_subscrpt'); ?>:</th>
-                                    <td><?php echo date('F d, Y', $subscrpt_meta['next_date']); ?></td>
+                                    <td><?php echo esc_html(date('F d, Y', $subscrpt_meta['next_date'])); ?></td>
                                 </tr>
                             <?php } else { ?>
                                 <tr>
                                     <th scope="row"><?php _e('Trial', 'sdevs_subscrpt'); ?>:</th>
-                                    <td><?php echo $subscrpt_meta['trial']; ?></td>
+                                    <td><?php echo esc_html($subscrpt_meta['trial']); ?></td>
                                 </tr>
                                 <tr>
                                     <th scope="row"><?php _e('First billing on', 'sdevs_subscrpt'); ?>:</th>
-                                    <td><?php echo date('F d, Y', $subscrpt_meta['start_date']); ?></td>
+                                    <td><?php echo esc_html(date('F d, Y', $subscrpt_meta['start_date'])); ?></td>
                                 </tr>
                             <?php } ?>
                         </tfoot>

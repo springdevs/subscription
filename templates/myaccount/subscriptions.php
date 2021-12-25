@@ -54,7 +54,7 @@ $postslist = new WP_Query($args);
                 <tr>
                     <td><?php the_ID(); ?></td>
                     <td><?php echo get_post_status(); ?></td>
-                    <td><a href="<?php echo $product_link; ?>" target="_blank"><?php echo $product_name; ?></a></td>
+                    <td><a href="<?php echo esc_html($product_link); ?>" target="_blank"><?php echo esc_html($product_name); ?></a></td>
                     <?php if ($post_meta['trial'] == null) : ?>
                         <td><?php echo date('F d, Y', $post_meta['next_date']); ?></td>
                     <?php else : ?>
