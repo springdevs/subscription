@@ -15,8 +15,6 @@ Allow your customers to order once and get their products and services every mon
 
 A powerfull plugin that allow to enable subscription on woocommerce products.
 
-> It's require [Missing Addons for WooCommerce](https://wordpress.org/plugins/wc-essential-addons/) plugin for activate
-
 ## Features
 
 ### Free
