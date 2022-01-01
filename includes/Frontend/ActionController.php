@@ -19,9 +19,9 @@ class ActionController
     public function control_action_subscrpt()
     {
         if (!(isset($_GET['subscrpt_id']) && isset($_GET['action']) && isset($_GET['wpnonce']))) return;
-        $subscrpt_id = esc_url($_GET['subscrpt_id']);
-        $action = esc_url($_GET['action']);
-        $wpnonce = esc_url($_GET['wpnonce']);
+        $subscrpt_id = esc_url_raw($_GET['subscrpt_id']);
+        $action = esc_url_raw($_GET['action']);
+        $wpnonce = esc_url_raw($_GET['wpnonce']);
         if (!wp_verify_nonce($wpnonce, "subscrpt_nonce")) wp_die(__('Sorry !! You cannot permit to access.', 'sdevs_subscrpt'));
         if ($action == 'renew') {
             $this->RenewProduct($subscrpt_id);
