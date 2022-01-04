@@ -112,7 +112,7 @@ class Order
                 $has_trial = isset($post_meta['trial']) && strlen($post_meta['trial']) > 2 ? true : false;
                 if ($has_trial) {
                     if (isset($post_meta['signup_fee']) && $post_meta['signup_fee'] > 0) echo "<small> + Signup fee of " . wc_price($post_meta['signup_fee']) . '</small><br/>';
-                    echo "<small> + Get " . $post_meta['trial'] . " " . " free trial!</small>";
+                    echo "<small> + Get " . esc_sql($post_meta['trial']) . " " . " free trial!</small>";
                 }
             endif;
         }

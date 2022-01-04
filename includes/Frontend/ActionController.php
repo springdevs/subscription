@@ -71,7 +71,7 @@ class ActionController
     {
 ?>
         <script>
-            window.location.href = '<?php echo $url; ?>';
+            window.location.href = '<?php echo esc_url_raw($url); ?>';
         </script>
 <?php
     }

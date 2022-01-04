@@ -106,7 +106,11 @@ $status    = get_post_status($id);
                 <strong class="product-quantity">× <?php echo esc_html($post_meta['qty']); ?></strong>
             </td>
             <td class="product-total">
-                <span class="woocommerce-Price-amount amount"><?php echo wc_price($product->get_price()) . " / " . $time . " " . $type; ?></span>
+                <span class="woocommerce-Price-amount amount">
+                    <?php
+                    echo esc_sql(wc_price($product->get_price()) . " / " . $time . " " . $type);
+                    ?>
+                </span>
             </td>
         </tr>
     </tbody>
