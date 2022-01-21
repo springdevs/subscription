@@ -60,7 +60,7 @@ $postslist = new WP_Query($args);
                     <?php else : ?>
                         <td><small>First Billing : </small><?php echo date('F d, Y', $post_meta['start_date']); ?></td>
                     <?php endif; ?>
-                    <td><?php echo $product_price_html; ?></td>
+                    <td><?php echo esc_sql($product_price_html); ?></td>
                     <td>
                         <a href="<?php echo get_permalink(wc_get_page_id('myaccount')) . "view-subscrpt/" . get_the_ID(); ?>" class="woocommerce-button button view">View</a>
                     </td>

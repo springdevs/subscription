@@ -68,14 +68,14 @@ $status    = get_post_status($id);
                 <td><?php _e('Actions', 'sdevs_subscrpt'); ?></td>
                 <td>
                     <?php if (($status == "pending" || $status == "active" || $status == "on_hold") && $product_meta['user_cancell'] == 'yes') : ?>
-                        <a href="<?php echo get_permalink(wc_get_page_id('myaccount')) . "view-subscrpt/" . $id . "?subscrpt_id=" . $id . "&action=cancelled&wpnonce=" . $subscrpt_nonce; ?>" class="button cancel">Cancel</a>
+                        <a href="<?php echo esc_js(get_permalink(wc_get_page_id('myaccount')) . "view-subscrpt/" . $id . "?subscrpt_id=" . $id . "&action=cancelled&wpnonce=" . $subscrpt_nonce); ?>" class="button cancel">Cancel</a>
                     <?php elseif (trim($status) == trim("pe_cancelled")) : ?>
                         <a href="" class="button subscription_renewal_early"><?php _e("Reactive", "sdevs_subscrpt"); ?></a>
                     <?php endif; ?>
                     <?php if ($order->get_status() === 'pending') : ?>
                         <a href="<?php echo $order->get_checkout_payment_url(); ?>" class="button subscription_renewal_early"><?php _e('Pay now', 'sdevs_subscrpt'); ?></a>
                     <?php elseif ((get_option('subscrpt_early_renew', '') == 1 || trim($status) == trim("expired")) && $order->get_status() == 'completed') : ?>
-                        <a href="<?php echo get_permalink(wc_get_page_id('myaccount')) . "view-subscrpt/" . $id . "?subscrpt_id=" . $id . "&action=early-renew&wpnonce=" . $subscrpt_nonce; ?>" class="button subscription_renewal_early"><?php _e('Renew now', 'sdevs_subscrpt'); ?></a>
+                        <a href="<?php echo esc_js(get_permalink(wc_get_page_id('myaccount')) . "view-subscrpt/" . $id . "?subscrpt_id=" . $id . "&action=early-renew&wpnonce=" . $subscrpt_nonce); ?>" class="button subscription_renewal_early"><?php _e('Renew now', 'sdevs_subscrpt'); ?></a>
                     <?php endif; ?>
                     <?php do_action('subscrpt_single_action_buttons', $id, $order, $subscrpt_nonce); ?>
                 </td>
