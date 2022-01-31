@@ -88,7 +88,7 @@ class Subscriptions
             } elseif ($column == "subscrpt_next_date") {
                 echo date('F d, Y', $post_meta['next_date']);
             } elseif ($column == "subscrpt_status") {
-                echo get_post_status($post_id);
+                echo esc_html(get_post_status($post_id));
             }
         } else {
             _e("Order not found !!", "sdevs_subscrpt");
