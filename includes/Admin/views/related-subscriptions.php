@@ -16,12 +16,12 @@
         ?>
                 <tr>
                     <td>
-                        <a href="<?php echo esc_sql(get_edit_post_link($post)); ?>" target="_blank">#<?php echo esc_html($post); ?> - <?php echo esc_html(get_the_title($post_meta['product_id'])); ?></a>
+                        <a href="<?php echo wp_kses_post(get_edit_post_link($post)); ?>" target="_blank">#<?php echo esc_html($post); ?> - <?php echo esc_html(get_the_title($post_meta['product_id'])); ?></a>
                     </td>
                     <td>
                         <?php echo $post_meta['trial'] == null ? esc_html(date('F d, Y', $post_meta['start_date'])) : "+" . esc_html($post_meta['trial']) . " " . __('free trial', 'sdevs_subscrpt'); ?>
                     </td>
-                    <td><?php echo esc_sql($post_meta['total_price_html']); ?></td>
+                    <td><?php echo wp_kses_post($post_meta['total_price_html']); ?></td>
                     <td><?php echo esc_html($post_meta['trial'] == null ? date('F d, Y', $post_meta['next_date']) : date('F d, Y', $post_meta['start_date'])); ?></td>
                     <td><?php echo esc_html(get_post_status($post)); ?></td>
                 </tr>

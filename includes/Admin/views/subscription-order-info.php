@@ -12,7 +12,7 @@
         </tr>
         <tr>
             <th scope="row">Cost : </th>
-            <td><?php echo esc_sql(wc_price($order->get_item_subtotal($order_item, false, true), array('currency' => $order->get_currency()))); ?></td>
+            <td><?php echo wp_kses_post(wc_price($order->get_item_subtotal($order_item, false, true), array('currency' => $order->get_currency()))); ?></td>
         </tr>
         <tr>
             <th scope="row">Qty : </th>
@@ -20,7 +20,7 @@
         </tr>
         <tr>
             <th scope="row">Amount : </th>
-            <td><strong><?php echo esc_sql($post_meta['subtotal_price_html']); ?></strong></td>
+            <td><strong><?php echo wp_kses_post($post_meta['subtotal_price_html']); ?></strong></td>
         </tr>
         <?php if (!empty($post_meta['trial'])) : ?>
             <tr>
@@ -46,11 +46,11 @@
         </tr>
         <tr>
             <th scope="row">Billing:</th>
-            <td><?php echo esc_sql($order->get_formatted_billing_address()); ?></td>
+            <td><?php echo wp_kses_post($order->get_formatted_billing_address()); ?></td>
         </tr>
         <tr>
             <th scope="row">Shipping:</th>
-            <td><?php echo esc_sql($order->get_formatted_shipping_address() ? $order->get_formatted_shipping_address() : "No shipping address set."); ?></td>
+            <td><?php echo wp_kses_post($order->get_formatted_shipping_address() ? $order->get_formatted_shipping_address() : "No shipping address set."); ?></td>
         </tr>
     </tbody>
 </table>

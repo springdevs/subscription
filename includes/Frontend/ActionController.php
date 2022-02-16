@@ -48,7 +48,7 @@ class ActionController
             if (isset($post_meta['variation_id'])) $data['variation'] = $post_meta['variation_id'];
             Action::status($action, get_current_user_id(), $data);
         }
-        echo esc_sql("<script>location.href = '" . get_permalink(wc_get_page_id('myaccount')) . "view-subscrpt/" . $subscrpt_id . "';</script>");
+        echo wp_kses_post("<script>location.href = '" . get_permalink(wc_get_page_id('myaccount')) . "view-subscrpt/" . $subscrpt_id . "';</script>");
     }
 
     public function RenewProduct($subscrpt_id)

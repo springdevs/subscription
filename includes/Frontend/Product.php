@@ -227,13 +227,13 @@ class Product
                 <?php foreach ($recurrs as $recurr) : ?>
                     <?php if ($recurr['trial']) : ?>
                         <p>
-                            <span><?php echo esc_sql($recurr['price_html']); ?></span><br />
+                            <span><?php echo wp_kses_post($recurr['price_html']); ?></span><br />
                             <small><?php echo esc_html_e('First billing on', 'sdevs_subscrpt'); ?>: <?php echo esc_html(date('F d, Y', $recurr['start_date'])); ?></small>
                         </p>
                     <?php else : ?>
                         <p>
-                            <span><?php echo esc_sql($recurr['price_html']); ?></span><br />
-                            <small><?php echo esc_html_e('Next billing on', 'sdevs_subscrpt'); ?>: <?php echo esc_sql($recurr['next_date']); ?></small>
+                            <span><?php echo wp_kses_post($recurr['price_html']); ?></span><br />
+                            <small><?php echo esc_html_e('Next billing on', 'sdevs_subscrpt'); ?>: <?php echo wp_kses_post($recurr['next_date']); ?></small>
                         </p>
                     <?php endif; ?>
                 <?php endforeach; ?>

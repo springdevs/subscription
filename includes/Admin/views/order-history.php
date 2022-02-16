@@ -14,13 +14,13 @@
             $order = wc_get_order($order_history['order_id']);
             ?>
             <tr>
-                <td><a href="<?php echo esc_sql(get_edit_post_link($order_history['order_id'])); ?>" target="_blank"><?php echo esc_sql($order_history['order_id']); ?></a></td>
-                <td><?php echo esc_sql($order_history['stats']); ?></td>
+                <td><a href="<?php echo wp_kses_post(get_edit_post_link($order_history['order_id'])); ?>" target="_blank"><?php echo wp_kses_post($order_history['order_id']); ?></a></td>
+                <td><?php echo wp_kses_post($order_history['stats']); ?></td>
                 <td>
-                    <?php if ($order) echo esc_sql(date('F d, Y', strtotime($order->get_date_created()))); ?>
+                    <?php if ($order) echo wp_kses_post(date('F d, Y', strtotime($order->get_date_created()))); ?>
                 </td>
                 <td><?php if ($order) echo esc_html($order->get_status()); ?></td>
-                <td><?php echo esc_sql($order_history['subtotal_price_html']); ?></td>
+                <td><?php echo wp_kses_post($order_history['subtotal_price_html']); ?></td>
             </tr>
         <?php endforeach; ?>
     </tbody>

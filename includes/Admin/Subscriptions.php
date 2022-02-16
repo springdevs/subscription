@@ -79,11 +79,11 @@ class Subscriptions
                 echo date('F d, Y', $post_meta['start_date']);
             } elseif ($column == "subscrpt_customer") {
 ?>
-                <?php echo $order->get_formatted_billing_full_name(); ?>
+                <?php echo wp_kses_post($order->get_formatted_billing_full_name()); ?>
                 <br />
-                <a href="mailto:<?php echo $order->get_billing_email(); ?>"><?php echo $order->get_billing_email(); ?></a>
+                <a href="mailto:<?php echo wp_kses_post($order->get_billing_email()); ?>"><?php echo wp_kses_post($order->get_billing_email()); ?></a>
                 <br />
-                Phone : <a href="tel:<?php echo $order->get_billing_phone(); ?>"><?php echo $order->get_billing_phone(); ?></a>
+                Phone : <a href="tel:<?php echo esc_js($order->get_billing_phone()); ?>"><?php echo esc_js($order->get_billing_phone()); ?></a>
             <?php
             } elseif ($column == "subscrpt_next_date") {
                 echo date('F d, Y', $post_meta['next_date']);

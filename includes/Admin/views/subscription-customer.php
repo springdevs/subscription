@@ -2,7 +2,7 @@
     <tbody>
         <tr>
             <th>Name:</th>
-            <td><?php echo esc_sql($order->get_formatted_billing_full_name()); ?></td>
+            <td><?php echo wp_kses_post($order->get_formatted_billing_full_name()); ?></td>
         </tr>
         <tr>
             <th>Email:</th>
@@ -10,7 +10,7 @@
         </tr>
         <tr>
             <th>Address:</th>
-            <td><?php echo esc_sql($order->get_formatted_billing_address()); ?></td>
+            <td><?php echo wp_kses_post($order->get_formatted_billing_address()); ?></td>
         </tr>
         <tr>
             <th>Phone:</th>

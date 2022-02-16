@@ -195,7 +195,7 @@ class Thankyou
                             <tr>
                                 <th scope="row"><?php _e('Recurring amount', 'sdevs_subscrpt'); ?>:</th>
                                 <td class="woocommerce-table__product-total product-total">
-                                    <?php echo esc_sql($subscrpt_meta['subtotal_price_html']); ?>
+                                    <?php echo wp_kses_post($subscrpt_meta['subtotal_price_html']); ?>
                                 </td>
                             </tr>
                             <?php if ($trial_status == null) { ?>

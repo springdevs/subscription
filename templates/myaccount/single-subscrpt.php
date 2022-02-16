@@ -108,7 +108,7 @@ $status    = get_post_status($id);
             <td class="product-total">
                 <span class="woocommerce-Price-amount amount">
                     <?php
-                    echo esc_sql(wc_price($product->get_price()) . " / " . $time . " " . $type);
+                    echo wp_kses_post(wc_price($product->get_price()) . " / " . $time . " " . $type);
                     ?>
                 </span>
             </td>
@@ -125,7 +125,7 @@ $status    = get_post_status($id);
             <th scope="row"><?php _e('Renew', 'sdevs_subscrpt'); ?>:</th>
             <td>
                 <span class="woocommerce-Price-amount amount">
-                    <?php echo esc_sql($product_price_html); ?>
+                    <?php echo wp_kses_post($product_price_html); ?>
                 </span>
             </td>
         </tr>
@@ -135,7 +135,7 @@ $status    = get_post_status($id);
 <section class="woocommerce-customer-details">
     <h2 class="woocommerce-column__title"><?php _e('Billing address', 'sdevs_subscrpt'); ?></h2>
     <address>
-        <?php echo esc_sql($order->get_formatted_billing_address()); ?>
+        <?php echo wp_kses_post($order->get_formatted_billing_address()); ?>
         <p class="woocommerce-customer-details--phone"><?php echo esc_html($order->get_billing_phone()); ?></p>
         <p class="woocommerce-customer-details--email"><?php echo esc_html($order->get_billing_email()); ?></p>
     </address>
