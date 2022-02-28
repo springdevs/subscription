@@ -4,7 +4,7 @@ Donate link:
 Tags: woocommerce, subscription, missing addons, woocommerce subscription
 Requires at least: 4.0
 Tested up to: 5.9
-Stable tag: 1.0.0
+Stable tag: 1.0.1
 Requires PHP: 7.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -55,13 +55,19 @@ A powerfull plugin that allow to enable subscription on woocommerce products.
 3. Cart page
 4. Checkout Page
 5. Thank you Page
-6. My Account subscription lists
-7. Manage subscription from user
-8. Subscription lists from wp-admin
-9. Manage subscription from wp-admin
+6. Manage wooCommerce order from user
+7. My Account subscription lists
+8. Manage subscription from user
+9. Subscription lists from wp-admin
+10. Manage subscription from wp-admin
+11. Subscription settings
+12. Manage wooCommerce order from admin
 
 
 == Changelog ==
+
+    = 1.0.1 =
+        * Fix "total" amount not display in "My Subscription's"
 
     = 1.0.0 =
         * Initial release
