@@ -1,12 +1,12 @@
 <?php
 
 
-namespace SpringDevs\WcSubscription\Frontend;
+namespace SpringDevs\Subscription\Frontend;
 
 
 /**
  * Class MyAccount
- * @package SpringDevs\WcSubscription\Frontend
+ * @package SpringDevs\Subscription\Frontend
  */
 class MyAccount
 {
@@ -28,7 +28,7 @@ class MyAccount
 
     public function view_subscrpt_content($value)
     {
-        wc_get_template('myaccount/single-subscrpt.php', ["id" => $value], 'simple-subscription', WCSUBSCRIPTION_TEMPLATES);
+        wc_get_template('myaccount/single-subscrpt.php', ["id" => $value], 'simple-subscription', SUBSCRPT_TEMPLATES);
     }
 
     /**
@@ -50,10 +50,10 @@ class MyAccount
         $is_endpoint = isset($wp_query->query_vars['subscrpt-endpoint']);
         $is_single = isset($wp_query->query_vars['view-subscrpt']);
         if ($is_endpoint && !is_admin() && is_main_query() && in_the_loop() && is_account_page()) {
-            $title = __('My Subscription\'s', 'sdevs_wea');
+            $title = __('My Subscription\'s', 'sdevs_subscrpt');
             remove_filter('the_title', [$this, 'change_endpoint_title']);
         } elseif ($is_single && !is_admin() && is_main_query() && in_the_loop() && is_account_page()) {
-            $title = __('Subscription #' . get_query_var('view-subscrpt'), 'sdevs_wea');
+            $title = __('Subscription #' . get_query_var('view-subscrpt'), 'sdevs_subscrpt');
             remove_filter('the_title', [$this, 'change_endpoint_title']);
         }
         return $title;
@@ -67,7 +67,7 @@ class MyAccount
     {
         $logout = $items['customer-logout'];
         unset($items['customer-logout']);
-        $items['subscrpt-endpoint'] = __('Subscriptions', 'sdevs_wea');
+        $items['subscrpt-endpoint'] = __('Subscriptions', 'sdevs_subscrpt');
         $items['customer-logout'] = $logout;
         return $items;
     }
@@ -77,6 +77,6 @@ class MyAccount
      */
     public function subscrpt_endpoint_content()
     {
-        wc_get_template('myaccount/subscriptions.php', [], 'simple-subscription', WCSUBSCRIPTION_TEMPLATES);
+        wc_get_template('myaccount/subscriptions.php', [], 'simple-subscription', SUBSCRPT_TEMPLATES);
     }
 }

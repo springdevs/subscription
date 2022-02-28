@@ -23,36 +23,36 @@ $status    = get_post_status($id);
 <table class="shop_table subscription_details">
     <tbody>
         <tr>
-            <td><?php _e('Order', 'sdevs_wea'); ?></td>
-            <td><a href="<?php echo get_permalink(wc_get_page_id('myaccount')) . "view-order/" . $post_meta['order_id']; ?>" target="_blank"># <?php echo $post_meta['order_id']; ?></a></td>
+            <td><?php _e('Order', 'sdevs_subscrpt'); ?></td>
+            <td><a href="<?php echo get_permalink(wc_get_page_id('myaccount')) . "view-order/" . esc_html($post_meta['order_id']); ?>" target="_blank"># <?php echo esc_html($post_meta['order_id']); ?></a></td>
         </tr>
         <tr>
-            <td><?php _e('Status', 'sdevs_wea'); ?></td>
-            <td><?php echo $status; ?></td>
+            <td><?php _e('Status', 'sdevs_subscrpt'); ?></td>
+            <td><?php echo esc_html($status); ?></td>
         </tr>
         <tr>
-            <td><?php _e('Start date', 'sdevs_wea'); ?></td>
+            <td><?php _e('Start date', 'sdevs_subscrpt'); ?></td>
             <td><?php echo date('F d, Y', $post_meta['start_date']); ?></td>
         </tr>
         <?php if ($post_meta['trial'] == null) : ?>
             <tr>
-                <td><?php _e('Next payment date', 'sdevs_wea'); ?></td>
+                <td><?php _e('Next payment date', 'sdevs_subscrpt'); ?></td>
                 <td><?php echo date('F d, Y', $post_meta['next_date']); ?></td>
             </tr>
         <?php else : ?>
             <tr>
-                <td><?php _e('Trial', 'sdevs_wea'); ?></td>
-                <td><?php echo $post_meta['trial']; ?></td>
+                <td><?php _e('Trial', 'sdevs_subscrpt'); ?></td>
+                <td><?php echo esc_html($post_meta['trial']); ?></td>
             </tr>
             <tr>
-                <td><?php _e('Trial End & First Billing', 'sdevs_wea'); ?></td>
+                <td><?php _e('Trial End & First Billing', 'sdevs_subscrpt'); ?></td>
                 <td><?php echo date('F d, Y', $post_meta['start_date']); ?></td>
             </tr>
         <?php endif; ?>
         <tr>
-            <td><?php _e('Payment', 'sdevs_wea'); ?></td>
+            <td><?php _e('Payment', 'sdevs_subscrpt'); ?></td>
             <td>
-                <span data-is_manual="yes" class="subscription-payment-method"><?php echo $order->get_payment_method_title(); ?></span>
+                <span data-is_manual="yes" class="subscription-payment-method"><?php echo esc_html($order->get_payment_method_title()); ?></span>
             </td>
         </tr>
         <?php
@@ -65,17 +65,17 @@ $status    = get_post_status($id);
         ?>
         <?php if ($status != "cancelled") : ?>
             <tr>
-                <td><?php _e('Actions', 'sdevs_wea'); ?></td>
+                <td><?php _e('Actions', 'sdevs_subscrpt'); ?></td>
                 <td>
                     <?php if (($status == "pending" || $status == "active" || $status == "on_hold") && $product_meta['user_cancell'] == 'yes') : ?>
-                        <a href="<?php echo get_permalink(wc_get_page_id('myaccount')) . "view-subscrpt/" . $id . "?subscrpt_id=" . $id . "&action=cancelled&wpnonce=" . $subscrpt_nonce; ?>" class="button cancel">Cancel</a>
+                        <a href="<?php echo esc_js(get_permalink(wc_get_page_id('myaccount')) . "view-subscrpt/" . $id . "?subscrpt_id=" . $id . "&action=cancelled&wpnonce=" . $subscrpt_nonce); ?>" class="button cancel">Cancel</a>
                     <?php elseif (trim($status) == trim("pe_cancelled")) : ?>
-                        <a href="" class="button subscription_renewal_early"><?php _e("Reactive", "sdevs_wea"); ?></a>
+                        <a href="" class="button subscription_renewal_early"><?php _e("Reactive", "sdevs_subscrpt"); ?></a>
                     <?php endif; ?>
                     <?php if ($order->get_status() === 'pending') : ?>
-                        <a href="<?php echo $order->get_checkout_payment_url(); ?>" class="button subscription_renewal_early"><?php _e('Pay now', 'sdevs_wea'); ?></a>
+                        <a href="<?php echo $order->get_checkout_payment_url(); ?>" class="button subscription_renewal_early"><?php _e('Pay now', 'sdevs_subscrpt'); ?></a>
                     <?php elseif ((get_option('subscrpt_early_renew', '') == 1 || trim($status) == trim("expired")) && $order->get_status() == 'completed') : ?>
-                        <a href="<?php echo get_permalink(wc_get_page_id('myaccount')) . "view-subscrpt/" . $id . "?subscrpt_id=" . $id . "&action=early-renew&wpnonce=" . $subscrpt_nonce; ?>" class="button subscription_renewal_early"><?php _e('Renew now', 'sdevs_wea'); ?></a>
+                        <a href="<?php echo esc_js(get_permalink(wc_get_page_id('myaccount')) . "view-subscrpt/" . $id . "?subscrpt_id=" . $id . "&action=early-renew&wpnonce=" . $subscrpt_nonce); ?>" class="button subscription_renewal_early"><?php _e('Renew now', 'sdevs_subscrpt'); ?></a>
                     <?php endif; ?>
                     <?php do_action('subscrpt_single_action_buttons', $id, $order, $subscrpt_nonce); ?>
                 </td>
@@ -84,12 +84,12 @@ $status    = get_post_status($id);
     </tbody>
 </table>
 
-<h2><?php _e('Subscription totals', 'sdevs_wea'); ?></h2>
+<h2><?php _e('Subscription totals', 'sdevs_subscrpt'); ?></h2>
 <table class="shop_table order_details">
     <thead>
         <tr>
-            <th class="product-name"><?php _e('Product', 'sdevs_wea'); ?></th>
-            <th class="product-total"><?php _e('Total', 'sdevs_wea'); ?></th>
+            <th class="product-name"><?php _e('Product', 'sdevs_subscrpt'); ?></th>
+            <th class="product-total"><?php _e('Total', 'sdevs_subscrpt'); ?></th>
         </tr>
     </thead>
     <tbody>
@@ -102,26 +102,30 @@ $status    = get_post_status($id);
         ?>
         <tr class="order_item">
             <td class="product-name">
-                <a href="<?php echo $product_link; ?>"><?php echo $product_name; ?></a>
-                <strong class="product-quantity">× <?php echo $post_meta['qty']; ?></strong>
+                <a href="<?php echo esc_html($product_link); ?>"><?php echo esc_html($product_name); ?></a>
+                <strong class="product-quantity">× <?php echo esc_html($post_meta['qty']); ?></strong>
             </td>
             <td class="product-total">
-                <span class="woocommerce-Price-amount amount"><?php echo wc_price($product->get_price()) . " / " . $time . " " . $type; ?></span>
+                <span class="woocommerce-Price-amount amount">
+                    <?php
+                    echo wp_kses_post(wc_price($product->get_price()) . " / " . $time . " " . $type);
+                    ?>
+                </span>
             </td>
         </tr>
     </tbody>
     <tfoot>
         <tr>
-            <th scope="row"><?php _e('Subtotal', 'sdevs_wea'); ?>:</th>
+            <th scope="row"><?php _e('Subtotal', 'sdevs_subscrpt'); ?>:</th>
             <td>
                 <span class="woocommerce-Price-amount amount"><?php echo wc_price($product->get_price() * $post_meta['qty']); ?></span>
             </td>
         </tr>
         <tr>
-            <th scope="row"><?php _e('Renew', 'sdevs_wea'); ?>:</th>
+            <th scope="row"><?php _e('Renew', 'sdevs_subscrpt'); ?>:</th>
             <td>
                 <span class="woocommerce-Price-amount amount">
-                    <?php echo $product_price_html; ?>
+                    <?php echo wp_kses_post($product_price_html); ?>
                 </span>
             </td>
         </tr>
@@ -129,11 +133,11 @@ $status    = get_post_status($id);
 </table>
 
 <section class="woocommerce-customer-details">
-    <h2 class="woocommerce-column__title"><?php _e('Billing address', 'sdevs_wea'); ?></h2>
+    <h2 class="woocommerce-column__title"><?php _e('Billing address', 'sdevs_subscrpt'); ?></h2>
     <address>
-        <?php echo $order->get_formatted_billing_address(); ?>
-        <p class="woocommerce-customer-details--phone"><?php echo $order->get_billing_phone(); ?></p>
-        <p class="woocommerce-customer-details--email"><?php echo $order->get_billing_email(); ?></p>
+        <?php echo wp_kses_post($order->get_formatted_billing_address()); ?>
+        <p class="woocommerce-customer-details--phone"><?php echo esc_html($order->get_billing_phone()); ?></p>
+        <p class="woocommerce-customer-details--email"><?php echo esc_html($order->get_billing_email()); ?></p>
     </address>
 </section>
 <div class="clear"></div>

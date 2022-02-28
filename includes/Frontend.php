@@ -1,18 +1,18 @@
 <?php
 
-namespace SpringDevs\WcSubscription;
+namespace SpringDevs\Subscription;
 
-use SpringDevs\WcSubscription\Frontend\ActionController;
-use SpringDevs\WcSubscription\Frontend\Downloadable;
-use SpringDevs\WcSubscription\Frontend\MyAccount;
-use SpringDevs\WcSubscription\Frontend\Product;
-use SpringDevs\WcSubscription\Frontend\Thankyou;
-use SpringDevs\WcSubscription\Illuminate\AutoRenewal;
-use SpringDevs\WcSubscription\Illuminate\Cron;
-use SpringDevs\WcSubscription\Illuminate\Email;
-use SpringDevs\WcSubscription\Illuminate\Order;
-use SpringDevs\WcSubscription\Illuminate\RegisterPostStatus;
-use SpringDevs\WcSubscription\Illuminate\Subscriptions;
+use SpringDevs\Subscription\Frontend\ActionController;
+use SpringDevs\Subscription\Frontend\Downloadable;
+use SpringDevs\Subscription\Frontend\MyAccount;
+use SpringDevs\Subscription\Frontend\Product;
+use SpringDevs\Subscription\Frontend\Thankyou;
+use SpringDevs\Subscription\Illuminate\AutoRenewal;
+use SpringDevs\Subscription\Illuminate\Cron;
+use SpringDevs\Subscription\Illuminate\Email;
+use SpringDevs\Subscription\Illuminate\Order;
+use SpringDevs\Subscription\Illuminate\RegisterPostStatus;
+use SpringDevs\Subscription\Illuminate\Subscriptions;
 
 /**
  * Frontend handler class

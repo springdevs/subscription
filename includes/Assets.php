@@ -1,6 +1,6 @@
 <?php
 
-namespace SpringDevs\WcSubscription;
+namespace SpringDevs\Subscription;
 
 /**
  * Scripts and Styles Class
@@ -42,7 +42,7 @@ class Assets
         foreach ($scripts as $handle => $script) {
             $deps      = isset($script['deps']) ? $script['deps'] : false;
             $in_footer = isset($script['in_footer']) ? $script['in_footer'] : false;
-            $version   = isset($script['version']) ? $script['version'] : WCSUBSCRIPTION_ASSETS_VERSION;
+            $version   = isset($script['version']) ? $script['version'] : SUBSCRPT_VERSION;
 
             wp_register_script($handle, $script['src'], $deps, $version, $in_footer);
         }
@@ -60,7 +60,7 @@ class Assets
         foreach ($styles as $handle => $style) {
             $deps = isset($style['deps']) ? $style['deps'] : false;
 
-            wp_register_style($handle, $style['src'], $deps, WCSUBSCRIPTION_ASSETS_VERSION);
+            wp_register_style($handle, $style['src'], $deps, SUBSCRPT_VERSION);
         }
     }
 
@@ -71,7 +71,7 @@ class Assets
      */
     public function get_scripts()
     {
-        $plugin_js_assets_path = WCSUBSCRIPTION_ASSETS_ASSETS . '/js/';
+        $plugin_js_assets_path = SUBSCRPT_ASSETS . '/js/';
 
         $scripts = [
             "sdevs_subscription_admin" => [
@@ -91,7 +91,7 @@ class Assets
      */
     public function get_styles()
     {
-        $plugin_css_assets_path = WCSUBSCRIPTION_ASSETS_ASSETS . '/css/';
+        $plugin_css_assets_path = SUBSCRPT_ASSETS . '/css/';
 
         $styles = [
             "subscrpt_admin_css" => [

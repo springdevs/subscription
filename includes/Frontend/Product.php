@@ -1,8 +1,8 @@
 <?php
 
-namespace SpringDevs\WcSubscription\Frontend;
+namespace SpringDevs\Subscription\Frontend;
 
-use SpringDevs\WcSubscription\Illuminate\Helper;
+use SpringDevs\Subscription\Illuminate\Helper;
 
 /**
  * Product class
@@ -78,16 +78,16 @@ class Product
             if ($post_meta['limit'] == "one") if (!$unexpired) return;
             if ($post_meta['limit'] == "only_one") {
                 if (!subscrpt_check_trial($product->get_id())) {
-                    echo '<strong>' . __('You Already Purchased These Product!', 'sdevs_wea') . '</strong>';
+                    echo '<strong>' . __('You Already Purchased These Product!', 'sdevs_subscrpt') . '</strong>';
                 }
             }
         }
-        if ($unexpired) echo '<strong>' . __('You Already Purchased These Product!', 'sdevs_wea') . '</strong>';
+        if ($unexpired) echo '<strong>' . __('You Already Purchased These Product!', 'sdevs_subscrpt') . '</strong>';
     }
 
     public function remove_button_active_products($button, $product)
     {
-        if ($product->is_type('variable') && !sdevs_is_pro_module_activate('subscription-pro')) return $button;
+        if ($product->is_type('variable') && !subscrpt_pro_activated()) return $button;
         $unexpired = Helper::Check_un_expired($product->get_id());
         if ($unexpired) return;
         return $button;
@@ -135,7 +135,7 @@ class Product
         if (is_array($post_meta) && isset($post_meta['limit']) && $post_meta['limit'] == "unlimited") return $post_meta['cart_txt'];
         $expired = Helper::CheckExpired($product->get_id());
         if ($expired) :
-            $text = __("renew", "sdevs_wea");
+            $text = __("renew", "sdevs_subscrpt");
         elseif (is_array($post_meta) && $post_meta['enable']) :
             $text = $post_meta['cart_txt'];
         endif;
@@ -222,18 +222,18 @@ class Product
         if (count($recurrs) == 0) return;
 ?>
         <tr class="recurring-total">
-            <th><?php esc_html_e('Recurring totals', 'sdevs_wea'); ?></th>
-            <td data-title="<?php esc_attr_e('Recurring totals', 'sdevs_wea'); ?>">
+            <th><?php esc_html_e('Recurring totals', 'sdevs_subscrpt'); ?></th>
+            <td data-title="<?php esc_attr_e('Recurring totals', 'sdevs_subscrpt'); ?>">
                 <?php foreach ($recurrs as $recurr) : ?>
                     <?php if ($recurr['trial']) : ?>
                         <p>
-                            <span><?php echo $recurr['price_html']; ?></span><br />
-                            <small><?php _e('First billing on', 'sdevs_wea'); ?>: <?php echo date('F d, Y', $recurr['start_date']); ?></small>
+                            <span><?php echo wp_kses_post($recurr['price_html']); ?></span><br />
+                            <small><?php echo esc_html_e('First billing on', 'sdevs_subscrpt'); ?>: <?php echo esc_html(date('F d, Y', $recurr['start_date'])); ?></small>
                         </p>
                     <?php else : ?>
                         <p>
-                            <span><?php echo $recurr['price_html']; ?></span><br />
-                            <small><?php _e('Next billing on', 'sdevs_wea'); ?>: <?php echo $recurr['next_date']; ?></small>
+                            <span><?php echo wp_kses_post($recurr['price_html']); ?></span><br />
+                            <small><?php echo esc_html_e('Next billing on', 'sdevs_subscrpt'); ?>: <?php echo wp_kses_post($recurr['next_date']); ?></small>
                         </p>
                     <?php endif; ?>
                 <?php endforeach; ?>

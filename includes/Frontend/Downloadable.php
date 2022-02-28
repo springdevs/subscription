@@ -1,6 +1,6 @@
 <?php
 
-namespace SpringDevs\WcSubscription\Frontend;
+namespace SpringDevs\Subscription\Frontend;
 
 /**
  * Downloadable class

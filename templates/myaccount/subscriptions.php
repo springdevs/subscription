@@ -23,11 +23,11 @@ $postslist = new WP_Query($args);
 <table class="shop_table my_account_subscrpt">
     <thead>
         <tr>
-            <th scope="col" class="subscrpt-id"><?php esc_html_e('Subscription', 'sdevs_wea'); ?></th>
-            <th scope="col" class="order-status"><?php esc_html_e('Status', 'sdevs_wea'); ?></th>
-            <th scope="col" class="order-product"><?php esc_html_e('Product', 'sdevs_wea'); ?></th>
-            <th scope="col" class="subscrpt-next-date"><?php esc_html_e('Next Payment', 'sdevs_wea'); ?></th>
-            <th scope="col" class="subscrpt-total"><?php esc_html_e('Total', 'sdevs_wea'); ?></th>
+            <th scope="col" class="subscrpt-id"><?php esc_html_e('Subscription', 'sdevs_subscrpt'); ?></th>
+            <th scope="col" class="order-status"><?php esc_html_e('Status', 'sdevs_subscrpt'); ?></th>
+            <th scope="col" class="order-product"><?php esc_html_e('Product', 'sdevs_subscrpt'); ?></th>
+            <th scope="col" class="subscrpt-next-date"><?php esc_html_e('Next Payment', 'sdevs_subscrpt'); ?></th>
+            <th scope="col" class="subscrpt-total"><?php esc_html_e('Total', 'sdevs_subscrpt'); ?></th>
             <th scope="col" class="subscrpt-action"></th>
         </tr>
     </thead>
@@ -54,13 +54,13 @@ $postslist = new WP_Query($args);
                 <tr>
                     <td><?php the_ID(); ?></td>
                     <td><?php echo get_post_status(); ?></td>
-                    <td><a href="<?php echo $product_link; ?>" target="_blank"><?php echo $product_name; ?></a></td>
+                    <td><a href="<?php echo esc_html($product_link); ?>" target="_blank"><?php echo esc_html($product_name); ?></a></td>
                     <?php if ($post_meta['trial'] == null) : ?>
                         <td><?php echo date('F d, Y', $post_meta['next_date']); ?></td>
                     <?php else : ?>
                         <td><small>First Billing : </small><?php echo date('F d, Y', $post_meta['start_date']); ?></td>
                     <?php endif; ?>
-                    <td><?php echo $product_price_html; ?></td>
+                    <td><?php echo wp_kses_post($product_price_html); ?></td>
                     <td>
                         <a href="<?php echo get_permalink(wc_get_page_id('myaccount')) . "view-subscrpt/" . get_the_ID(); ?>" class="woocommerce-button button view">View</a>
                     </td>

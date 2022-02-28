@@ -1,9 +1,9 @@
 <?php
 
-namespace SpringDevs\WcSubscription\Frontend;
+namespace SpringDevs\Subscription\Frontend;
 
-use SpringDevs\WcSubscription\Illuminate\Action;
-use SpringDevs\WcSubscription\Illuminate\Helper;
+use SpringDevs\Subscription\Illuminate\Action;
+use SpringDevs\Subscription\Illuminate\Helper;
 
 /**
  * Thankyou class
@@ -54,7 +54,7 @@ class Thankyou
         $cart_items = $order->get_items();
         foreach ($cart_items as $cart_item) {
             $product = wc_get_product($cart_item['product_id']);
-            if (!$product->is_type('variable') || sdevs_is_pro_module_activate('subscription-pro')) :
+            if (!$product->is_type('variable') || subscrpt_pro_activated()) :
                 $conditional_key = apply_filters('subscrpt_filter_checkout_conditional_key', $cart_item['product_id'], $cart_item);
                 $post_meta = get_post_meta($conditional_key, 'subscrpt_general', true);
                 if (is_array($post_meta) && $post_meta['enable']) :
@@ -104,11 +104,11 @@ class Thankyou
                                 $comment_id = wp_insert_comment([
                                     "comment_agent" => "simple-subscriptions",
                                     "comment_author" => "simple-subscriptions",
-                                    "comment_content" => __('The order ' . $order_id . ' has been created for the subscription', 'sdevs_wea'),
+                                    "comment_content" => __('The order ' . $order_id . ' has been created for the subscription', 'sdevs_subscrpt'),
                                     "comment_post_ID" => $unexpire_data['post'],
                                     "comment_type" => "order_note"
                                 ]);
-                                update_comment_meta($comment_id, 'subscrpt_activity', __('Renewal Order', 'sdevs_wea'));
+                                update_comment_meta($comment_id, 'subscrpt_activity', __('Renewal Order', 'sdevs_subscrpt'));
                             }
                         }
                     }
@@ -117,11 +117,11 @@ class Thankyou
                         $comment_id = wp_insert_comment([
                             "comment_agent" => "simple-subscriptions",
                             "comment_author" => "simple-subscriptions",
-                            "comment_content" => __('Subscription successfully created.	order is ' . $order_id, 'sdevs_wea'),
+                            "comment_content" => __('Subscription successfully created.	order is ' . $order_id, 'sdevs_subscrpt'),
                             "comment_post_ID" => $post_id,
                             "comment_type" => "order_note"
                         ]);
-                        update_comment_meta($comment_id, 'subscrpt_activity', __('New Subscription', 'sdevs_wea'));
+                        update_comment_meta($comment_id, 'subscrpt_activity', __('New Subscription', 'sdevs_subscrpt'));
                         $unexpire_data['post'] = $post_id;
                     }
                     $post_id = $unexpire_data['post'];
@@ -160,7 +160,7 @@ class Thankyou
         $post_meta = get_post_meta($order->get_id(), "_order_subscrpt_full_data", true);
         if (!empty($post_meta) && is_array($post_meta) && count($post_meta) > 0) :
 ?>
-            <h2 class="woocommerce-order-details__title"><?php _e('Related Subscriptions', 'sdevs_wea'); ?></h2>
+            <h2 class="woocommerce-order-details__title"><?php _e('Related Subscriptions', 'sdevs_subscrpt'); ?></h2>
             <?php
             foreach ($post_meta as $subscrpt_meta) :
                 if (!empty($subscrpt_meta) && is_array($subscrpt_meta)) :
@@ -181,36 +181,36 @@ class Thankyou
                         <tbody>
                             <tr class="woocommerce-table__line-item order_item">
                                 <td class="woocommerce-table__product-name product-name">
-                                    <a href="<?php echo $product_link; ?>"><?php echo $product_name; ?></a>
-                                    <strong class="product-quantity">×&nbsp;<?php echo $subscrpt_meta['qty']; ?></strong>
+                                    <a href="<?php echo esc_html($product_link); ?>"><?php echo esc_html($product_name); ?></a>
+                                    <strong class="product-quantity">×&nbsp;<?php echo esc_html($subscrpt_meta['qty']); ?></strong>
                                 </td>
                                 <td class="woocommerce-table__product-total product-total"></td>
                             </tr>
                         </tbody>
                         <tfoot>
                             <tr>
-                                <th scope="row"><?php _e('Status', 'sdevs_wea') ?>:</th>
+                                <th scope="row"><?php _e('Status', 'sdevs_subscrpt') ?>:</th>
                                 <td><?php echo get_post_status($post); ?></td>
                             </tr>
                             <tr>
-                                <th scope="row"><?php _e('Recurring amount', 'sdevs_wea'); ?>:</th>
+                                <th scope="row"><?php _e('Recurring amount', 'sdevs_subscrpt'); ?>:</th>
                                 <td class="woocommerce-table__product-total product-total">
-                                    <?php echo $subscrpt_meta['subtotal_price_html']; ?>
+                                    <?php echo wp_kses_post($subscrpt_meta['subtotal_price_html']); ?>
                                 </td>
                             </tr>
                             <?php if ($trial_status == null) { ?>
                                 <tr>
-                                    <th scope="row"><?php _e('Next billing on', 'sdevs_wea'); ?>:</th>
-                                    <td><?php echo date('F d, Y', $subscrpt_meta['next_date']); ?></td>
+                                    <th scope="row"><?php _e('Next billing on', 'sdevs_subscrpt'); ?>:</th>
+                                    <td><?php echo esc_html(date('F d, Y', $subscrpt_meta['next_date'])); ?></td>
                                 </tr>
                             <?php } else { ?>
                                 <tr>
-                                    <th scope="row"><?php _e('Trial', 'sdevs_wea'); ?>:</th>
-                                    <td><?php echo $subscrpt_meta['trial']; ?></td>
+                                    <th scope="row"><?php _e('Trial', 'sdevs_subscrpt'); ?>:</th>
+                                    <td><?php echo esc_html($subscrpt_meta['trial']); ?></td>
                                 </tr>
                                 <tr>
-                                    <th scope="row"><?php _e('First billing on', 'sdevs_wea'); ?>:</th>
-                                    <td><?php echo date('F d, Y', $subscrpt_meta['start_date']); ?></td>
+                                    <th scope="row"><?php _e('First billing on', 'sdevs_subscrpt'); ?>:</th>
+                                    <td><?php echo esc_html(date('F d, Y', $subscrpt_meta['start_date'])); ?></td>
                                 </tr>
                             <?php } ?>
                         </tfoot>

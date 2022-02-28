@@ -1,23 +1,23 @@
 <?php
 
-namespace SpringDevs\WcSubscription\Illuminate;
+namespace SpringDevs\Subscription\Illuminate;
 
 /**
  * Class Helper || Some Helper Methods
- * @package SpringDevs\WcSubscription\Illuminate
+ * @package SpringDevs\Subscription\Illuminate
  */
 class Helper
 {
     static public function get_typos($number, $typo)
     {
         if ($number == 1 && $typo == "days") {
-            return __("day", "sdevs_wea");
+            return __("day", "sdevs_subscrpt");
         } elseif ($number == 1 && $typo == "weeks") {
-            return __("week", "sdevs_wea");
+            return __("week", "sdevs_subscrpt");
         } elseif ($number == 1 && $typo == "months") {
-            return __("month", "sdevs_wea");
+            return __("month", "sdevs_subscrpt");
         } elseif ($number == 1 && $typo == "years") {
-            return __("year", "sdevs_wea");
+            return __("year", "sdevs_subscrpt");
         } else {
             return $typo;
         }

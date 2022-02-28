@@ -1,13 +1,13 @@
 <?php
 
 
-namespace SpringDevs\WcSubscription\Frontend;
+namespace SpringDevs\Subscription\Frontend;
 
-use SpringDevs\WcSubscription\Illuminate\Action;
+use SpringDevs\Subscription\Illuminate\Action;
 
 /**
  * Class ActionController
- * @package SpringDevs\WcSubscription\Frontend
+ * @package SpringDevs\Subscription\Frontend
  */
 class ActionController
 {
@@ -19,10 +19,10 @@ class ActionController
     public function control_action_subscrpt()
     {
         if (!(isset($_GET['subscrpt_id']) && isset($_GET['action']) && isset($_GET['wpnonce']))) return;
-        $subscrpt_id = $_GET['subscrpt_id'];
-        $action = $_GET['action'];
-        $wpnonce = $_GET['wpnonce'];
-        if (!wp_verify_nonce($wpnonce, "subscrpt_nonce")) wp_die(__('Sorry !! You cannot permit to access.', 'sdevs_wea'));
+        $subscrpt_id = sanitize_text_field($_GET['subscrpt_id']);
+        $action = sanitize_text_field($_GET['action']);
+        $wpnonce = sanitize_text_field($_GET['wpnonce']);
+        if (!wp_verify_nonce($wpnonce, "subscrpt_nonce")) wp_die(__('Sorry !! You cannot permit to access.', 'sdevs_subscrpt'));
         if ($action == 'renew') {
             $this->RenewProduct($subscrpt_id);
         } elseif ($action == 'early-renew') {
@@ -48,7 +48,7 @@ class ActionController
             if (isset($post_meta['variation_id'])) $data['variation'] = $post_meta['variation_id'];
             Action::status($action, get_current_user_id(), $data);
         }
-        echo "<script>location.href = '" . get_permalink(wc_get_page_id('myaccount')) . "view-subscrpt/" . $subscrpt_id . "';</script>";
+        echo ("<script>location.href = '" . get_permalink(wc_get_page_id('myaccount')) . "view-subscrpt/" . $subscrpt_id . "';</script>");
     }
 
     public function RenewProduct($subscrpt_id)
@@ -63,7 +63,7 @@ class ActionController
             [],
             ['renew_subscrpt' => true]
         );
-        wc_add_notice(__('Product added to cart', 'sdevs_wea'), 'success');
+        wc_add_notice(__('Product added to cart', 'sdevs_subscrpt'), 'success');
         $this->redirect(wc_get_cart_url());
     }
 
@@ -71,7 +71,7 @@ class ActionController
     {
 ?>
         <script>
-            window.location.href = '<?php echo $url; ?>';
+            window.location.href = '<?php echo esc_url_raw($url); ?>';
         </script>
 <?php
     }

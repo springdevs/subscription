@@ -1,10 +1,10 @@
 <?php
 
-namespace SpringDevs\WcSubscription\Admin;
+namespace SpringDevs\Subscription\Admin;
 
 /**
  * Menu class
- * @package SpringDevs\WcSubscription\Admin
+ * @package SpringDevs\Subscription\Admin
  */
 class Menu
 {

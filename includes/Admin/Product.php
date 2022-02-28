@@ -1,10 +1,10 @@
 <?php
 
-namespace SpringDevs\WcSubscription\Admin;
+namespace SpringDevs\Subscription\Admin;
 
 /**
  * Product class
- * @package SpringDevs\WcSubscription\Admin
+ * @package SpringDevs\Subscription\Admin
  */
 class Product
 {
@@ -34,8 +34,8 @@ class Product
         $product_type_options["subscrpt_enable"] = [
             "id"            => "subscrpt_enable",
             "wrapper_class" => $wrapper_class,
-            "label"         => __("Subscription", "sdevs_wea"),
-            "description"   => __("Enable Subscriptions", "sdevs_wea"),
+            "label"         => __("Subscription", "sdevs_subscrpt"),
+            "description"   => __("Enable Subscriptions", "sdevs_subscrpt"),
             "default"       => $value,
         ];
 
@@ -44,8 +44,8 @@ class Product
 
     public function subscription_forms()
     {
-        if (function_exists('sdevs_is_pro_module_activate')) {
-            if (sdevs_is_pro_module_activate('subscription-pro')) {
+        if (function_exists('subscrpt_pro_activated')) {
+            if (subscrpt_pro_activated()) {
                 do_action('subscrpt_simple_pro_fields', get_the_ID());
             } else {
                 $timing_types = [
@@ -67,43 +67,7 @@ class Product
                         $subscrpt_user_cancell = $post_meta['user_cancell'];
                     }
                 }
-?>
-                <div class="option_group sdevs-form sdevs_panel show_if_subscription hide" style="padding: 10px;">
-                    <strong style="margin: 10px;"><?php _e("Subscription Settings", "sdevs_wea"); ?></strong>
-                    <?php
-
-                    woocommerce_wp_select([
-                        "id" => "subscrpt_timing",
-                        "label" => __('Users will pay', 'sdevs_wea'),
-                        "value" => $subscrpt_timing,
-                        "options" => $timing_types,
-                        "description" => __('Set the length of each recurring subscription period to daily, weekly, monthly or annually.', 'sdevs_wea'),
-                        "desc_tip" => true
-                    ]);
-
-                    woocommerce_wp_text_input([
-                        "id" => "subscrpt_cart_txt",
-                        "label" => __('Add to Cart Text', 'sdevs_wea'),
-                        "type" => "text",
-                        "value" => $subscrpt_cart_txt,
-                        "description" => __('change Add to Cart Text default is "subscribe"', 'sdevs_wea'),
-                        "desc_tip" => true
-                    ]);
-
-                    woocommerce_wp_select([
-                        "id" => "subscrpt_user_cancell",
-                        "label" => __('Can User Cancell', 'sdevs_wea'),
-                        "value" => $subscrpt_user_cancell,
-                        "options" => [
-                            'yes' => __('Yes', 'sdevs_wea'),
-                            'no' => __('No', 'sdevs_wea'),
-                        ],
-                        "description" => __('if "Yes",then user can be cancelled."No" means cannot do this !!', 'sdevs_wea'),
-                        "desc_tip" => true
-                    ]);
-                    ?>
-                </div>
-<?php
+                include 'views/product-form.php';
             }
         }
     }
@@ -111,8 +75,8 @@ class Product
     public function save_subscrpt_data($post_id)
     {
         if (!isset($_POST['subscrpt_enable'])) return;
-        if (function_exists('sdevs_is_pro_module_activate')) {
-            if (sdevs_is_pro_module_activate('subscription-pro')) return;
+        if (function_exists('subscrpt_pro_activated')) {
+            if (subscrpt_pro_activated()) return;
         }
         $subscrpt_enable = $_POST["subscrpt_enable"] ? true : false;
         $subscrpt_time = 1;

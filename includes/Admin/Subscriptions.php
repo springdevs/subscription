@@ -1,12 +1,12 @@
 <?php
 
-namespace SpringDevs\WcSubscription\Admin;
+namespace SpringDevs\Subscription\Admin;
 
-use SpringDevs\WcSubscription\Illuminate\Action;
+use SpringDevs\Subscription\Illuminate\Action;
 
 /**
  * Subscriptions class
- * @package SpringDevs\WcSubscription\Admin
+ * @package SpringDevs\Subscription\Admin
  */
 class Subscriptions
 {
@@ -62,10 +62,10 @@ class Subscriptions
 
     public function add_custom_columns($columns)
     {
-        $columns['subscrpt_start_date'] = __('Start Date', 'sdevs_wea');
-        $columns['subscrpt_customer'] = __('Customer', 'sdevs_wea');
-        $columns['subscrpt_next_date'] = __('Next Date', 'sdevs_wea');
-        $columns['subscrpt_status'] = __('Status', 'sdevs_wea');
+        $columns['subscrpt_start_date'] = __('Start Date', 'sdevs_subscrpt');
+        $columns['subscrpt_customer'] = __('Customer', 'sdevs_subscrpt');
+        $columns['subscrpt_next_date'] = __('Next Date', 'sdevs_subscrpt');
+        $columns['subscrpt_status'] = __('Status', 'sdevs_subscrpt');
         unset($columns['date']);
         return $columns;
     }
@@ -79,19 +79,19 @@ class Subscriptions
                 echo date('F d, Y', $post_meta['start_date']);
             } elseif ($column == "subscrpt_customer") {
 ?>
-                <?php echo $order->get_formatted_billing_full_name(); ?>
+                <?php echo wp_kses_post($order->get_formatted_billing_full_name()); ?>
                 <br />
-                <a href="mailto:<?php echo $order->get_billing_email(); ?>"><?php echo $order->get_billing_email(); ?></a>
+                <a href="mailto:<?php echo wp_kses_post($order->get_billing_email()); ?>"><?php echo wp_kses_post($order->get_billing_email()); ?></a>
                 <br />
-                Phone : <a href="tel:<?php echo $order->get_billing_phone(); ?>"><?php echo $order->get_billing_phone(); ?></a>
-        <?php
+                Phone : <a href="tel:<?php echo esc_js($order->get_billing_phone()); ?>"><?php echo esc_js($order->get_billing_phone()); ?></a>
+            <?php
             } elseif ($column == "subscrpt_next_date") {
                 echo date('F d, Y', $post_meta['next_date']);
             } elseif ($column == "subscrpt_status") {
-                echo get_post_status($post_id);
+                echo esc_html(get_post_status($post_id));
             }
         } else {
-            _e("Order not found !!", "sdevs_wea");
+            _e("Order not found !!", "sdevs_subscrpt");
         }
     }
 
@@ -101,7 +101,7 @@ class Subscriptions
         // Save Data
         add_meta_box(
             'subscrpt_order_save_post',
-            __('Subscription Action', 'sdevs_wea'),
+            __('Subscription Action', 'sdevs_subscrpt'),
             [$this, 'subscrpt_order_save_post'],
             'subscrpt_order',
             'side',
@@ -110,7 +110,7 @@ class Subscriptions
 
         add_meta_box(
             'subscrpt_customer_info',
-            __('Customer Info', 'sdevs_wea'),
+            __('Customer Info', 'sdevs_subscrpt'),
             [$this, 'subscrpt_customer_info'],
             'subscrpt_order',
             'side',
@@ -119,7 +119,7 @@ class Subscriptions
 
         add_meta_box(
             'subscrpt_order_info',
-            __('Subscription Info', 'sdevs_wea'),
+            __('Subscription Info', 'sdevs_subscrpt'),
             [$this, 'subscrpt_order_info'],
             'subscrpt_order',
             'normal',
@@ -128,7 +128,7 @@ class Subscriptions
 
         add_meta_box(
             'subscrpt_order_history',
-            __('Subscription History', 'sdevs_wea'),
+            __('Subscription History', 'sdevs_subscrpt'),
             [$this, 'subscrpt_order_history'],
             'subscrpt_order',
             'normal',
@@ -137,7 +137,7 @@ class Subscriptions
 
         add_meta_box(
             'subscrpt_order_activities',
-            __('Subscription Activities', 'sdevs_wea'),
+            __('Subscription Activities', 'sdevs_subscrpt'),
             [$this, 'subscrpt_order_activities'],
             'subscrpt_order',
             'normal',
@@ -149,48 +149,20 @@ class Subscriptions
     {
         $order_histories = get_post_meta(get_the_ID(), '_subscrpt_order_history', true);
         rsort($order_histories);
-        ?>
-        <table class="widefat striped">
-            <thead>
-                <tr>
-                    <th><?php _e('Order', 'sdevs_wea'); ?></th>
-                    <th></th>
-                    <th><?php _e('Date', 'sdevs_wea'); ?></th>
-                    <th><?php _e('Status', 'sdevs_wea'); ?></th>
-                    <th><?php _e('Amount', 'sdevs_wea'); ?></th>
-                </tr>
-            </thead>
-            <tbody>
-                <?php foreach ($order_histories as $order_history) : ?>
-                    <?php
-                    $order = wc_get_order($order_history['order_id']);
-                    ?>
-                    <tr>
-                        <td><a href="<?php echo get_edit_post_link($order_history['order_id']); ?>" target="_blank"><?php echo $order_history['order_id']; ?></a></td>
-                        <td><?php echo $order_history['stats']; ?></td>
-                        <td>
-                            <?php if ($order) echo date('F d, Y', strtotime($order->get_date_created())); ?>
-                        </td>
-                        <td><?php if ($order) echo $order->get_status(); ?></td>
-                        <td><?php echo $order_history['subtotal_price_html']; ?></td>
-                    </tr>
-                <?php endforeach; ?>
-            </tbody>
-        </table>
-        <?php
+        include 'views/order-history.php';
     }
 
     public function subscrpt_order_activities()
     {
-        if (function_exists('sdevs_is_pro_module_activate')) :
-            if (sdevs_is_pro_module_activate('subscription-pro')) :
+        if (function_exists('subscrpt_pro_activated')) :
+            if (subscrpt_pro_activated()) :
                 do_action('subscrpt_order_activities', get_the_ID());
             else :
-        ?>
+            ?>
                 <a href="https://springdevs.com" target="_blank">
-                    <img style="width: 100%;" src="<?php echo WCSUBSCRIPTION_ASSETS_ASSETS . '/images/subscrpt-ads.png'; ?>" />
+                    <img style="width: 100%;" src="<?php echo SUBSCRPT_ASSETS . '/images/subscrpt-ads.png'; ?>" />
                 </a>
-        <?php
+            <?php
             endif;
         endif;
     }
@@ -198,25 +170,13 @@ class Subscriptions
     public function subscrpt_order_save_post()
     {
         $actions = [
-            ["label" => __('Activate Subscription', 'sdevs_wea'), "value" => 'active'],
-            ["label" => __('Pending Subscription', 'sdevs_wea'),  "value" => 'pending'],
-            ["label" => __('Expire Subscription', 'sdevs_wea'),   "value" => 'expired'],
-            ["label" => __('Cancel Subscription', 'sdevs_wea'),   "value" => 'cancelled'],
+            ["label" => __('Activate Subscription', 'sdevs_subscrpt'), "value" => 'active'],
+            ["label" => __('Pending Subscription', 'sdevs_subscrpt'),  "value" => 'pending'],
+            ["label" => __('Expire Subscription', 'sdevs_subscrpt'),   "value" => 'expired'],
+            ["label" => __('Cancel Subscription', 'sdevs_subscrpt'),   "value" => 'cancelled'],
         ];
         $status = get_post_status(get_the_ID());
-        ?>
-        <p class="subscrpt_sub_box">
-            <select id="subscrpt_order_type" name="subscrpt_order_action">
-                <option value=""><?php _e('choose action', 'sdevs_wea'); ?></option>
-                <?php foreach ($actions as $action) : ?>
-                    <option value="<?php echo $action["value"]; ?>" <?php if ($action["value"] == $status) echo "selected"; ?>><?php echo $action["label"]; ?></option>
-                <?php endforeach; ?>
-            </select>
-        </p>
-        <div class="submitbox">
-            <input type="submit" class="button save_order button-primary tips" name="save" value="Process">
-        </div>
-    <?php
+        include 'views/subscription-save-meta.php';
     }
 
     public function subscrpt_customer_info()
@@ -224,32 +184,7 @@ class Subscriptions
         $post_meta = get_post_meta(get_the_ID(), "_subscrpt_order_general", true);
         $order = wc_get_order($post_meta["order_id"]);
         if (!$order) return;
-    ?>
-        <table class="booking-customer-details" style="width: 100%;">
-            <tbody>
-                <tr>
-                    <th>Name:</th>
-                    <td><?php echo $order->get_formatted_billing_full_name(); ?></td>
-                </tr>
-                <tr>
-                    <th>Email:</th>
-                    <td><a href="mailto:<?php echo $order->get_billing_email(); ?>"><?php echo $order->get_billing_email(); ?></a></td>
-                </tr>
-                <tr>
-                    <th>Address:</th>
-                    <td><?php echo $order->get_formatted_billing_address(); ?></td>
-                </tr>
-                <tr>
-                    <th>Phone:</th>
-                    <td><?php echo $order->get_billing_phone(); ?></td>
-                </tr>
-                <tr class="view">
-                    <th>&nbsp;</th>
-                    <td><a class="button button-small" target="_blank" href="<?php echo get_edit_post_link($post_meta['order_id']); ?>">View Order</a></td>
-                </tr>
-            </tbody>
-        </table>
-    <?php
+        include 'views/subscription-customer.php';
     }
 
     public function subscrpt_order_info()
@@ -264,71 +199,14 @@ class Subscriptions
                 break;
             }
         }
-    ?>
-        <table class="form-table">
-            <tbody>
-                <tr>
-                    <?php
-                    $product_name = apply_filters('subscrpt_filter_product_name', get_the_title($post_meta['product_id']), $post_meta);
-                    $product_link = apply_filters('subscrpt_filter_product_permalink', get_the_permalink($post_meta['product_id']), $post_meta);
-                    ?>
-                    <th scope="row">Product : </th>
-                    <td>
-                        <a href="<?php echo $product_link; ?>" target="_blank"><?php echo $product_name; ?></a>
-                    </td>
-                </tr>
-                <tr>
-                    <th scope="row">Cost : </th>
-                    <td><?php echo wc_price($order->get_item_subtotal($order_item, false, true), array('currency' => $order->get_currency())); ?></td>
-                </tr>
-                <tr>
-                    <th scope="row">Qty : </th>
-                    <td>x<?php echo $post_meta['qty']; ?></td>
-                </tr>
-                <tr>
-                    <th scope="row">Amount : </th>
-                    <td><strong><?php echo $post_meta['subtotal_price_html']; ?></strong></td>
-                </tr>
-                <?php if (!empty($post_meta['trial'])) : ?>
-                    <tr>
-                        <th scope="row">Trial</th>
-                        <td><?php echo $post_meta['trial']; ?></td>
-                    </tr>
-                    <tr>
-                        <th scope="row">Trial Date</th>
-                        <td><?php echo " [ " . date('F d, Y', strtotime($order->get_date_created())) . " - " . date('F d, Y', strtotime($post_meta['trial'], strtotime($order->get_date_created()))) . " ] "; ?></td>
-                    </tr>
-                <?php endif; ?>
-                <tr>
-                    <th scope="row">Started date:</th>
-                    <td><?php echo date('F d, Y', $post_meta['start_date']); ?></td>
-                </tr>
-                <tr>
-                    <th scope="row">Payment due date:</th>
-                    <td><?php echo date('F d, Y', $post_meta['next_date']); ?></td>
-                </tr>
-                <tr>
-                    <th scope="row">Payment Method:</th>
-                    <td><?php echo $order->get_payment_method_title(); ?></td>
-                </tr>
-                <tr>
-                    <th scope="row">Billing:</th>
-                    <td><?php echo $order->get_formatted_billing_address(); ?></td>
-                </tr>
-                <tr>
-                    <th scope="row">Shipping:</th>
-                    <td><?php echo $order->get_formatted_shipping_address() ? $order->get_formatted_shipping_address() : "No shipping address set."; ?></td>
-                </tr>
-            </tbody>
-        </table>
-        <?php
+        include 'views/subscription-order-info.php';
     }
 
     public function some_styles()
     {
         global $post;
         if ($post->post_type == "subscrpt_order") :
-        ?>
+            ?>
             <style>
                 .submitbox {
                     display: flex;
@@ -378,6 +256,6 @@ class Subscriptions
         }
         $data = ["post" => $post_id, "product" => $post_meta['product_id']];
         if (isset($post_meta['variation_id'])) $data['variation'] = $post_meta['variation_id'];
-        Action::status($action, $_POST['post_author'], $data);
+        Action::status($action, sanitize_text_field($_POST['post_author']), $data);
     }
 }

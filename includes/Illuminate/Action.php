@@ -1,10 +1,10 @@
 <?php
 
-namespace SpringDevs\WcSubscription\Illuminate;
+namespace SpringDevs\Subscription\Illuminate;
 
 /**
  * Action [ helper class ]
- * @package SpringDevs\WcSubscription\Illuminate
+ * @package SpringDevs\Subscription\Illuminate
  */
 class Action
 {
@@ -93,11 +93,11 @@ class Action
         $comment_id = wp_insert_comment([
             "comment_agent" => "simple-subscriptions",
             "comment_author" => "simple-subscriptions",
-            "comment_content" => __('Subscription is Expired ', 'sdevs_wea'),
+            "comment_content" => __('Subscription is Expired ', 'sdevs_subscrpt'),
             "comment_post_ID" => $data['post'],
             "comment_type" => "order_note"
         ]);
-        update_comment_meta($comment_id, 'subscrpt_activity', __('Subscription Expired', 'sdevs_wea'));
+        update_comment_meta($comment_id, 'subscrpt_activity', __('Subscription Expired', 'sdevs_subscrpt'));
         do_action('subscrpt_when_product_expired', $data['post'], $data['product'], $data, false);
     }
 
@@ -123,11 +123,11 @@ class Action
         $comment_id = wp_insert_comment([
             "comment_agent" => "simple-subscriptions",
             "comment_author" => "simple-subscriptions",
-            "comment_content" => __('Subscription activated.Next payment due date set. ', 'sdevs_wea'),
+            "comment_content" => __('Subscription activated.Next payment due date set. ', 'sdevs_subscrpt'),
             "comment_post_ID" => $data['post'],
             "comment_type" => "order_note"
         ]);
-        update_comment_meta($comment_id, 'subscrpt_activity', __('Subscription Activated', 'sdevs_wea'));
+        update_comment_meta($comment_id, 'subscrpt_activity', __('Subscription Activated', 'sdevs_subscrpt'));
     }
 
     static private function renew($data)
@@ -162,11 +162,11 @@ class Action
         $comment_id = wp_insert_comment([
             "comment_agent" => "simple-subscriptions",
             "comment_author" => "simple-subscriptions",
-            "comment_content" => __('Subscription is pending.', 'sdevs_wea'),
+            "comment_content" => __('Subscription is pending.', 'sdevs_subscrpt'),
             "comment_post_ID" => $data['post'],
             "comment_type" => "order_note"
         ]);
-        update_comment_meta($comment_id, 'subscrpt_activity', __('Subscription Pending', 'sdevs_wea'));
+        update_comment_meta($comment_id, 'subscrpt_activity', __('Subscription Pending', 'sdevs_subscrpt'));
     }
 
     static private function cancelled($data)
@@ -191,11 +191,11 @@ class Action
         $comment_id = wp_insert_comment([
             "comment_agent" => "simple-subscriptions",
             "comment_author" => "simple-subscriptions",
-            "comment_content" => __('Subscription is Cancelled.', 'sdevs_wea'),
+            "comment_content" => __('Subscription is Cancelled.', 'sdevs_subscrpt'),
             "comment_post_ID" => $data['post'],
             "comment_type" => "order_note"
         ]);
-        update_comment_meta($comment_id, 'subscrpt_activity', __('Subscription Cancelled', 'sdevs_wea'));
+        update_comment_meta($comment_id, 'subscrpt_activity', __('Subscription Cancelled', 'sdevs_subscrpt'));
     }
 
     static private function update($author)

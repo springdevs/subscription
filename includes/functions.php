@@ -3,13 +3,13 @@
 function subscrpt_get_typos($number, $typo)
 {
     if ($number == 1 && $typo == "days") {
-        return __("day", "sdevs_wea");
+        return __("day", "sdevs_subscrpt");
     } elseif ($number == 1 && $typo == "weeks") {
-        return __("week", "sdevs_wea");
+        return __("week", "sdevs_subscrpt");
     } elseif ($number == 1 && $typo == "months") {
-        return __("month", "sdevs_wea");
+        return __("month", "sdevs_subscrpt");
     } elseif ($number == 1 && $typo == "years") {
-        return __("year", "sdevs_wea");
+        return __("year", "sdevs_subscrpt");
     } else {
         return $typo;
     }
@@ -80,4 +80,9 @@ function subscrpt_check_unexpired($product_id)
 
     if ($product->is_type('simple')) return false;
     return apply_filters('subscrpt_filter_check_unexpired', false, $product_id, $active_items, $pending_items);
+}
+
+function subscrpt_pro_activated()
+{
+    return class_exists('Sdevs_Wc_Subscription_Pro');
 }

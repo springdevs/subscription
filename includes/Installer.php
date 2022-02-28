@@ -1,10 +1,10 @@
 <?php
 
-namespace SpringDevs\WcSubscription;
+namespace SpringDevs\Subscription;
 
 /**
  * Class Installer
- * @package SpringDevs\WcSubscription
+ * @package SpringDevs\Subscription
  */
 class Installer
 {
@@ -24,13 +24,13 @@ class Installer
      */
     public function add_version()
     {
-        $installed = get_option('simple subscription_installed');
+        $installed = get_option('subscrpt_installed');
 
         if (!$installed) {
-            update_option('simple subscription_installed', time());
+            update_option('subscrpt_installed', time());
         }
 
-        update_option('simple subscription_version', WCSUBSCRIPTION_ASSETS_VERSION);
+        update_option('subscrpt_version', SUBSCRPT_VERSION);
 
         add_filter('cron_schedules', function ($schedules) {
             $schedules['every_three_minutes'] = array(

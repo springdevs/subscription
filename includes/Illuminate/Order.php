@@ -1,10 +1,10 @@
 <?php
 
-namespace SpringDevs\WcSubscription\Illuminate;
+namespace SpringDevs\Subscription\Illuminate;
 
 /**
  * Class Order
- * @package SpringDevs\WcSubscription\Illuminate
+ * @package SpringDevs\Subscription\Illuminate
  */
 class Order
 {
@@ -63,7 +63,7 @@ class Order
         foreach ($order_data as $post_meta) {
             if (is_array($post_meta) && isset($post_meta['stats']) && $item['product_id'] == $post_meta['product_id']) :
                 $trial = null;
-                $has_trial = isset($post_meta['trial']) && strlen($post_meta['trial']) > 2 ? true : false;
+                $has_trial = isset($post_meta['trial']) && strlen($post_meta['trial']) > 2;
                 $signup_fee_html = null;
                 if ($has_trial) {
                     $trial = "<br/><small> + Get " . $post_meta['trial'] . " " . " free trial!</small>";
@@ -79,7 +79,7 @@ class Order
     public function admin_order_item_header($order)
     {
 ?>
-        <th class="item_recurring sortable" data-sort="float"><?php esc_html_e('Recurring', 'sdevs_wea'); ?></th>
+        <th class="item_recurring sortable" data-sort="float"><?php esc_html_e('Recurring', 'sdevs_subscrpt'); ?></th>
     <?php
     }
 
@@ -96,7 +96,7 @@ class Order
     ?>
         <td class="item_recurring" width="15%">
             <div class="view">
-                <?php echo $subtotal; ?>
+                <?php echo wp_kses_post($subtotal); ?>
             </div>
         </td>
 <?php
@@ -112,7 +112,7 @@ class Order
                 $has_trial = isset($post_meta['trial']) && strlen($post_meta['trial']) > 2 ? true : false;
                 if ($has_trial) {
                     if (isset($post_meta['signup_fee']) && $post_meta['signup_fee'] > 0) echo "<small> + Signup fee of " . wc_price($post_meta['signup_fee']) . '</small><br/>';
-                    echo "<small> + Get " . $post_meta['trial'] . " " . " free trial!</small>";
+                    echo "<small> + Get " . wp_kses_post($post_meta['trial']) . " " . " free trial!</small>";
                 }
             endif;
         }
@@ -124,27 +124,14 @@ class Order
         $post_status = "active";
 
         switch ($order->get_status()) {
+            case "on-hold":
             case "pending";
                 $post_status = "pending";
                 break;
 
-            case "on-hold";
-                $post_status = "pending";
-                break;
-
-            case "completed";
-                $post_status = "active";
-                break;
-
+            case "refunded":
+            case "failed":
             case "cancelled";
-                $post_status = "cancelled";
-                break;
-
-            case "refunded";
-                $post_status = "cancelled";
-                break;
-
-            case "failed";
                 $post_status = "cancelled";
                 break;
 
