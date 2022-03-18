@@ -17,23 +17,22 @@ use SpringDevs\Subscription\Illuminate\Subscriptions;
 /**
  * Frontend handler class
  */
-class Frontend
-{
-    /**
-     * Frontend constructor.
-     */
-    public function __construct()
-    {
-        new Subscriptions;
-        new Cron;
-        new RegisterPostStatus;
-        new Product;
-        new Thankyou;
-        new ActionController;
-        new MyAccount;
-        new Downloadable;
-        new Order;
-        new Email;
-        new AutoRenewal;
-    }
+class Frontend {
+
+	/**
+	 * Frontend constructor.
+	 */
+	public function __construct() {
+		new Subscriptions();
+		new Cron();
+		new RegisterPostStatus();
+		new Product();
+		new Thankyou();
+		new ActionController();
+		new MyAccount();
+		new Downloadable();
+		new Order();
+		new Email();
+		new AutoRenewal();
+	}
 }
