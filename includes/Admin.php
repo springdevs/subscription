@@ -17,34 +17,32 @@ use SpringDevs\Subscription\Illuminate\Subscriptions as IlluminateSubscriptions;
 /**
  * The admin class
  */
-class Admin
-{
+class Admin {
 
-    /**
-     * Initialize the class
-     */
-    public function __construct()
-    {
-        $this->dispatch_actions();
-        new IlluminateSubscriptions;
-        new Cron;
-        new Menu;
-        new Product;
-        new Subscriptions;
-        new RegisterPostStatus;
-        new Order;
-        new AdminOrder;
-        new Comments;
-        new Email;
-        new Settings;
-    }
 
-    /**
-     * Dispatch and bind actions
-     *
-     * @return void
-     */
-    public function dispatch_actions()
-    {
-    }
+	/**
+	 * Initialize the class
+	 */
+	public function __construct() {
+		$this->dispatch_actions();
+		new IlluminateSubscriptions();
+		new Cron();
+		new Menu();
+		new Product();
+		new Subscriptions();
+		new RegisterPostStatus();
+		new Order();
+		new AdminOrder();
+		new Comments();
+		new Email();
+		new Settings();
+	}
+
+	/**
+	 * Dispatch and bind actions
+	 *
+	 * @return void
+	 */
+	public function dispatch_actions() {
+	}
 }

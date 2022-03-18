@@ -13,7 +13,10 @@
   "require-dev": {
     "phpunit/phpunit": "^9",
     "yoast/phpunit-polyfills": "1.x-dev",
-    "sempro/phpunit-pretty-print": "dev-develop"
+    "sempro/phpunit-pretty-print": "dev-develop",
+    "wp-coding-standards/wpcs": "dev-master",
+    "dealerdirect/phpcodesniffer-composer-installer": "dev-master",
+    "phpcompatibility/phpcompatibility-wp": "dev-master"
   },
   "autoload": {
     "psr-4": {

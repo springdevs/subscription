@@ -4,56 +4,57 @@ namespace SpringDevs\Subscription;
 
 /**
  * Class Installer
+ *
  * @package SpringDevs\Subscription
  */
-class Installer
-{
-    /**
-     * Run the installer
-     *
-     * @return void
-     */
-    public function run()
-    {
-        $this->add_version();
-        $this->create_tables();
-    }
+class Installer {
 
-    /**
-     * Add time and version on DB
-     */
-    public function add_version()
-    {
-        $installed = get_option('subscrpt_installed');
+	/**
+	 * Run the installer
+	 *
+	 * @return void
+	 */
+	public function run() {
+		$this->add_version();
+		$this->create_tables();
+	}
 
-        if (!$installed) {
-            update_option('subscrpt_installed', time());
-        }
+	/**
+	 * Add time and version on DB
+	 */
+	public function add_version() {
+		$installed = get_option( 'subscrpt_installed' );
 
-        update_option('subscrpt_version', SUBSCRPT_VERSION);
+		if ( ! $installed ) {
+			update_option( 'subscrpt_installed', time() );
+		}
 
-        add_filter('cron_schedules', function ($schedules) {
-            $schedules['every_three_minutes'] = array(
-                'interval'  => 60,
-                'display'   => __('Every 3 Minutes', 'textdomain')
-            );
-            return $schedules;
-        });
+		update_option( 'subscrpt_version', SUBSCRPT_VERSION );
 
-        if (!wp_next_scheduled('subscrpt_daily_cron')) {
-            wp_schedule_event(time(), 'daily', 'subscrpt_daily_cron');
-        }
-    }
+		add_filter(
+			'cron_schedules',
+			function ( $schedules ) {
+				$schedules['every_three_minutes'] = array(
+					'interval' => 60,
+					'display'  => __( 'Every 3 Minutes', 'textdomain' ),
+				);
+				return $schedules;
+			}
+		);
 
-    /**
-     * Create necessary database tables
-     *
-     * @return void
-     */
-    public function create_tables()
-    {
-        if (!function_exists('dbDelta')) {
-            require_once ABSPATH . 'wp-admin/includes/upgrade.php';
-        }
-    }
+		if ( ! wp_next_scheduled( 'subscrpt_daily_cron' ) ) {
+			wp_schedule_event( time(), 'daily', 'subscrpt_daily_cron' );
+		}
+	}
+
+	/**
+	 * Create necessary database tables
+	 *
+	 * @return void
+	 */
+	public function create_tables() {
+		if ( ! function_exists( 'dbDelta' ) ) {
+			require_once ABSPATH . 'wp-admin/includes/upgrade.php';
+		}
+	}
 }
