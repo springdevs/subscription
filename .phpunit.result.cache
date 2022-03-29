@@ -1,1 +1,0 @@
-{"version":1,"defects":{"Warning":6},"times":{"Vendor\\YourPackage\\Tests\\SubscriptionTest::test_sample":0.003,"Warning":0.002,"Vendor\\YourPackage\\Tests\\SubscriptionTest::test_subscription_post_type_exixts_test":0.003,"Vendor\\YourPackage\\Tests\\SubscriptionTest::test_subscription_post_type_exixts":0.003}}

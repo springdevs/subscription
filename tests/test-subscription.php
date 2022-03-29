@@ -1,9 +1,5 @@
 <?php
 
-namespace Vendor\YourPackage\Tests;
-
-use WP_UnitTestCase;
-
 /**
  * Class SubscriptionTest
  *
@@ -13,9 +9,11 @@ use WP_UnitTestCase;
 /**
  * Test our subscrpt_order post_type
  */
-class SubscriptionTest extends WP_UnitTestCase {
+class SubscriptionTest extends WP_UnitTestCase
+{
 
-	public function test_subscription_post_type_exixts() {
-		$this->assertTrue( post_type_exists( 'subscrpt_order' ) );
+	public function test_subscription_post_type_exixts()
+	{
+		$this->assertTrue(post_type_exists('subscrpt_order'));
 	}
 }
