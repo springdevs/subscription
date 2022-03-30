@@ -16,7 +16,8 @@
     "sempro/phpunit-pretty-print": "dev-develop",
     "wp-coding-standards/wpcs": "dev-master",
     "dealerdirect/phpcodesniffer-composer-installer": "dev-master",
-    "phpcompatibility/phpcompatibility-wp": "dev-master"
+    "phpcompatibility/phpcompatibility-wp": "dev-master",
+    "brain/monkey": "^2.6"
   },
   "autoload": {
     "psr-4": {
