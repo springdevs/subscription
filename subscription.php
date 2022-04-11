@@ -1,9 +1,9 @@
 <?php
 /*
-Plugin Name: Subscription
-Plugin URI: https://wordpress.org/plugins/sdevs-wc-subscription
+Plugin Name: Subscription for WooCommerce
+Plugin URI: https://wordpress.org/plugins/subscription
 Description: Allow your customers to order once and get their products and services every month/week.
-Version: 1.0.1
+Version: 1.0.2
 Author: SpringDevs
 Author URI: https://springdevs.com/
 License: GPLv2
@@ -57,14 +57,14 @@ final class Sdevs_Subscription {
 	 *
 	 * @var string
 	 */
-	const version = '1.0.1';
+	const version = '1.0.2';
 
 	/**
 	 * Holds various class instances
 	 *
 	 * @var array
 	 */
-	private $container = array();
+	private array $container = array();
 
 	/**
 	 * Constructor for the Sdevs_Wc_Subscription class
@@ -141,7 +141,7 @@ final class Sdevs_Subscription {
 	}
 
 	/**
-	 * Load the plugin after all plugis are loaded
+	 * Load the plugin after all plugins are loaded
 	 *
 	 * @return void
 	 */
@@ -253,7 +253,7 @@ final class Sdevs_Subscription {
 /**
  * Initialize the main plugin
  *
- * @return \Sdevs_Subscription|bool
+ * @return Sdevs_Subscription|bool
  */
 function sdevs_subscription() {
 	 return Sdevs_Subscription::init();

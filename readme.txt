@@ -1,5 +1,5 @@
-=== WooCommerce Subscription ===
-Contributors: naminbd, istiaqnirab
+=== Subscription for WooCommerce ===
+Contributors: naminbd, ok9xnirab
 Donate link:
 Tags: woocommerce, subscription, missing addons, woocommerce subscription
 Requires at least: 4.0
@@ -65,6 +65,9 @@ A powerfull plugin that allow to enable subscription on woocommerce products.
 
 
 == Changelog ==
+
+    = 1.0.2 =
+        * Update plugin name
 
     = 1.0.1 =
         * Fix "total" amount not display in "My Subscription's"
