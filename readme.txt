@@ -66,7 +66,7 @@ A powerfull plugin that allow to enable subscription on woocommerce products.
 
 == Changelog ==
 
-= 1.0.2 ( Mar 18, 2022 ) =
+= 1.0.2 =
 - **Update:** Change plugin name
 - **Update:** Did some Code refactoring
 - **Fix:** WPCodingStandard related issues using `phpcbf`
