@@ -78,7 +78,7 @@ class Product {
 				return;
 			}
 		}
-		$subscrpt_enable       = $_POST['subscrpt_enable'] ? true : false;
+		$subscrpt_enable       = (bool) $_POST['subscrpt_enable'];
 		$subscrpt_time         = 1;
 		$subscrpt_timing       = sanitize_text_field( $_POST['subscrpt_timing'] );
 		$subscrpt_trial_time   = null;

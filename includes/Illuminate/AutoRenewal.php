@@ -2,6 +2,8 @@
 
 namespace SpringDevs\Subscription\Illuminate;
 
+use WC_Data_Exception;
+
 /**
  * AutoRenewal [ helper class ]
  *
@@ -14,7 +16,7 @@ class AutoRenewal {
 	}
 
 	/**
-	 * @throws \WC_Data_Exception
+	 * @throws WC_Data_Exception
 	 */
 	public function product_expired_action( $subscription_id, $product_id, $all_data, $early_renew ) {
 		$is_auto_renew = get_post_meta( $subscription_id, '_subscrpt_auto_renew', true );
@@ -133,7 +135,7 @@ class AutoRenewal {
 			$order_history = array();
 		}
 
-		array_push( $order_history, $post_meta );
+		$order_history[] = $post_meta;
 		update_post_meta( $subscription_id, '_subscrpt_order_history', $order_history );
 		$comment_id = wp_insert_comment(
 			array(

@@ -31,17 +31,6 @@ class Installer {
 
 		update_option( 'subscrpt_version', SUBSCRPT_VERSION );
 
-		add_filter(
-			'cron_schedules',
-			function ( $schedules ) {
-				$schedules['every_three_minutes'] = array(
-					'interval' => 60,
-					'display'  => __( 'Every 3 Minutes', 'textdomain' ),
-				);
-				return $schedules;
-			}
-		);
-
 		if ( ! wp_next_scheduled( 'subscrpt_daily_cron' ) ) {
 			wp_schedule_event( time(), 'daily', 'subscrpt_daily_cron' );
 		}

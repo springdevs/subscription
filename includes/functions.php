@@ -106,6 +106,6 @@ function subscrpt_check_unexpired( $product_id ) {
 	return apply_filters( 'subscrpt_filter_check_unexpired', false, $product_id, $active_items, $pending_items );
 }
 
-function subscrpt_pro_activated() {
+function subscrpt_pro_activated(): bool {
 	 return class_exists( 'Sdevs_Wc_Subscription_Pro' );
 }
