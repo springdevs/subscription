@@ -47,7 +47,7 @@ class MyAccount {
 		$is_endpoint = isset( $wp_query->query_vars['subscrpt-endpoint'] );
 		$is_single   = isset( $wp_query->query_vars['view-subscrpt'] );
 		if ( $is_endpoint && ! is_admin() && is_main_query() && in_the_loop() && is_account_page() ) {
-			$title = __( 'My Subscription\'s', 'sdevs_subscrpt' );
+			$title = __( 'My Subscriptions', 'sdevs_subscrpt' );
 			remove_filter( 'the_title', array( $this, 'change_endpoint_title' ) );
 		} elseif ( $is_single && ! is_admin() && is_main_query() && in_the_loop() && is_account_page() ) {
 			$title = __( 'Subscription #' . get_query_var( 'view-subscrpt' ), 'sdevs_subscrpt' );
