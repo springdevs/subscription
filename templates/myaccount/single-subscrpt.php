@@ -1,4 +1,11 @@
 <?php
+
+/**
+ * Single subscription page
+ *
+ * This template can be overridden by copying it to yourtheme/simple-booking/myaccount/single-subscrpt.php
+ */
+
 if ( ! isset( $id ) ) {
 	return;
 }

@@ -3,7 +3,7 @@
 Plugin Name: Subscription for WooCommerce
 Plugin URI: https://wordpress.org/plugins/subscription
 Description: Allow your customers to order once and get their products and services every month/week.
-Version: 1.0.2
+Version: 1.0.3
 Author: SpringDevs
 Author URI: https://springdevs.com/
 License: GPLv2
@@ -57,7 +57,7 @@ final class Sdevs_Subscription {
 	 *
 	 * @var string
 	 */
-	const version = '1.0.2';
+	const version = '1.0.3';
 
 	/**
 	 * Holds various class instances
@@ -119,8 +119,8 @@ final class Sdevs_Subscription {
 	 *
 	 * @param $prop
 	 *
-	 * @return mixed
-	 */
+	 * @return bool
+     */
 	public function __isset( $prop ) {
 		return isset( $this->{$prop} ) || isset( $this->container[ $prop ] );
 	}
@@ -184,7 +184,7 @@ final class Sdevs_Subscription {
 		}
 
 		if ( $this->is_request( 'ajax' ) ) {
-			// require_once WCSUBSCRIPTION_ASSETS_INCLUDES . '/class-ajax.php';
+			// require_once SUBSCRPT_INCLUDES . '/class-ajax.php';
 		}
 	}
 

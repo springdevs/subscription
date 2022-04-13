@@ -1,9 +1,9 @@
 <?php
 
 /**
- * External product add to cart
+ * Subscriptions Table
  *
- * This template can be overridden by copying it to yourtheme/simple-booking/myaccount/bookings.php
+ * This template can be overridden by copying it to yourtheme/simple-booking/myaccount/subscriptions.php
  */
 
 $paged = ( get_query_var( 'paged' ) ) ? get_query_var( 'paged' ) : 1;

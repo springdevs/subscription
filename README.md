@@ -4,6 +4,10 @@ Allow your customers to order once and get their products and services every mon
 
 ## changelog
 
+### v1.0.3
+- Code clean-up
+- Fix some minor issues
+
 ### v1.0.2
 - Update plugin name
 - Did some Code refactoring

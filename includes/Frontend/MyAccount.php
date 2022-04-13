@@ -36,10 +36,12 @@ class MyAccount {
 		flush_rewrite_rules();
 	}
 
-	/**
-	 * @param $title
-	 * @return string|void
-	 */
+    /**
+     * @param $title
+     * @param $endpoint
+     *
+     * @return string|void
+     */
 	public function change_endpoint_title( $title, $endpoint ) {
 		global $wp_query;
 		$is_endpoint = isset( $wp_query->query_vars['subscrpt-endpoint'] );
