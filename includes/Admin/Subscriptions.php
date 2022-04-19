@@ -31,10 +31,10 @@ class Subscriptions {
 		return $options;
 	}
 
-	public function remove_order_meta( $formatted_meta ) {
+	public function remove_order_meta( $formatted_meta ): array {
 		$temp_metas = array();
 		foreach ( $formatted_meta as $key => $meta ) {
-			if ( isset( $meta->key ) && ! in_array( $meta->key, array( '_renew_subscrpt' ) ) ) {
+			if ( isset( $meta->key ) && $meta->key != '_renew_subscrpt' ) {
 				$temp_metas[ $key ] = $meta;
 			}
 		}
@@ -151,7 +151,7 @@ class Subscriptions {
 				do_action( 'subscrpt_order_activities', get_the_ID() );
 			else :
 				?>
-				<a href="https://springdevs.com" target="_blank">
+				<a href="https://springdevs.com/subscription" target="_blank">
 					<img style="width: 100%;" src="<?php echo SUBSCRPT_ASSETS . '/images/subscrpt-ads.png'; ?>" />
 				</a>
 				<?php
