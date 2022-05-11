@@ -91,6 +91,8 @@ $status    = get_post_status( $id );
 	</tbody>
 </table>
 
+<?php do_action('subscrpt_before_subscription_totals', (int)$id); ?>
+
 <h2><?php _e( 'Subscription totals', 'sdevs_subscrpt' ); ?></h2>
 <table class="shop_table order_details">
 	<thead>

@@ -135,6 +135,8 @@ class Action {
 			)
 		);
 		update_comment_meta( $comment_id, 'subscrpt_activity', __( 'Subscription Activated', 'sdevs_subscrpt' ) );
+
+        do_action('subscrpt_subscription_activated', $data);
 	}
 
 	private static function renew( $data ) {
