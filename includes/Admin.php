@@ -2,6 +2,7 @@
 
 namespace SpringDevs\Subscription;
 
+use SpringDevs\Subscription\Admin\Links;
 use SpringDevs\Subscription\Admin\Menu;
 use SpringDevs\Subscription\Admin\Order as AdminOrder;
 use SpringDevs\Subscription\Admin\Product;
@@ -36,6 +37,7 @@ class Admin {
 		new Comments();
 		new Email();
 		new Settings();
+		new Links();
 	}
 
 	/**
