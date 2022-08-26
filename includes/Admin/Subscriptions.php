@@ -43,6 +43,7 @@ class Subscriptions {
 
 	public function custom_enqueue_scripts() {
 		wp_enqueue_style( 'subscrpt_admin_css' );
+		wp_enqueue_style( 'subscrpt_status_css' );
 	}
 
 	public function post_row_actions( $unset_actions, $post ) {
@@ -83,7 +84,9 @@ class Subscriptions {
 			} elseif ( $column == 'subscrpt_next_date' ) {
 				echo date( 'F d, Y', $post_meta['next_date'] );
 			} elseif ( $column == 'subscrpt_status' ) {
-				echo esc_html( get_post_status( $post_id ) );
+				?>
+				<span class="subscrpt-<?php echo esc_html( get_post_status( $post_id ) ); ?>"><?php echo esc_html( get_post_status( $post_id ) ); ?></span>
+				<?php
 			}
 		} else {
 			_e( 'Order not found !!', 'sdevs_subscrpt' );

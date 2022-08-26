@@ -1,0 +1,27 @@
+span.subscrpt-pending {
+    background: #535050;
+    color: white;
+    text-transform: capitalize;
+    padding: 8px;
+}
+
+span.subscrpt-active {
+    background: green;
+    color: white;
+    text-transform: capitalize;
+    padding: 8px;
+}
+
+span.subscrpt-expired {
+    background: red;
+    color: white;
+    text-transform: capitalize;
+    padding: 8px;
+}
+
+span.subscrpt-cancelled {
+    background: #cecece;
+    color: white;
+    text-transform: capitalize;
+    padding: 8px;
+}

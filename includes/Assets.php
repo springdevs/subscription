@@ -91,6 +91,9 @@ class Assets {
 			'subscrpt_admin_css' => array(
 				'src' => $plugin_css_assets_path . 'admin.css',
 			),
+			'subscrpt_status_css' => array(
+				'src' => $plugin_css_assets_path . 'status.css',
+			),
 		);
 
 		return $styles;

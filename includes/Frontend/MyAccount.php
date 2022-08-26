@@ -17,6 +17,7 @@ class MyAccount {
 		add_filter( 'woocommerce_get_query_vars', array( $this, 'custom_query_vars' ) );
 		add_action( 'woocommerce_account_view-subscrpt_endpoint', array( $this, 'view_subscrpt_content' ) );
 		add_action( 'woocommerce_account_subscrpt-endpoint_endpoint', array( $this, 'subscrpt_endpoint_content' ) );
+		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_styles' ) );
 	}
 
 	public function custom_query_vars( $query_vars ) {
@@ -73,5 +74,10 @@ class MyAccount {
 	 */
 	public function subscrpt_endpoint_content() {
 		wc_get_template( 'myaccount/subscriptions.php', array(), 'simple-subscription', SUBSCRPT_TEMPLATES );
+	}
+
+	public function enqueue_styles()
+	{
+		wp_enqueue_style( 'subscrpt_status_css' );
 	}
 }

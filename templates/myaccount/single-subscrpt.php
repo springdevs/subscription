@@ -35,7 +35,7 @@ $status    = get_post_status( $id );
 		</tr>
 		<tr>
 			<td><?php _e( 'Status', 'sdevs_subscrpt' ); ?></td>
-			<td><?php echo esc_html( $status ); ?></td>
+			<td><span class="subscrpt-<?php echo esc_html( $status ); ?>"><?php echo esc_html( $status ); ?></span></td>
 		</tr>
 		<tr>
 			<td><?php _e( 'Start date', 'sdevs_subscrpt' ); ?></td>

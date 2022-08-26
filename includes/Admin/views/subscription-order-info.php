@@ -41,6 +41,10 @@
 			<td><?php echo esc_html( date( 'F d, Y', $post_meta['next_date'] ) ); ?></td>
 		</tr>
 		<tr>
+			<th scope="row">Status:</th>
+			<td><span class="subscrpt-<?php echo get_post_status(); ?>"><?php echo get_post_status(); ?></span></td>
+		</tr>
+		<tr>
 			<th scope="row">Payment Method:</th>
 			<td><?php echo esc_html( $order->get_payment_method_title() ); ?></td>
 		</tr>
