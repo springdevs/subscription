@@ -2,6 +2,7 @@
 
 namespace SpringDevs\Subscription;
 
+use SpringDevs\Subscription\Admin\Required;
 use SpringDevs\Subscription\Admin\Links;
 use SpringDevs\Subscription\Admin\Menu;
 use SpringDevs\Subscription\Admin\Order as AdminOrder;
@@ -26,6 +27,7 @@ class Admin {
 	 */
 	public function __construct() {
 		$this->dispatch_actions();
+		new Required();
 		new IlluminateSubscriptions();
 		new Cron();
 		new Menu();
