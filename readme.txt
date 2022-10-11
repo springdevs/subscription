@@ -66,6 +66,12 @@ A powerfull plugin that allow to enable subscription on woocommerce products.
 
 == Changelog ==
 
+= 1.0.4 =
+- **New:** Display color based subscription status
+- **New:** Add required plugin installer
+- **Fix:** Subscription customer box overflow issue
+- Plugin action links added
+
 = 1.0.3 =
 - **Update:** Code clean-up
 - **Fix:** Some minor issues
