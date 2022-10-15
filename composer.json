@@ -13,7 +13,8 @@
   "require-dev": {
     "wp-coding-standards/wpcs": "dev-master",
     "dealerdirect/phpcodesniffer-composer-installer": "dev-master",
-    "phpcompatibility/phpcompatibility-wp": "dev-master"
+    "phpcompatibility/phpcompatibility-wp": "dev-master",
+    "symfony/var-dumper": "6.2.x-dev"
   },
   "scripts": {
     "phpcs": "phpcs -p . --standard=PHPCompatibilityWP --ignore=vendor/*"

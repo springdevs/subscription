@@ -2,8 +2,11 @@
 	<tbody>
 		<tr>
 			<?php
-			$product_name = apply_filters( 'subscrpt_filter_product_name', get_the_title( $post_meta['product_id'] ), $post_meta );
-			$product_link = apply_filters( 'subscrpt_filter_product_permalink', get_the_permalink( $post_meta['product_id'] ), $post_meta );
+
+use SpringDevs\Subscription\Illuminate\Helper;
+
+			$product_name = $order_item->get_name();
+			$product_link =  get_the_permalink( $order_item->get_product_id() );
 			?>
 			<th scope="row">Product : </th>
 			<td>
@@ -12,15 +15,11 @@
 		</tr>
 		<tr>
 			<th scope="row">Cost : </th>
-			<td><?php echo wp_kses_post( wc_price( $order->get_item_subtotal( $order_item, false, true ), array( 'currency' => $order->get_currency() ) ) ); ?></td>
+			<td><?php echo wp_kses_post( Helper::format_price_with_order_item( $order_item->get_total(), $order_item->get_id() ) ); ?></td>
 		</tr>
 		<tr>
 			<th scope="row">Qty : </th>
-			<td>x<?php echo esc_html( $post_meta['qty'] ); ?></td>
-		</tr>
-		<tr>
-			<th scope="row">Amount : </th>
-			<td><strong><?php echo wp_kses_post( $post_meta['subtotal_price_html'] ); ?></strong></td>
+			<td>x<?php echo esc_html( $order_item->get_quantity() ); ?></td>
 		</tr>
 		<?php if ( ! empty( $post_meta['trial'] ) ) : ?>
 			<tr>

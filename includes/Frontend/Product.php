@@ -34,8 +34,8 @@ class Product {
 		$cart_items = WC()->cart->cart_contents;
 		foreach ( $cart_items as $cart_item ) {
 			$conditional_key = apply_filters( 'subscrpt_filter_checkout_conditional_key', $cart_item['product_id'], $cart_item );
-			$post_meta       = get_post_meta( $conditional_key, 'subscrpt_general', true );
-			$has_trial       = Helper::Check_Trial( $conditional_key );
+			$post_meta       = get_post_meta( $conditional_key, '_subscrpt_meta', true );
+			$has_trial       = Helper::check_trial( $conditional_key );
 			if ( is_array( $post_meta ) && $post_meta['enable'] ) {
 				if ( ! empty( $post_meta['trial_time'] ) && $post_meta['trial_time'] > 0 && $has_trial ) {
 					if ( isset( $cart_item['line_subtotal'] ) ) {
@@ -52,9 +52,9 @@ class Product {
 		$signup_fee = 0;
 		foreach ( $cart_items as $cart_item ) {
 			$conditional_key = apply_filters( 'subscrpt_filter_checkout_conditional_key', $cart_item['product_id'], $cart_item );
-			$post_meta       = get_post_meta( $conditional_key, 'subscrpt_general', true );
+			$post_meta       = get_post_meta( $conditional_key, '_subscrpt_meta', true );
 			if ( is_array( $post_meta ) && $post_meta['enable'] ) :
-				$has_trial = Helper::Check_Trial( $conditional_key );
+				$has_trial = Helper::check_trial( $conditional_key );
 				if ( $has_trial && isset( $post_meta['signup_fee'] ) ) {
 					$signup_fee += (int) $post_meta['signup_fee'];
 				}
@@ -76,8 +76,8 @@ class Product {
 		if ( $product->is_type( 'variable' ) ) {
 			return;
 		}
-		$post_meta = get_post_meta( $product->get_id(), 'subscrpt_general', true );
-		$unexpired = Helper::Check_un_expired( $product->get_id() );
+		$post_meta = get_post_meta( $product->get_id(), '_subscrpt_meta', true );
+		$unexpired = Helper::subscription_exists( $product->get_id(), array( 'active', 'pending' ) );
 		if ( is_array( $post_meta ) && isset( $post_meta['limit'] ) ) {
 			if ( $post_meta['limit'] == 'unlimited' ) {
 				return;
@@ -88,7 +88,7 @@ class Product {
 				}
 			}
 			if ( $post_meta['limit'] == 'only_one' ) {
-				if ( ! subscrpt_check_trial( $product->get_id() ) ) {
+				if ( ! Helper::check_trial( $product->get_id() ) ) {
 					echo '<strong>' . __( 'You Already Purchased These Product!', 'sdevs_subscrpt' ) . '</strong>';
 				}
 			}
@@ -102,7 +102,7 @@ class Product {
 		if ( $product->is_type( 'variable' ) && ! subscrpt_pro_activated() ) {
 			return $button;
 		}
-		$unexpired = Helper::Check_un_expired( $product->get_id() );
+		$unexpired = Helper::subscription_exists( $product->get_id(), array( 'active', 'pending' ) );
 		if ( $unexpired ) {
 			return;
 		}
@@ -113,7 +113,7 @@ class Product {
 		if ( $product->is_type( 'variable' ) ) {
 			return $is_purchasable;
 		}
-		$unexpired = Helper::Check_un_expired( $product->get_id() );
+		$unexpired = Helper::subscription_exists( $product->get_id(), array( 'active', 'pending' ) );
 		if ( $unexpired ) {
 			return false;
 		}
@@ -121,7 +121,7 @@ class Product {
 	}
 
 	public function add_to_cart_item_data( $cart_item_data, $product_id, $variation_id ) {
-		$expired = Helper::CheckExpired( $product_id );
+		$expired = Helper::subscription_exists( $product_id, 'expired' );
 		if ( $expired ) {
 			$cart_item_data['renew_subscrpt'] = true;
 		}
@@ -132,8 +132,8 @@ class Product {
 		$cart_items = WC()->cart->cart_contents;
 		foreach ( $cart_items as $cart_item ) {
 			$conditional_key = apply_filters( 'subscrpt_filter_checkout_conditional_key', $cart_item['product_id'], $cart_item );
-			$post_meta       = get_post_meta( $conditional_key, 'subscrpt_general', true );
-			$has_trial       = Helper::Check_Trial( $conditional_key );
+			$post_meta       = get_post_meta( $conditional_key, '_subscrpt_meta', true );
+			$has_trial       = Helper::check_trial( $conditional_key );
 			if ( is_array( $post_meta ) && $post_meta['enable'] ) {
 				if ( ! empty( $post_meta['trial_time'] ) && $post_meta['trial_time'] > 0 && $has_trial ) {
 					$subtotal = WC()->cart->get_subtotal() - $cart_item['line_subtotal'];
@@ -153,11 +153,11 @@ class Product {
 		if ( $product->is_type( 'variable' ) ) {
 			return $text;
 		}
-		$post_meta = get_post_meta( $product->get_id(), 'subscrpt_general', true );
+		$post_meta = get_post_meta( $product->get_id(), '_subscrpt_meta', true );
 		if ( is_array( $post_meta ) && isset( $post_meta['limit'] ) && $post_meta['limit'] == 'unlimited' ) {
 			return $post_meta['cart_txt'];
 		}
-		$expired = Helper::CheckExpired( $product->get_id() );
+		$expired = Helper::subscription_exists( $product->get_id(), 'expired' );
 		if ( $expired ) :
 			$text = __( 'renew', 'sdevs_subscrpt' );
 		elseif ( is_array( $post_meta ) && $post_meta['enable'] ) :
@@ -170,11 +170,11 @@ class Product {
 		if ( $product->is_type( 'variable' ) ) {
 			return $price;
 		}
-		$post_meta = get_post_meta( $product->get_id(), 'subscrpt_general', true );
+		$post_meta = get_post_meta( $product->get_id(), '_subscrpt_meta', true );
 		if ( is_array( $post_meta ) && $post_meta['enable'] ) :
 			$time            = $post_meta['time'] == 1 ? null : $post_meta['time'];
 			$type            = Helper::get_typos( $post_meta['time'], $post_meta['type'] );
-			$has_trial       = Helper::Check_Trial( $product->get_id() );
+			$has_trial       = Helper::check_trial( $product->get_id() );
 			$trial           = null;
 			$signup_fee_html = null;
 			if ( ! empty( $post_meta['trial_time'] ) && $post_meta['trial_time'] > 0 && $has_trial ) {
@@ -195,14 +195,14 @@ class Product {
 		if ( $product->is_type( 'variable' ) ) {
 			return $price;
 		}
-		$post_meta = get_post_meta( $cart_item['product_id'], 'subscrpt_general', true );
+		$post_meta = get_post_meta( $cart_item['product_id'], '_subscrpt_meta', true );
 		if ( is_array( $post_meta ) && $post_meta['enable'] ) :
 			$time            = $post_meta['time'] == 1 ? null : $post_meta['time'];
 			$price_type      = apply_filters( 'subscrpt_single_item_cart_price_type', $post_meta['type'], $cart_item );
 			$type            = Helper::get_typos( $post_meta['time'], $price_type );
 			$trial           = null;
 			$signup_fee_html = null;
-			$has_trial       = Helper::Check_Trial( $cart_item['product_id'] );
+			$has_trial       = Helper::check_trial( $cart_item['product_id'] );
 			if ( ! empty( $post_meta['trial_time'] ) && $post_meta['trial_time'] > 0 && $has_trial ) {
 				$trial = '<br/><small> + ' . $post_meta['trial_time'] . ' ' . Helper::get_typos( $post_meta['trial_time'], $post_meta['trial_type'] ) . ' free trial!</small>';
 				if ( isset( $post_meta['signup_fee'] ) ) {
@@ -220,7 +220,7 @@ class Product {
 		$cart_items = WC()->cart->cart_contents;
 		$recurrs    = array();
 		foreach ( $cart_items as $cart_item ) {
-			$post_meta = get_post_meta( $cart_item['product_id'], 'subscrpt_general', true );
+			$post_meta = get_post_meta( $cart_item['product_id'], '_subscrpt_meta', true );
 			$product   = wc_get_product( $cart_item['product_id'] );
 			if ( ! $product->is_type( 'variable' ) && is_array( $post_meta ) && $post_meta['enable'] ) :
 				$time       = $post_meta['time'] == 1 ? null : $post_meta['time'];
@@ -229,7 +229,7 @@ class Product {
 				$price_html = get_woocommerce_currency_symbol() . $cart_item['line_subtotal'] . ' / ' . $time . ' ' . $type;
 				$trial      = null;
 				$start_date = null;
-				$has_trial  = Helper::Check_Trial( $cart_item['product_id'] );
+				$has_trial  = Helper::check_trial( $cart_item['product_id'] );
 				if ( ! empty( $post_meta['trial_time'] ) && $post_meta['trial_time'] > 0 && $has_trial ) {
 					$trial = $post_meta['trial_time'] . ' ' . Helper::get_typos( $post_meta['trial_time'], $post_meta['trial_type'] );
 				}

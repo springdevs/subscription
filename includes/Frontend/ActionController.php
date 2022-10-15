@@ -4,6 +4,7 @@
 namespace SpringDevs\Subscription\Frontend;
 
 use SpringDevs\Subscription\Illuminate\Action;
+use SpringDevs\Subscription\Illuminate\Helper;
 
 /**
  * Class ActionController
@@ -30,58 +31,40 @@ class ActionController {
 		if ( $action == 'renew' ) {
 			$this->RenewProduct( $subscrpt_id );
 		} elseif ( $action == 'early-renew' ) {
-			$post_meta = get_post_meta( $subscrpt_id, '_subscrpt_order_general', true );
-			$data      = array(
-				'post'    => $subscrpt_id,
-				'product' => $post_meta['product_id'],
-			);
-			if ( isset( $post_meta['variation_id'] ) ) {
-				$data['variation'] = $post_meta['variation_id'];
-			}
-			Action::status( 'renew', get_current_user_id(), $data );
+			Helper::renew( $subscrpt_id );
 		} elseif ( $action == 'renew-on' ) {
 			update_post_meta( $subscrpt_id, '_subscrpt_auto_renew', 1 );
 		} elseif ( $action == 'renew-off' ) {
 			update_post_meta( $subscrpt_id, '_subscrpt_auto_renew', 0 );
 		} else {
-			$post_meta = get_post_meta( $subscrpt_id, '_subscrpt_order_general', true );
 			if ( $action == 'cancelled' ) {
-				$product_meta = get_post_meta( $post_meta['product_id'], 'subscrpt_general', true );
-				if ( $product_meta['user_cancell'] == 'no' ) {
+				$user_cancell = get_post_meta( $subscrpt_id, '_subscrpt_user_cancell', true );
+				if ( $user_cancell == 'no' ) {
 					return;
 				}
 			}
-			wp_update_post(
-				array(
-					'ID'          => $subscrpt_id,
-					'post_status' => $action,
-				)
-			);
-			$data = array(
-				'post'    => $subscrpt_id,
-				'product' => $post_meta['product_id'],
-			);
-			if ( isset( $post_meta['variation_id'] ) ) {
-				$data['variation'] = $post_meta['variation_id'];
-			}
-			Action::status( $action, get_current_user_id(), $data );
+			Action::status( $action, $subscrpt_id );
 		}
 		echo ( "<script>location.href = '" . get_permalink( wc_get_page_id( 'myaccount' ) ) . 'view-subscrpt/' . $subscrpt_id . "';</script>" );
 	}
 
 	public function RenewProduct( $subscrpt_id ) {
-		$post_meta    = get_post_meta( $subscrpt_id, '_subscrpt_order_general', true );
+		$post_meta    = get_post_meta( $subscrpt_id, '_order_subscrpt_meta', true );
+		$product_id    = get_post_meta( $subscrpt_id, '_subscrpt_product_id', true );
+
 		$variation_id = 0;
 		if ( isset( $post_meta['variation_id'] ) ) {
 			$variation_id = $post_meta['variation_id'];
 		}
+
 		WC()->cart->add_to_cart(
-			$post_meta['product_id'],
+			$product_id,
 			1,
 			$variation_id,
 			array(),
 			array( 'renew_subscrpt' => true )
 		);
+
 		wc_add_notice( __( 'Product added to cart', 'sdevs_subscrpt' ), 'success' );
 		$this->redirect( wc_get_cart_url() );
 	}

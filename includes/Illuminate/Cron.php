@@ -14,22 +14,27 @@ class Cron {
 	}
 
 	public function daily_cron_task() {
-		$active_items = get_user_meta( get_current_user_id(), '_subscrpt_active_items', true );
-		if ( ! is_array( $active_items ) ) {
-			$active_items = array();
-		}
-		foreach ( $active_items as $active_item ) {
-			$post_meta = get_post_meta( $active_item['post'], '_subscrpt_order_general', true );
+		$args = array(
+			'post_type' => 'subscrpt_order',
+			'post_status' => "active",
+			'fields' => 'ids',
+			'author' => get_current_user_id()
+		);
+
+		$active_subscriptions = get_posts($args);
+
+		foreach ( $active_subscriptions as $subscription ) {
+			$post_meta = get_post_meta( $subscription, '_order_subscrpt_meta', true );
 			if ( time() >= $post_meta['next_date'] || ( $post_meta['trial'] != null && time() >= $post_meta['start_date'] ) ) {
 				wp_update_post(
 					array(
-						'ID'          => $post_meta['post'],
+						'ID'          => $subscription,
 						'post_type'   => 'subscrpt_order',
 						'post_status' => 'expired',
 					)
 				);
-				Action::status( 'expired', get_current_user_id(), $active_item );
-				do_action( 'subscrpt_cron_expired', $active_item );
+				
+				Action::write_comment( 'expired', $subscription );
 			}
 		}
 	}

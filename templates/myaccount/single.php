@@ -3,8 +3,10 @@
 /**
  * Single subscription page
  *
- * This template can be overridden by copying it to yourtheme/simple-booking/myaccount/single-subscrpt.php
+ * This template can be overridden by copying it to yourtheme/subscription/myaccount/single.php
  */
+
+use SpringDevs\Subscription\Illuminate\Helper;
 
 if ( ! isset( $id ) ) {
 	return;
@@ -15,10 +17,6 @@ if ( ! get_the_title( $id ) ) {
 }
 
 do_action( 'before_single_subscrpt_content' );
-$post_meta = get_post_meta( $id, '_subscrpt_order_general', true );
-$order     = wc_get_order( $post_meta['order_id'] );
-$product   = wc_get_product( $post_meta['product_id'] );
-$status    = get_post_status( $id );
 ?>
 <style>
 	.auto-renew-on,
@@ -64,17 +62,12 @@ $status    = get_post_status( $id );
 		</tr>
 		<?php
 		$subscrpt_nonce = wp_create_nonce( 'subscrpt_nonce' );
-		if ( isset( $post_meta['variation_id'] ) ) {
-			$product_meta = get_post_meta( $post_meta['variation_id'], 'subscrpt_general', true );
-		} else {
-			$product_meta = $product->get_meta( 'subscrpt_general', true );
-		}
 		?>
 		<?php if ( $status != 'cancelled' ) : ?>
 			<tr>
 				<td><?php _e( 'Actions', 'sdevs_subscrpt' ); ?></td>
 				<td>
-					<?php if ( ( $status == 'pending' || $status == 'active' || $status == 'on_hold' ) && $product_meta['user_cancell'] == 'yes' ) : ?>
+					<?php if ( ( $status == 'pending' || $status == 'active' || $status == 'on_hold' ) && $user_cancell == 'yes' ) : ?>
 						<a href="<?php echo esc_js( get_permalink( wc_get_page_id( 'myaccount' ) ) . 'view-subscrpt/' . $id . '?subscrpt_id=' . $id . '&action=cancelled&wpnonce=' . $subscrpt_nonce ); ?>" class="button cancel">Cancel</a>
 					<?php elseif ( trim( $status ) == trim( 'pe_cancelled' ) ) : ?>
 						<a href="" class="button subscription_renewal_early"><?php _e( 'Reactive', 'sdevs_subscrpt' ); ?></a>
@@ -103,21 +96,22 @@ $status    = get_post_status( $id );
 	</thead>
 	<tbody>
 		<?php
-		$product_name       = apply_filters( 'subscrpt_filter_product_name', $product->get_name(), $post_meta );
-		$product_link       = apply_filters( 'subscrpt_filter_product_permalink', $product->get_permalink(), $post_meta );
-		$time               = $product_meta['time'] == 1 ? null : $product_meta['time'];
-		$type               = subscrpt_get_typos( $product_meta['time'], $product_meta['type'] );
-		$product_price_html = wc_price( $product->get_price() * $post_meta['qty'] ) . ' / ' . $time . ' ' . $type;
+		$product_name       = $order_item->get_name();
+		$product_link       = get_permalink( $order_item->get_product_id() );
+		$order_item_meta	= $order_item->get_meta( '_subscrpt_meta', true );
+		$time               = $order_item_meta['time'] == 1 ? null : $order_item_meta['time'];
+		$type               = subscrpt_get_typos( $order_item_meta['time'], $order_item_meta['type'] );
+		$product_price_html = Helper::format_price_with_order_item( $order_item->get_total(), $order_item->get_id() );
 		?>
 		<tr class="order_item">
 			<td class="product-name">
 				<a href="<?php echo esc_html( $product_link ); ?>"><?php echo esc_html( $product_name ); ?></a>
-				<strong class="product-quantity">× <?php echo esc_html( $post_meta['qty'] ); ?></strong>
+				<strong class="product-quantity">× <?php echo esc_html( $order_item->get_quantity() ); ?></strong>
 			</td>
 			<td class="product-total">
 				<span class="woocommerce-Price-amount amount">
 					<?php
-					echo wp_kses_post( wc_price( $product->get_price() ) . ' / ' . $time . ' ' . $type );
+					echo wp_kses_post( Helper::format_price_with_order_item( $order_item->get_total(), $order_item->get_id() ) );
 					?>
 				</span>
 			</td>
@@ -127,7 +121,7 @@ $status    = get_post_status( $id );
 		<tr>
 			<th scope="row"><?php _e( 'Subtotal', 'sdevs_subscrpt' ); ?>:</th>
 			<td>
-				<span class="woocommerce-Price-amount amount"><?php echo wc_price( $product->get_price() * $post_meta['qty'] ); ?></span>
+				<span class="woocommerce-Price-amount amount"><?php echo wc_price( $order_item->get_subtotal(), array( 'currency' => $order->get_currency() ) ); ?></span>
 			</td>
 		</tr>
 		<tr>

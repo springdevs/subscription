@@ -24,7 +24,7 @@ class Product {
         $screen = get_current_screen();
         $value  = 'no';
         if ( $screen->parent_base == 'edit' ) {
-            $post_meta = get_post_meta( get_the_ID(), 'subscrpt_general', true );
+            $post_meta = get_post_meta( get_the_ID(), '_subscrpt_meta', true );
             $value     = ! empty( $post_meta ) && $post_meta['enable'] ? 'yes' : 'no';
         }
 
@@ -46,10 +46,10 @@ class Product {
                 do_action( 'subscrpt_simple_pro_fields', get_the_ID() );
             } else {
                 $timing_types          = array(
-                    'days'   => 'Daily',
-                    'weeks'  => 'Weekly',
-                    'months' => 'Monthly',
-                    'years'  => 'Yearly',
+                    'days'   => __('Daily', 'sdevs_subscrpt'),
+                    'weeks'  => __('Weekly', 'sdevs_subscrpt'),
+                    'months' => __('Monthly', 'sdevs_subscrpt'),
+                    'years'  => __('Yearly', 'sdevs_subscrpt'),
                 );
                 $subscrpt_timing       = null;
                 $subscrpt_cart_txt     = 'subscribe';
@@ -57,7 +57,7 @@ class Product {
 
                 $screen = get_current_screen();
                 if ( $screen->parent_base == 'edit' ) {
-                    $post_meta = get_post_meta( get_the_ID(), 'subscrpt_general', true );
+                    $post_meta = get_post_meta( get_the_ID(), '_subscrpt_meta', true );
                     if ( ! empty( $post_meta ) && is_array( $post_meta ) ) {
                         $subscrpt_timing       = $post_meta['type'];
                         $subscrpt_cart_txt     = $post_meta['cart_txt'];
@@ -94,6 +94,7 @@ class Product {
             'cart_txt'     => $subscrpt_cart_txt,
             'user_cancell' => $subscrpt_user_cancell,
         );
-        update_post_meta( $post_id, 'subscrpt_general', $data );
+
+        update_post_meta( $post_id, '_subscrpt_meta', $data );
     }
 }

@@ -24,7 +24,13 @@ class Subscriptions {
 		add_action( 'admin_footer-post-new.php', array( $this, 'some_scripts' ) );
 		add_action( 'save_post', array( $this, 'save_subscrpt_order' ) );
 		add_filter( 'woocommerce_order_item_get_formatted_meta_data', array( $this, 'remove_order_meta' ), 10, 1 );
+		add_filter( 'bulk_actions-edit-subscrpt_order', array( $this, 'remove_bulk_actions' ) );
 	}
+
+	public function remove_bulk_actions( $actions ){
+        unset( $actions[ 'edit' ] );
+        return $actions;
+    }
 
 	public function edit_bulk_actions( $options ) {
 		unset( $options['trash'] );
@@ -64,11 +70,12 @@ class Subscriptions {
 		$columns['subscrpt_next_date']  = __( 'Next Date', 'sdevs_subscrpt' );
 		$columns['subscrpt_status']     = __( 'Status', 'sdevs_subscrpt' );
 		unset( $columns['date'] );
+		unset( $columns['cb'] );
 		return $columns;
 	}
 
 	public function add_custom_columns_data( $column, $post_id ) {
-		$post_meta = get_post_meta( $post_id, '_subscrpt_order_general', true );
+		$post_meta = get_post_meta( $post_id, '_order_subscrpt_meta', true );
 		$order     = wc_get_order( $post_meta['order_id'] );
 		if ( $order ) {
 			if ( $column == 'subscrpt_start_date' ) {
@@ -143,8 +150,11 @@ class Subscriptions {
 	}
 
 	public function subscrpt_order_history() {
-		$order_histories = get_post_meta( get_the_ID(), '_subscrpt_order_history', true );
-		rsort( $order_histories );
+		$subscription_id = get_the_ID();
+		global $wpdb;
+		$table_name = $wpdb->prefix . 'subscrpt_histories';
+		$order_histories = $wpdb->get_results("SELECT * FROM ${table_name} WHERE subscription_id=${subscription_id}");
+
 		include 'views/order-history.php';
 	}
 
@@ -186,7 +196,7 @@ class Subscriptions {
 	}
 
 	public function subscrpt_customer_info() {
-		$post_meta = get_post_meta( get_the_ID(), '_subscrpt_order_general', true );
+		$post_meta = get_post_meta( get_the_ID(), '_order_subscrpt_meta', true );
 		$order     = wc_get_order( $post_meta['order_id'] );
 		if ( ! $order ) {
 			return;
@@ -195,18 +205,12 @@ class Subscriptions {
 	}
 
 	public function subscrpt_order_info() {
-		$post_meta  = get_post_meta( get_the_ID(), '_subscrpt_order_general', true );
-		$order_item = null;
+		$post_meta  = get_post_meta( get_the_ID(), '_order_subscrpt_meta', true );
 		$order      = wc_get_order( $post_meta['order_id'] );
 		if ( ! $order ) {
 			return;
 		}
-		foreach ( $order->get_items() as $cart_item ) {
-			if ( $cart_item['product_id'] == $post_meta['product_id'] ) {
-				$order_item = $cart_item;
-				break;
-			}
-		}
+		$order_item = $order->get_item( $post_meta['order_item_id'] );
 		include 'views/subscription-order-info.php';
 	}
 
@@ -262,18 +266,12 @@ class Subscriptions {
 			)
 		);
 
-		$post_meta = get_post_meta( $post_id, '_subscrpt_order_general', true );
+		$post_meta = get_post_meta( $post_id, '_order_subscrpt_meta', true );
 		if ( $action === 'active' ) {
 			$order = wc_get_order( $post_meta['order_id'] );
 			$order->update_status( 'completed' );
 		}
-		$data = array(
-			'post'    => $post_id,
-			'product' => $post_meta['product_id'],
-		);
-		if ( isset( $post_meta['variation_id'] ) ) {
-			$data['variation'] = $post_meta['variation_id'];
-		}
-		Action::status( $action, sanitize_text_field( $_POST['post_author'] ), $data );
+		
+		Action::status( $action, $post_id );
 	}
 }

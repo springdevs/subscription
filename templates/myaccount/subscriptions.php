@@ -6,6 +6,8 @@
  * This template can be overridden by copying it to yourtheme/simple-booking/myaccount/subscriptions.php
  */
 
+use SpringDevs\Subscription\Illuminate\Helper;
+
 $paged = ( get_query_var( 'paged' ) ) ? get_query_var( 'paged' ) : 1;
 
 $args = array(
@@ -35,21 +37,14 @@ $postslist = new WP_Query( $args );
 		if ( $postslist->have_posts() ) :
 			while ( $postslist->have_posts() ) :
 				$postslist->the_post();
-				$post_meta = get_post_meta( get_the_ID(), '_subscrpt_order_general', true );
-				$product   = wc_get_product( $post_meta['product_id'] );
-				if ( isset( $post_meta['variation_id'] ) ) {
-					$product_meta = get_post_meta( $post_meta['variation_id'], 'subscrpt_general', true );
-				} else {
-					$product_meta = $product->get_meta( 'subscrpt_general', true );
-				}
-				$product_name       = get_the_title( $post_meta['product_id'] );
-				$product_name       = apply_filters( 'subscrpt_filter_product_name', $product_name, $post_meta );
-				$product_link       = get_the_permalink( $post_meta['product_id'] );
-				$product_link       = apply_filters( 'subscrpt_filter_product_permalink', $product_link, $post_meta );
-				$time               = $product_meta['time'] == 1 ? null : $product_meta['time'];
-				$type               = subscrpt_get_typos( $product_meta['time'], $product_meta['type'] );
-				$product_price_html = wc_price( $product->get_price() * $post_meta['qty'] ) . ' / ' . $time . ' ' . $type;
-				$product_price_html = apply_filters( 'subscrpt_price_recurring', $product_price_html, $product, wc_get_order( $post_meta['order_id'] ), $post_meta['qty'] );
+				$post_meta = get_post_meta( get_the_ID(), '_order_subscrpt_meta', true );
+				$product_id = get_post_meta( get_the_ID(), '_subscrpt_product_id', true );
+				$order = wc_get_order( $post_meta['order_id'] );
+				$order_item = $order->get_item( $post_meta['order_item_id'] );
+
+				$product_name       = $order_item->get_name();
+				$product_link       = get_the_permalink( $product_id );
+				$product_price_html = Helper::format_price_with_order_item( $order_item->get_total(), $order_item->get_id() );
 				?>
 				<tr>
 					<td><?php the_ID(); ?></td>
@@ -62,7 +57,7 @@ $postslist = new WP_Query( $args );
 					<?php endif; ?>
 					<td><?php echo wp_kses_post( $product_price_html ); ?></td>
 					<td>
-						<a href="<?php echo get_permalink( wc_get_page_id( 'myaccount' ) ) . 'view-subscrpt/' . get_the_ID(); ?>" class="woocommerce-button button view">View</a>
+						<a href="<?php echo get_permalink( wc_get_page_id( 'myaccount' ) ) . 'view-subscription/' . get_the_ID(); ?>" class="woocommerce-button button view">View</a>
 					</td>
 				</tr>
 				<?php

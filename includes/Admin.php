@@ -28,12 +28,12 @@ class Admin {
 	public function __construct() {
 		$this->dispatch_actions();
 		new Required();
-		new IlluminateSubscriptions();
+		new Illuminate();
+		// new IlluminateSubscriptions();
 		new Cron();
 		new Menu();
 		new Product();
 		new Subscriptions();
-		new RegisterPostStatus();
 		new Order();
 		new AdminOrder();
 		new Comments();

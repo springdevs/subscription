@@ -2,6 +2,8 @@
 
 namespace SpringDevs\Subscription\Frontend;
 
+use SpringDevs\Subscription\Illuminate\Helper;
+
 /**
  * Downloadable class
  * control Download feature - woocommerce
@@ -14,43 +16,10 @@ class Downloadable {
 	}
 
 	public function check_download_items( $downloads ) {
-		$expired_items   = get_user_meta( get_current_user_id(), '_subscrpt_expired_items', true );
-		$pending_items   = get_user_meta( get_current_user_id(), '_subscrpt_pending_items', true );
-		$cancelled_items = get_user_meta( get_current_user_id(), '_subscrpt_cancelled_items', true );
-
-		if ( ! is_array( $expired_items ) ) {
-			$expired_items = array();
-		}
-		if ( ! is_array( $pending_items ) ) {
-			$pending_items = array();
-		}
-		if ( ! is_array( $cancelled_items ) ) {
-			$cancelled_items = array();
-		}
-
-		$expired_products = array();
-		foreach ( $expired_items as $expired_item ) {
-			$expired_products[] = $expired_item['product'];
-		}
-
-		$pending_products = array();
-		foreach ( $pending_items as $pending_item ) {
-			$pending_products[] = $pending_item['product'];
-		}
-
-		$cancelled_products = array();
-		foreach ( $cancelled_items as $cancelled_item ) {
-			$cancelled_products[] = $cancelled_item['product'];
-		}
-
 		foreach ( $downloads as $key => $download ) {
-			if ( in_array( $download['product_id'], $expired_products ) ) {
-				unset( $downloads[ $key ] );
-			}
-			if ( in_array( $download['product_id'], $pending_products ) ) {
-				unset( $downloads[ $key ] );
-			}
-			if ( in_array( $download['product_id'], $cancelled_products ) ) {
+			$unactive_items = Helper::subscription_exists( $download['product_id'], array( 'expired', 'cancelled', 'pending' ) );
+
+			if ( $unactive_items ) {
 				unset( $downloads[ $key ] );
 			}
 		}
