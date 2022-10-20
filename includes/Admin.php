@@ -13,8 +13,6 @@ use SpringDevs\Subscription\Illuminate\Comments;
 use SpringDevs\Subscription\Illuminate\Cron;
 use SpringDevs\Subscription\Illuminate\Email;
 use SpringDevs\Subscription\Illuminate\Order;
-use SpringDevs\Subscription\Illuminate\RegisterPostStatus;
-use SpringDevs\Subscription\Illuminate\Subscriptions as IlluminateSubscriptions;
 
 /**
  * The admin class
@@ -29,7 +27,6 @@ class Admin {
 		$this->dispatch_actions();
 		new Required();
 		new Illuminate();
-		// new IlluminateSubscriptions();
 		new Cron();
 		new Menu();
 		new Product();

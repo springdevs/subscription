@@ -6,13 +6,9 @@ use SpringDevs\Subscription\Installer;
 
 class Upgrade
 {
-    public function __construct() {
-        add_action('upgrader_process_complete', array( $this, 'upgrade' ), 10, 2);
-    }
-
-    public function upgrade( $upgrader, array $options )
+    public function run()
     {
-        if ( $options === 'plugin' && in_array( plugin_basename( SUBSCRPT_FILE ), $options['plugins'] ) && version_compare( SUBSCRPT_VERSION, get_option('subscrpt_version'), '>' ) ) {
+        if ( version_compare( SUBSCRPT_VERSION, get_option('subscrpt_version'), '>' ) ) {
 
             // create histories table
             $installer = new Installer();
@@ -74,35 +70,38 @@ class Upgrade
         }
 
         foreach ($histories as $history) {
-            $history_meta = unserialize( $history->meta_value );
-            $order = wc_get_order($history_meta['order_id']);
-            $product_meta = get_post_meta( $history_meta['product_id'], '_subscrpt_meta', true );
-            $order = wc_get_order($history_meta['order_id']);
+            $histories_meta = unserialize( $history->meta_value );
 
-            if ( $order ) {
-                $order_item_id = 0;
-                foreach ($order->get_items() as $order_item) {
-                    if ( $order_item->get_product_id() == $history_meta['product_id'] ) {
-                        $order_item_id = $order_item->get_id();
-                        wc_update_order_item_meta( $order_item->get_id(), '_subscrpt_meta', array(
-                            'time'                =>  $product_meta['time'],
-                            'type'                =>  $product_meta['type'],
-                            'trial'               =>  $history_meta['trial'],
-                            'start_date'          =>  $history_meta['start_date'],
-                            'next_date'           => $history_meta['next_date'],
-                        ) );
+            foreach ($histories_meta as $history_meta) {
+
+                $order = wc_get_order($history_meta['order_id']);
+                $product_meta = get_post_meta( $history_meta['product_id'], '_subscrpt_meta', true );
+                $order = wc_get_order($history_meta['order_id']);
+
+                if ( $order ) {
+                    $order_item_id = 0;
+                    foreach ($order->get_items() as $order_item) {
+                        if ( $order_item->get_product_id() == $history_meta['product_id'] ) {
+                            $order_item_id = $order_item->get_id();
+                            wc_update_order_item_meta( $order_item->get_id(), '_subscrpt_meta', array(
+                                'time'                =>  $product_meta['time'],
+                                'type'                =>  $product_meta['type'],
+                                'trial'               =>  $history_meta['trial'],
+                                'start_date'          =>  $history_meta['start_date'],
+                                'next_date'           => $history_meta['next_date'],
+                            ) );
+                        }
                     }
+
+                    $history_table = $wpdb->prefix . 'subscrpt_histories';
+                    $wpdb->insert( $history_table, array(
+                        'subscription_id'     => $history_meta['post_id'],
+                        'order_id'            => $history_meta['order_id'],
+                        'order_item_id'       => $order_item_id,
+                        'stat'                => $history_meta['stats']
+                    ) );
                 }
-
-                $history_table = $wpdb->prefix . 'subscrpt_histories';
-                $wpdb->insert( $history_table, array(
-                    'subscription_id'     => $history_meta['post_id'],
-                    'order_id'            => $history_meta['order_id'],
-                    'order_item_id'       => $order_item_id,
-                    'stat'                => $history_meta['stats']
-                ) );
             }
-
 
             delete_post_meta( $history->post_id, "_subscrpt_order_history");
         }

@@ -195,9 +195,18 @@ final class Sdevs_Subscription {
 	 */
 	public function init_hooks() {
 		add_action( 'init', array( $this, 'init_classes' ) );
-
-		// Localize our plugin
 		add_action( 'init', array( $this, 'localization_setup' ) );
+		add_action( 'init', array( $this, 'run_update' ) );
+	}
+
+	/**
+	 * Need to do some actions after update plugin
+	 *
+	 * @return void
+	 */
+	public function run_update() {
+		$upgrade = new \SpringDevs\Subscription\Upgrade();
+		$upgrade->run();
 	}
 
 	/**
