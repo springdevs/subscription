@@ -29,7 +29,7 @@ class Upgrade
         $product_meta_query = "SELECT * FROM ".$wpdb->prefix."postmeta WHERE meta_key='subscrpt_general'";
         $products_meta = $wpdb->get_results($product_meta_query);
         foreach ($products_meta as $product_meta) {
-            update_post_meta( $product_meta->post_id, "_subscrpt_meta", $product_meta->meta_value );
+            update_post_meta( $product_meta->post_id, "_subscrpt_meta", unserialize($product_meta->meta_value) );
             delete_post_meta( $product_meta->post_id, "subscrpt_general");
         }
     }
