@@ -18,11 +18,6 @@ class Order {
 	}
 
 	public function format_order_price( $subtotal, $item, $order ) {
-		$product = wc_get_product( $item['product_id'] );
-		if ( $product->is_type( 'variable' ) ) {
-			return $subtotal;
-		}
-
 		$price_html = Helper::format_price_with_order_item(
 			$item->get_subtotal(),
 			$item->get_id(),

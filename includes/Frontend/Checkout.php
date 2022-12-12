@@ -18,28 +18,17 @@ class Checkout
         // grab the post status based on order status
         $post_status              = 'active';
         switch ( $order->get_status() ) {
+            case 'on-hold':
             case 'pending';
                 $post_status = 'pending';
                 break;
 
-            case 'on-hold';
-                $post_status = 'pending';
-                break;
-
-            case 'completed';
-                $post_status = 'active';
-                break;
-
+            case 'failed':
             case 'cancelled';
                 $post_status = 'cancelled';
                 break;
 
-            case 'failed';
-                $post_status = 'cancelled';
-                break;
-
             default;
-                $post_status = 'active';
                 break;
         }
 
@@ -49,7 +38,7 @@ class Checkout
             $product = wc_get_product( $order_item['product_id'] );
 
             if ( ! $product->is_type( 'variable' ) ) {
-                $post_meta       = $product->get_meta( '_subscrpt_meta', true );
+                $post_meta       = $product->get_meta( '_subscrpt_meta');
 
                 if ( is_array( $post_meta ) && $post_meta['enable'] ) {
                     $is_renew            = isset( $order_item['_renew_subscrpt'] );
@@ -138,6 +127,7 @@ class Checkout
                 }
             }
 
+            do_action('subscrpt_product_checkout', $order, $order_item, $post_status);
         }
     }
 }
