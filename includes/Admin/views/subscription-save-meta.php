@@ -1,9 +1,9 @@
-		<p class="subscrpt_sub_box">
+<p class="subscrpt_sub_box">
 			<select id="subscrpt_order_type" name="subscrpt_order_action">
-				<option value=""><?php _e( 'choose action', 'sdevs_subscrpt' ); ?></option>
+				<option value=""><?php esc_html_e( 'Choose Action', 'sdevs_subscrpt' ); ?></option>
 				<?php foreach ( $actions as $action ) : ?>
 					<option value="<?php echo esc_html( $action['value'] ); ?>" 
-											  <?php
+												<?php
 												if ( $action['value'] == $status ) {
 													echo 'selected';}
 												?>

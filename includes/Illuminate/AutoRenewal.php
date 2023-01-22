@@ -2,8 +2,6 @@
 
 namespace SpringDevs\Subscription\Illuminate;
 
-use WC_Data_Exception;
-
 /**
  * AutoRenewal [ helper class ]
  *
@@ -11,52 +9,58 @@ use WC_Data_Exception;
  */
 class AutoRenewal {
 
+	/**
+	 * Initialize the class
+	 */
 	public function __construct() {
-		add_action( 'subscrpt_subscription_expired', array( $this, 'product_expired_action' ), 10, 4 );
+		add_action( 'subscrpt_subscription_expired', array( $this, 'product_expired_action' ) );
 	}
 
 	/**
-	 * @throws WC_Data_Exception
+	 * Create renewal order when subscription expired.
+	 *
+	 * @param Int $subscription_id Subscription ID.
 	 */
-	public function product_expired_action( $subscription_id, $early_renew = false ) {
+	public function product_expired_action( $subscription_id ) {
 		$is_auto_renew = get_post_meta( $subscription_id, '_subscrpt_auto_renew', true );
 		if ( get_option( 'subscrpt_manual_renew', '1' ) != '1' && $is_auto_renew == 0 ) {
 			return;
 		}
 
-		$post_meta = get_post_meta( $subscription_id, '_order_subscrpt_meta', true );
+		$early_renew = ! ( get_option( 'subscrpt_early_renew', '' ) === '' );
+		$post_meta   = get_post_meta( $subscription_id, '_order_subscrpt_meta', true );
 
 		$original_order_id = $post_meta['order_id'];
 		$old_order         = wc_get_order( $post_meta['order_id'] );
-		if ( ! $old_order || $old_order->get_status() != 'completed' ) {
+		if ( ! $old_order || 'completed' !== $old_order->get_status() ) {
 			return;
 		}
 
-		$user_id = $old_order->get_user_id();
-		$new_order    = wc_create_order(
+		$user_id   = $old_order->get_user_id();
+		$new_order = wc_create_order(
 			array(
 				'customer_id' => $user_id,
 				'parent'      => $post_meta['order_id'],
 			)
 		);
-		$order_id     = $new_order->get_id();
+		$order_id  = $new_order->get_id();
 
-		$product_id	  = get_post_meta( $subscription_id, '_subscrpt_product_id', true );
-		$product      = wc_get_product( $product_id );
-		if ( !$product || $product === null ) {
+		$product_id = get_post_meta( $subscription_id, '_subscrpt_product_id', true );
+		$product    = wc_get_product( $product_id );
+		if ( ! $product || null === $product ) {
 			return;
 		}
 
 		$order_item = $old_order->get_item( $post_meta['order_item_id'] );
 
-		if ( $product->is_type('simple') ) {
+		if ( $product->is_type( 'simple' ) ) {
 			$new_order_item_id = $new_order->add_product(
 				$product,
 				$order_item->get_quantity(),
 				array(
-					'name'         => $order_item->get_name(),
-					'subtotal' 	   => $order_item->get_subtotal(),
-					'total'		   => $order_item->get_total()
+					'name'     => $order_item->get_name(),
+					'subtotal' => $order_item->get_subtotal(),
+					'total'    => $order_item->get_total(),
 				)
 			);
 
@@ -72,24 +76,31 @@ class AutoRenewal {
 			}
 			update_post_meta( $subscription_id, '_order_subscrpt_meta', $post_meta );
 
-			wc_update_order_item_meta( $new_order_item_id, '_subscrpt_meta', array(
-				'time'                =>  $product_meta['time'],
-				'type'                =>  $product_meta['type'],
-				'trial'               =>  null,
-				'start_date'          =>  $product_meta['start_date'],
-				'next_date'           =>  $post_meta['next_date']
-			) );
+			wc_update_order_item_meta(
+				$new_order_item_id,
+				'_subscrpt_meta',
+				array(
+					'time'       => $product_meta['time'],
+					'type'       => $product_meta['type'],
+					'trial'      => null,
+					'start_date' => $product_meta['start_date'],
+					'next_date'  => $post_meta['next_date'],
+				)
+			);
 
 			global $wpdb;
 			$history_table = $wpdb->prefix . 'subscrpt_histories';
-			$wpdb->insert( $history_table, array(
-				'subscription_id'     => $subscription_id,
-				'order_id'            => $new_order->get_id(),
-				'order_item_id'       => $new_order_item_id,
-				'stat'                => 'Renewal Order'
-			) );
+			$wpdb->insert(
+				$history_table,
+				array(
+					'subscription_id' => $subscription_id,
+					'order_id'        => $new_order->get_id(),
+					'order_item_id'   => $new_order_item_id,
+					'stat'            => 'Renewal Order',
+				)
+			);
 		} else {
-			do_action('subscrpt_renewal_order_add_product', $subscription_id, $new_order);
+			do_action( 'subscrpt_renewal_order_add_product', $subscription_id, $new_order );
 		}
 
 		update_post_meta( $order_id, '_order_key', 'wc_' . apply_filters( 'woocommerce_generate_order_key', uniqid( 'order_' ) ) );

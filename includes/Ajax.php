@@ -16,6 +16,9 @@ class Ajax {
 		add_action( 'wp_ajax_activate_woocommerce_plugin', array( $this, 'activate_woocommerce_plugin' ) );
 	}
 
+	/**
+	 * Install the WooCommerce Plugin.
+	 */
 	public function install_woocommerce_plugin() {
 		include ABSPATH . 'wp-admin/includes/plugin-install.php';
 		include ABSPATH . 'wp-admin/includes/class-wp-upgrader.php';
@@ -56,7 +59,7 @@ class Ajax {
 			wp_die( $api );
 		}
 
-		$title = sprintf( __( 'Installing Plugin: %s', "sdevs_subscrpt" ), $api->name . ' ' . $api->version );
+		$title = sprintf( __( 'Installing Plugin: %s', 'sdevs_subscrpt' ), $api->name . ' ' . $api->version );
 		$nonce = 'install-plugin_' . $plugin;
 		$url   = 'update.php?action=install-plugin&plugin=' . urlencode( $plugin );
 
@@ -69,6 +72,9 @@ class Ajax {
 		);
 	}
 
+	/**
+	 * Active WooComerce Plugin.
+	 */
 	public function activate_woocommerce_plugin() {
 		activate_plugin( 'woocommerce/woocommerce.php' );
 		wp_send_json(

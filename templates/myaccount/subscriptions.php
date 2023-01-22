@@ -1,5 +1,4 @@
 <?php
-
 /**
  * Subscriptions Table
  *
@@ -8,12 +7,12 @@
 
 use SpringDevs\Subscription\Illuminate\Helper;
 
-$paged = ( get_query_var( 'paged' ) ) ? get_query_var( 'paged' ) : 1;
+$page_num = ( get_query_var( 'paged' ) ) ? get_query_var( 'paged' ) : 1;
 
 $args = array(
 	'author'         => get_current_user_id(),
 	'posts_per_page' => 10,
-	'paged'          => $paged,
+	'paged'          => $page_num,
 	'post_type'      => 'subscrpt_order',
 	'post_status'    => array( 'pending', 'active', 'on_hold', 'cancelled', 'expired', 'pe_cancelled' ),
 );
@@ -37,18 +36,19 @@ $postslist = new WP_Query( $args );
 		if ( $postslist->have_posts() ) :
 			while ( $postslist->have_posts() ) :
 				$postslist->the_post();
-				$post_meta = get_post_meta( get_the_ID(), '_order_subscrpt_meta', true );
+				$post_meta  = get_post_meta( get_the_ID(), '_order_subscrpt_meta', true );
 				$product_id = get_post_meta( get_the_ID(), '_subscrpt_product_id', true );
-				$order = wc_get_order( $post_meta['order_id'] );
+				$order      = wc_get_order( $post_meta['order_id'] );
 				$order_item = $order->get_item( $post_meta['order_item_id'] );
 
+				$post_status_object = get_post_status_object( get_post_status() );
 				$product_name       = $order_item->get_name();
 				$product_link       = get_the_permalink( $product_id );
 				$product_price_html = Helper::format_price_with_order_item( $order_item->get_total(), $order_item->get_id() );
 				?>
 				<tr>
 					<td><?php the_ID(); ?></td>
-					<td><span class="subscrpt-<?php echo get_post_status(); ?>"><?php echo get_post_status(); ?></span></td>
+					<td><span class="subscrpt-<?php echo esc_attr( $post_status_object->name ); ?>"><?php echo esc_html( strlen( $post_status_object->label ) > 9 ? substr( $post_status_object->label, 0, 6 ) . '...' : $post_status_object->label ); ?></span></td>
 					<td><a href="<?php echo esc_html( $product_link ); ?>" target="_blank"><?php echo esc_html( $product_name ); ?></a></td>
 					<?php if ( $post_meta['trial'] == null ) : ?>
 						<td><?php echo date( 'F d, Y', $post_meta['next_date'] ); ?></td>
@@ -57,7 +57,7 @@ $postslist = new WP_Query( $args );
 					<?php endif; ?>
 					<td><?php echo wp_kses_post( $product_price_html ); ?></td>
 					<td>
-						<a href="<?php echo get_permalink( wc_get_page_id( 'myaccount' ) ) . 'view-subscription/' . get_the_ID(); ?>" class="woocommerce-button button view">View</a>
+						<a href="<?php echo esc_html( wc_get_endpoint_url( 'view-subscription', get_the_ID(), wc_get_page_permalink( 'myaccount' ) ) ); ?>" class="woocommerce-button button view">View</a>
 					</td>
 				</tr>
 				<?php

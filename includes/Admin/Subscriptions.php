@@ -11,6 +11,9 @@ use SpringDevs\Subscription\Illuminate\Action;
  */
 class Subscriptions {
 
+	/**
+	 * Initialize the class.
+	 */
 	public function __construct() {
 		add_action( 'admin_enqueue_scripts', array( $this, 'custom_enqueue_scripts' ) );
 		add_filter( 'post_row_actions', array( $this, 'post_row_actions' ), 10, 2 );
@@ -27,10 +30,10 @@ class Subscriptions {
 		add_filter( 'bulk_actions-edit-subscrpt_order', array( $this, 'remove_bulk_actions' ) );
 	}
 
-	public function remove_bulk_actions( $actions ){
-        unset( $actions[ 'edit' ] );
-        return $actions;
-    }
+	public function remove_bulk_actions( $actions ) {
+		unset( $actions['edit'] );
+		return $actions;
+	}
 
 	public function edit_bulk_actions( $options ) {
 		unset( $options['trash'] );
@@ -100,9 +103,11 @@ class Subscriptions {
 		}
 	}
 
+	/**
+	 * Create metaboxes for admin subscriptions.
+	 */
 	public function create_meta_boxes() {
 		remove_meta_box( 'submitdiv', 'subscrpt_order', 'side' );
-		// Save Data
 		add_meta_box(
 			'subscrpt_order_save_post',
 			__( 'Subscription Action', 'sdevs_subscrpt' ),
@@ -152,8 +157,8 @@ class Subscriptions {
 	public function subscrpt_order_history() {
 		$subscription_id = get_the_ID();
 		global $wpdb;
-		$table_name = $wpdb->prefix . 'subscrpt_histories';
-		$order_histories = $wpdb->get_results("SELECT * FROM ${table_name} WHERE subscription_id=${subscription_id}");
+		$table_name      = $wpdb->prefix . 'subscrpt_histories';
+		$order_histories = $wpdb->get_results( "SELECT * FROM ${table_name} WHERE subscription_id=${subscription_id}" );
 
 		include 'views/order-history.php';
 	}
@@ -172,6 +177,9 @@ class Subscriptions {
 		endif;
 	}
 
+	/**
+	 * Save subscription HTML.
+	 */
 	public function subscrpt_order_save_post() {
 		$actions = array(
 			array(
@@ -185,6 +193,10 @@ class Subscriptions {
 			array(
 				'label' => __( 'Expire Subscription', 'sdevs_subscrpt' ),
 				'value' => 'expired',
+			),
+			array(
+				'label' => __( 'Pending Cancel Subscription', 'sdevs_subscrpt' ),
+				'value' => 'pe_cancelled',
 			),
 			array(
 				'label' => __( 'Cancel Subscription', 'sdevs_subscrpt' ),
@@ -205,8 +217,8 @@ class Subscriptions {
 	}
 
 	public function subscrpt_order_info() {
-		$post_meta  = get_post_meta( get_the_ID(), '_order_subscrpt_meta', true );
-		$order      = wc_get_order( $post_meta['order_id'] );
+		$post_meta = get_post_meta( get_the_ID(), '_order_subscrpt_meta', true );
+		$order     = wc_get_order( $post_meta['order_id'] );
 		if ( ! $order ) {
 			return;
 		}
@@ -271,7 +283,7 @@ class Subscriptions {
 			$order = wc_get_order( $post_meta['order_id'] );
 			$order->update_status( 'completed' );
 		}
-		
+
 		Action::status( $action, $post_id );
 	}
 }

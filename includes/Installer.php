@@ -34,6 +34,8 @@ class Installer {
 		if ( ! wp_next_scheduled( 'subscrpt_daily_cron' ) ) {
 			wp_schedule_event( time(), 'daily', 'subscrpt_daily_cron' );
 		}
+
+		update_option( 'subscrpt_manual_renew_cart_notice', 'Subscriptional product added to cart. Please complete the checkout to renew subscription.' );
 	}
 
 	/**
@@ -54,8 +56,7 @@ class Installer {
 	 *
 	 * @return void
 	 */
-	public function create_histories_table()
-	{
+	public function create_histories_table() {
 		global $wpdb;
 
 		$charset_collate = $wpdb->get_charset_collate();
@@ -70,6 +71,6 @@ class Installer {
                       PRIMARY KEY (`id`)
                     ) $charset_collate";
 
-		dbDelta($schema);
+		dbDelta( $schema );
 	}
 }

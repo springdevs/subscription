@@ -2,26 +2,24 @@
 
 namespace SpringDevs\Subscription\Illuminate;
 
-class Post
-{
-    public function __construct() {
-        add_action( 'init', array( $this, 'create_post_type' ) );
-    }
+class Post {
 
-    public function create_post_type()
-    {
-        $this->register_subscription_post_type();
-        $this->register_subscription_item_post_type();
+	public function __construct() {
+		add_action( 'init', array( $this, 'create_post_type' ) );
+	}
+
+	public function create_post_type() {
+		$this->register_subscription_post_type();
+		$this->register_subscription_item_post_type();
 		$this->register_post_status();
-    }
+	}
 
 
-    /**
-     * Register ``subscrpt_order`` post type
-     */
-    public function register_subscription_post_type()
-    {
-        $labels = array(
+	/**
+	 * Register ``subscrpt_order`` post type
+	 */
+	public function register_subscription_post_type() {
+		$labels = array(
 			'name'              => __( 'Subscriptions', 'sdevs_subscrpt' ),
 			'singular_name'     => __( 'Subscription', 'sdevs_subscrpt' ),
 			'name_admin_bar'    => __( 'Subscription\'s', 'sdevs_subscrpt' ),
@@ -68,16 +66,15 @@ class Post
 			'supports'              => false,
 		);
 
-        $args = apply_filters('subscrpt_order_post_args', $args);
+		$args = apply_filters( 'subscrpt_order_post_args', $args );
 
 		register_post_type( 'subscrpt_order', $args );
-    }
+	}
 
-    /**
-     * Register ``subscrpt_order_item`` post type
-     */
-    public function register_subscription_item_post_type()
-    {
+	/**
+	 * Register ``subscrpt_order_item`` post type
+	 */
+	public function register_subscription_item_post_type() {
 		$args = array(
 			'label'                 => __( 'Subscription Items', 'sdevs_subscrpt' ),
 			// 'labels'                => ,
@@ -107,10 +104,10 @@ class Post
 			'supports'              => false,
 		);
 
-        $args = apply_filters('subscrpt_order_item_post_args', $args);
+		$args = apply_filters( 'subscrpt_order_item_post_args', $args );
 
-		register_post_type( 'subscrpt_order_item', $args ); 
-    }
+		register_post_type( 'subscrpt_order_item', $args );
+	}
 
 	public function register_post_status() {
 		register_post_status(

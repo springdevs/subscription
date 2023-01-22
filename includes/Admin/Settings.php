@@ -9,6 +9,9 @@ namespace SpringDevs\Subscription\Admin;
  */
 class Settings {
 
+	/**
+	 * Initialize the class.
+	 */
 	public function __construct() {
 		add_action( 'admin_menu', array( $this, 'admin_menu' ) );
 		add_action( 'admin_init', array( $this, 'register_settings' ) );
@@ -20,14 +23,19 @@ class Settings {
 	}
 
 	/**
-	 * register settings options
+	 * Register settings options.
 	 **/
 	public function register_settings() {
+		register_setting( 'subscrpt_settings', 'subscrpt_renewal_process' );
+		register_setting( 'subscrpt_settings', 'subscrpt_manual_renew_cart_notice' );
 		register_setting( 'subscrpt_settings', 'subscrpt_active_role' );
 		register_setting( 'subscrpt_settings', 'subscrpt_unactive_role' );
 		do_action( 'subscrpt_register_settings', 'subscrpt_settings' );
 	}
 
+	/**
+	 * Settings HTML.
+	 */
 	public function settings_content() {
 		include 'views/settings.php';
 	}

@@ -7,7 +7,6 @@ use SpringDevs\Subscription\Frontend\Downloadable;
 use SpringDevs\Subscription\Frontend\MyAccount;
 use SpringDevs\Subscription\Frontend\Order as FrontendOrder;
 use SpringDevs\Subscription\Frontend\Product;
-use SpringDevs\Subscription\Frontend\Thankyou;
 use SpringDevs\Subscription\Illuminate\AutoRenewal;
 use SpringDevs\Subscription\Illuminate\Cron;
 use SpringDevs\Subscription\Illuminate\Email;
