@@ -4,9 +4,9 @@
 			<th></th>
 			<th><?php
 
-use SpringDevs\Subscription\Illuminate\Helper;
+			use SpringDevs\Subscription\Illuminate\Helper;
 
- _e( 'Started on', 'sdevs_subscrpt' ); ?></th>
+			_e( 'Started on', 'sdevs_subscrpt' ); ?></th>
 			<th><?php _e( 'Recurring', 'sdevs_subscrpt' ); ?></th>
 			<th><?php _e( 'Expiry date', 'sdevs_subscrpt' ); ?></th>
 			<th><?php _e( 'Status', 'sdevs_subscrpt' ); ?></th>
@@ -15,9 +15,9 @@ use SpringDevs\Subscription\Illuminate\Helper;
 	<tbody>
 		<?php
 		foreach ( $histories as $history ) :
-				$post_meta = get_post_meta( $history->subscription_id, '_order_subscrpt_meta', true );
+				$post_meta  = get_post_meta( $history->subscription_id, '_order_subscrpt_meta', true );
 				$order_item = $order->get_item( $history->order_item_id );
-				?>
+			?>
 				<tr>
 					<td>
 						<a href="<?php echo wp_kses_post( get_edit_post_link( $history->subscription_id ) ); ?>" target="_blank">#<?php echo esc_html( $history->subscription_id ); ?> - <?php echo esc_html( $order_item->get_name() ); ?></a>

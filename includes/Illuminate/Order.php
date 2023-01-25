@@ -42,8 +42,8 @@ class Order {
 			return;
 		}
 
-		$subtotal   = '-';
-		$item_id = $item->get_id();
+		$subtotal = '-';
+		$item_id  = $item->get_id();
 		$subtotal = Helper::format_price_with_order_item( $item->get_subtotal(), $item_id );
 		?>
 		<td class="item_recurring" width="15%">
@@ -59,19 +59,18 @@ class Order {
 			return;
 		}
 
-		$item_meta 			 = wc_get_order_item_meta( $item_id, '_subscrpt_meta', true );
+		$item_meta = wc_get_order_item_meta( $item_id, '_subscrpt_meta', true );
 
-		if ( !$item_meta || !is_array($item_meta) ) {
+		if ( ! $item_meta || ! is_array( $item_meta ) ) {
 			return false;
 		}
 
-		$trial           = $item_meta['trial'];
-		$has_trial       = isset( $item_meta['trial'] ) && strlen( $item_meta['trial'] ) > 2;
+		$trial     = $item_meta['trial'];
+		$has_trial = isset( $item_meta['trial'] ) && strlen( $item_meta['trial'] ) > 2;
 
 		if ( $has_trial ) {
 			echo '<br/><small> + Got ' . $trial . ' free trial!</small>';
 		}
-
 	}
 
 	public function order_status_changed( $order_id ) {
@@ -97,9 +96,9 @@ class Order {
 
 		global $wpdb;
 		$table_name = $wpdb->prefix . 'subscrpt_histories';
-		$histories = $wpdb->get_results("SELECT * FROM ${table_name} WHERE order_id=${order_id}");
+		$histories  = $wpdb->get_results( "SELECT * FROM ${table_name} WHERE order_id=${order_id}" );
 
-		foreach ($histories as $history) {
+		foreach ( $histories as $history ) {
 			wp_update_post(
 				array(
 					'ID'          => $history->subscription_id,

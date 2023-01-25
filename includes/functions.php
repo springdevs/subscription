@@ -35,16 +35,42 @@ function subscrpt_get_typos( $number, $typo ) {
 	}
 }
 
+/**
+ * Format time with trial.
+ *
+ * @param mixed       $time Time.
+ * @param null|string $trial Trial.
+ *
+ * @return string
+ */
 function subscrpt_next_date( $time, $trial = null ) {
-	if ( $trial == null ) {
+	if ( null === $trial ) {
 		$start_date = time();
 	} else {
 		$start_date = strtotime( $trial );
 	}
 
-	return date( 'F d, Y', strtotime( $time, $start_date ) );
+	return gmdate( 'F d, Y', strtotime( $time, $start_date ) );
 }
 
+/**
+ * Check if subscription-pro activated.
+ *
+ * @return bool
+ */
 function subscrpt_pro_activated(): bool {
 	return class_exists( 'Sdevs_Wc_Subscription_Pro' );
+}
+
+/**
+ * Get renewal process settings.
+ *
+ * @return string
+ */
+function subscrpt_get_renewal_process() {
+	if ( ! subscrpt_pro_activated() ) {
+		return 'manual';
+	} else {
+		return get_option( 'subscrpt_renewal_process', 'manual' );
+	}
 }

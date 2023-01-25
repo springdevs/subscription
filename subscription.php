@@ -38,7 +38,7 @@ Domain Path: /languages
  * **********************************************************************
  */
 
-// don't call the file directly
+// don't call the file directly.
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
@@ -102,7 +102,7 @@ final class Sdevs_Subscription {
 	/**
 	 * Magic getter to bypass referencing plugin.
 	 *
-	 * @param $prop
+	 * @param mixed $prop Prop.
 	 *
 	 * @return mixed
 	 */
@@ -117,10 +117,10 @@ final class Sdevs_Subscription {
 	/**
 	 * Magic isset to bypass referencing plugin.
 	 *
-	 * @param $prop
+	 * @param mixed $prop Prop.
 	 *
 	 * @return bool
-     */
+	 */
 	public function __isset( $prop ) {
 		return isset( $this->{$prop} ) || isset( $this->container[ $prop ] );
 	}
@@ -216,7 +216,7 @@ final class Sdevs_Subscription {
 	 */
 	public function init_classes() {
 		if ( $this->is_request( 'ajax' ) ) {
-			$this->container['ajax'] =  new SpringDevs\Subscription\Ajax();
+			$this->container['ajax'] = new SpringDevs\Subscription\Ajax();
 		}
 
 		$this->container['api']    = new SpringDevs\Subscription\Api();
@@ -265,7 +265,7 @@ final class Sdevs_Subscription {
  * @return Sdevs_Subscription|bool
  */
 function sdevs_subscription() {
-	 return Sdevs_Subscription::init();
+	return Sdevs_Subscription::init();
 }
 
 /**

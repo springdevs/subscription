@@ -3,9 +3,9 @@
 		<tr>
 			<th><?php
 
-use SpringDevs\Subscription\Illuminate\Helper;
+			use SpringDevs\Subscription\Illuminate\Helper;
 
- _e( 'Order', 'sdevs_subscrpt' ); ?></th>
+			_e( 'Order', 'sdevs_subscrpt' ); ?></th>
 			<th></th>
 			<th><?php _e( 'Date', 'sdevs_subscrpt' ); ?></th>
 			<th><?php _e( 'Status', 'sdevs_subscrpt' ); ?></th>
@@ -15,7 +15,7 @@ use SpringDevs\Subscription\Illuminate\Helper;
 	<tbody>
 		<?php foreach ( $order_histories as $order_history ) : ?>
 			<?php
-			$order = wc_get_order( $order_history->order_id );
+			$order      = wc_get_order( $order_history->order_id );
 			$order_item = $order->get_item( $order_history->order_item_id );
 			?>
 			<tr>

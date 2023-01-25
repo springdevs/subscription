@@ -11,11 +11,11 @@ namespace SpringDevs\Subscription\Admin;
  */
 class Links {
 
-    public function __construct() {
+	public function __construct() {
 		add_filter( 'plugin_action_links_' . plugin_basename( SUBSCRPT_FILE ), array( $this, 'plugin_action_links' ) );
 	}
 
-    /**
+	/**
 	 * Add plugin action links
 	 *
 	 * @param array $links array

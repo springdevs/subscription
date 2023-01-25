@@ -74,7 +74,7 @@ class Assets {
 				'deps'      => 'jquery',
 				'in_footer' => true,
 			),
-			'sdevs_installer' => array(
+			'sdevs_installer'          => array(
 				'src'       => $plugin_js_assets_path . 'installer.js',
 				'deps'      => array( 'jquery' ),
 				'in_footer' => true,
@@ -93,13 +93,13 @@ class Assets {
 		$plugin_css_assets_path = SUBSCRPT_ASSETS . '/css/';
 
 		$styles = array(
-			'subscrpt_admin_css' => array(
+			'subscrpt_admin_css'  => array(
 				'src' => $plugin_css_assets_path . 'admin.css',
 			),
 			'subscrpt_status_css' => array(
 				'src' => $plugin_css_assets_path . 'status.css',
 			),
-			'sdevs_installer' => array(
+			'sdevs_installer'     => array(
 				'src' => $plugin_css_assets_path . 'installer.css',
 			),
 		);

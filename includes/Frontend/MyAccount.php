@@ -62,6 +62,11 @@ class MyAccount {
 					'url'   => subscrpt_get_action_url( 'reactive', $subscrpt_nonce, $id ),
 					'label' => __( 'Reactive', 'sdevs_subscrpt' ),
 				);
+			} elseif ( 'expired' === $status && 'pending' !== $order->get_status() ) {
+				$action_buttons['renew'] = array(
+					'url'   => subscrpt_get_action_url( 'renew', $subscrpt_nonce, $id ),
+					'label' => __( 'Renew', 'sdevs_subscrpt' ),
+				);
 			}
 
 			if ( 'pending' === $order->get_status() ) {
@@ -69,20 +74,10 @@ class MyAccount {
 					'url'   => $order->get_checkout_payment_url(),
 					'label' => __( 'Pay now', 'sdevs_subscrpt' ),
 				);
-			} elseif ( '1' === get_option( 'subscrpt_early_renew', '' ) && 'active' === $status ) {
-				$action_buttons['early_renew'] = array(
-					'url'   => subscrpt_get_action_url( 'early-renew', $subscrpt_nonce, $id ),
-					'label' => __( 'Early Renew', 'sdevs_subscrpt' ),
-				);
-			} elseif ( 'expired' === $status && 'manual' === get_option( 'subscrpt_renewal_process', 'auto' ) ) {
-				$action_buttons['early_renew'] = array(
-					'url'   => subscrpt_get_action_url( 'renew', $subscrpt_nonce, $id ),
-					'label' => __( 'Renew now', 'sdevs_subscrpt' ),
-				);
 			}
 		}
 
-		$action_buttons     = apply_filters( 'subscrpt_single_action_buttons', $action_buttons, $id );
+		$action_buttons     = apply_filters( 'subscrpt_single_action_buttons', $action_buttons, $id, $subscrpt_nonce );
 		$post_status_object = get_post_status_object( $status );
 
 		wc_get_template(

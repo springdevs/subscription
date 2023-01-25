@@ -16,7 +16,7 @@ class Order {
 	}
 
 	public function add_meta_boxes() {
-		$order_id   = get_the_ID();
+		$order_id  = get_the_ID();
 		$histories = Helper::get_subscriptions_from_order( $order_id );
 		if ( is_array( $histories ) ) {
 			$order = wc_get_order( $order_id );
@@ -27,14 +27,17 @@ class Order {
 				'shop_order',
 				'normal',
 				'default',
-				array( 'histories' => $histories, 'order' => $order )
+				array(
+					'histories' => $histories,
+					'order'     => $order,
+				)
 			);
 		}
 	}
 
 	public function subscrpt_order_related( $order_post, $info ) {
-		$histories = $info["args"]["histories"];
-		$order = $info["args"]["order"];
+		$histories = $info['args']['histories'];
+		$order     = $info['args']['order'];
 
 		include 'views/related-subscriptions.php';
 	}

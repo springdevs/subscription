@@ -10,7 +10,6 @@ use SpringDevs\Subscription\Admin\Product;
 use SpringDevs\Subscription\Admin\Settings;
 use SpringDevs\Subscription\Admin\Subscriptions;
 use SpringDevs\Subscription\Illuminate\Comments;
-use SpringDevs\Subscription\Illuminate\Cron;
 use SpringDevs\Subscription\Illuminate\Email;
 use SpringDevs\Subscription\Illuminate\Order;
 
@@ -27,7 +26,6 @@ class Admin {
 		$this->dispatch_actions();
 		new Required();
 		new Illuminate();
-		new Cron();
 		new Menu();
 		new Product();
 		new Subscriptions();

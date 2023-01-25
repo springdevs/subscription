@@ -7,8 +7,6 @@ use SpringDevs\Subscription\Frontend\Downloadable;
 use SpringDevs\Subscription\Frontend\MyAccount;
 use SpringDevs\Subscription\Frontend\Order as FrontendOrder;
 use SpringDevs\Subscription\Frontend\Product;
-use SpringDevs\Subscription\Illuminate\AutoRenewal;
-use SpringDevs\Subscription\Illuminate\Cron;
 use SpringDevs\Subscription\Illuminate\Email;
 use SpringDevs\Subscription\Illuminate\Order;
 
@@ -22,7 +20,6 @@ class Frontend {
 	 */
 	public function __construct() {
 		new Illuminate();
-		new Cron();
 		new Product();
 		new FrontendOrder();
 		new ActionController();
@@ -30,6 +27,5 @@ class Frontend {
 		new Downloadable();
 		new Order();
 		new Email();
-		new AutoRenewal();
 	}
 }

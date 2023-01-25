@@ -3,10 +3,10 @@
 		<tr>
 			<?php
 
-use SpringDevs\Subscription\Illuminate\Helper;
+			use SpringDevs\Subscription\Illuminate\Helper;
 
 			$product_name = $order_item->get_name();
-			$product_link =  get_the_permalink( $order_item->get_product_id() );
+			$product_link = get_the_permalink( $order_item->get_product_id() );
 			?>
 			<th scope="row">Product : </th>
 			<td>
