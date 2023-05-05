@@ -11,10 +11,16 @@ use SpringDevs\Subscription\Illuminate\Helper;
  */
 class Order {
 
+	/**
+	 * Initialize the class
+	 */
 	public function __construct() {
 		add_action( 'add_meta_boxes', array( $this, 'add_meta_boxes' ) );
 	}
 
+	/**
+	 * Related Subscriptions meta box on Orders.
+	 */
 	public function add_meta_boxes() {
 		$order_id  = get_the_ID();
 		$histories = Helper::get_subscriptions_from_order( $order_id );
@@ -35,6 +41,12 @@ class Order {
 		}
 	}
 
+	/**
+	 * Display content related subscriptions.
+	 *
+	 * @param mixed $order_post Current Order.
+	 * @param mixed $info Meta box Info.
+	 */
 	public function subscrpt_order_related( $order_post, $info ) {
 		$histories = $info['args']['histories'];
 		$order     = $info['args']['order'];

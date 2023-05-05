@@ -11,6 +11,7 @@
   ],
   "minimum-stability": "dev",
   "require-dev": {
+    "symfony/var-dumper": "5.4.x-dev",
     "wp-coding-standards/wpcs": "dev-master",
     "dealerdirect/phpcodesniffer-composer-installer": "dev-master",
     "phpcompatibility/phpcompatibility-wp": "dev-master"
@@ -26,7 +27,5 @@
       "includes/functions.php"
     ]
   },
-  "require": {
-    "symfony/var-dumper": "5.4.x-dev"
-  }
+  "require": {}
 }

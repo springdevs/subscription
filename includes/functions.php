@@ -74,3 +74,22 @@ function subscrpt_get_renewal_process() {
 		return get_option( 'subscrpt_renewal_process', 'manual' );
 	}
 }
+
+/**
+ * Return Label against key.
+ *
+ * @param string $key Key to return cast Value.
+ *
+ * @return string
+ */
+function order_relation_type_cast( string $key ) {
+	$relational_type_keys = apply_filters(
+		'subscrpt_order_relational_types',
+		array(
+			'new'   => __( 'New Subscription Order', 'sdevs_subscrpt' ),
+			'renew' => __( 'Renewal Order', 'sdevs_subscrpt' ),
+		)
+	);
+
+	return $relational_type_keys[ $key ];
+}

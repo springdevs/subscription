@@ -16,13 +16,15 @@ use SpringDevs\Subscription\Illuminate\Order;
 /**
  * The admin class
  */
-class Admin {
+class Admin
+{
 
 
 	/**
 	 * Initialize the class
 	 */
-	public function __construct() {
+	public function __construct()
+	{
 		$this->dispatch_actions();
 		new Required();
 		new Illuminate();
@@ -42,6 +44,7 @@ class Admin {
 	 *
 	 * @return void
 	 */
-	public function dispatch_actions() {
+	public function dispatch_actions()
+	{
 	}
 }

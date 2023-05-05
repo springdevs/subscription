@@ -20,11 +20,11 @@
 			?>
 			<tr>
 				<td><a href="<?php echo wp_kses_post( get_edit_post_link( $order_history->order_id ) ); ?>" target="_blank"><?php echo wp_kses_post( $order_history->order_id ); ?></a></td>
-				<td><?php echo wp_kses_post( $order_history->stat ); ?></td>
+				<td><?php echo wp_kses_post( order_relation_type_cast( $order_history->type ) ); ?></td>
 				<td>
 					<?php
 					if ( $order ) {
-						echo wp_kses_post( date( 'F d, Y', strtotime( $order->get_date_created() ) ) );}
+						echo wp_kses_post( gmdate( 'F d, Y', strtotime( $order->get_date_created() ) ) );}
 					?>
 				</td>
 				<td>

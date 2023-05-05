@@ -9,6 +9,9 @@ namespace SpringDevs\Subscription\Illuminate;
  */
 class Order {
 
+	/**
+	 * Initialize the class.
+	 */
 	public function __construct() {
 		add_filter( 'woocommerce_order_formatted_line_subtotal', array( $this, 'format_order_price' ), 10, 3 );
 		add_action( 'woocommerce_admin_order_item_headers', array( $this, 'admin_order_item_header' ) );
@@ -73,40 +76,47 @@ class Order {
 		}
 	}
 
+	/**
+	 * Take some actions based on order status changed.
+	 *
+	 * @param int $order_id Order Id.
+	 */
 	public function order_status_changed( $order_id ) {
 		$order       = new \WC_Order( $order_id );
 		$post_status = 'active';
 
 		switch ( $order->get_status() ) {
-			case 'on-hold':
-			case 'pending';
+			case 'on-hold' | 'pending':
 				$post_status = 'pending';
 				break;
 
-			case 'refunded':
-			case 'failed':
-			case 'cancelled';
+			case 'refunded' | 'failed' | 'cancelled':
 				$post_status = 'cancelled';
 				break;
 
-			default;
+			default:
 				$post_status = 'active';
 				break;
 		}
 
 		global $wpdb;
-		$table_name = $wpdb->prefix . 'subscrpt_histories';
-		$histories  = $wpdb->get_results( "SELECT * FROM ${table_name} WHERE order_id=${order_id}" );
+		$table_name = $wpdb->prefix . 'subscrpt_order_relation';
+		// @phpcs:ignore
+		$histories = $wpdb->get_results( $wpdb->prepare( 'SELECT * FROM %i WHERE order_id=%d', array( $table_name, $order_id ) ) );
 
 		foreach ( $histories as $history ) {
-			wp_update_post(
-				array(
-					'ID'          => $history->subscription_id,
-					'post_status' => $post_status,
-				)
-			);
+			if ( 'new' === $history->type || 'renew' === $history->type ) {
+				wp_update_post(
+					array(
+						'ID'          => $history->subscription_id,
+						'post_status' => $post_status,
+					)
+				);
 
-			Action::write_comment( $post_status, $history->subscription_id );
+				Action::write_comment( $post_status, $history->subscription_id );
+			} else {
+				do_action( 'subscrpt_order_status_changed', $order, $history );
+			}
 		}
 	}
 }

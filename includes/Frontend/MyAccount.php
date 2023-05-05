@@ -77,8 +77,8 @@ class MyAccount {
 			}
 		}
 
-		$action_buttons     = apply_filters( 'subscrpt_single_action_buttons', $action_buttons, $id, $subscrpt_nonce );
 		$post_status_object = get_post_status_object( $status );
+		$action_buttons     = apply_filters( 'subscrpt_single_action_buttons', $action_buttons, $id, $subscrpt_nonce, $status );
 
 		wc_get_template(
 			'myaccount/single.php',

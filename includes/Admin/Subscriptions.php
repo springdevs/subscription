@@ -157,8 +157,9 @@ class Subscriptions {
 	public function subscrpt_order_history() {
 		$subscription_id = get_the_ID();
 		global $wpdb;
-		$table_name      = $wpdb->prefix . 'subscrpt_histories';
-		$order_histories = $wpdb->get_results( "SELECT * FROM ${table_name} WHERE subscription_id=${subscription_id}" );
+		$table_name = $wpdb->prefix . 'subscrpt_order_relation';
+		// @phpcs:ignore
+		$order_histories = $wpdb->get_results( $wpdb->prepare( 'SELECT * FROM %i WHERE subscription_id=%d', array( $table_name, $subscription_id ) ) );
 
 		include 'views/order-history.php';
 	}

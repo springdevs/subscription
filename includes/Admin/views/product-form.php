@@ -1,4 +1,5 @@
-<div class="option_group sdevs-form sdevs_panel show_if_subscription hide" style="padding: 10px;">
+<div class="option_group sdevs-form sdevs_panel show_if_simple hide" style="padding: 10px;">
+<div class="show_if_subscription">
 	<input name="_subscript_nonce" type="hidden" value="<?php echo esc_attr( wp_create_nonce( '_subscript_edit_product_nonce' ) ); ?>" />
 	<strong style="margin: 10px;"><?php _e( 'Subscription Settings', 'sdevs_subscrpt' ); ?></strong>
 	<?php
@@ -39,4 +40,5 @@
 		)
 	);
 	?>
+</div>
 </div>

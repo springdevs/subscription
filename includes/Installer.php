@@ -60,14 +60,14 @@ class Installer {
 		global $wpdb;
 
 		$charset_collate = $wpdb->get_charset_collate();
-		$table_name      = $wpdb->prefix . 'subscrpt_histories';
+		$table_name      = $wpdb->prefix . 'subscrpt_order_relation';
 
 		$schema = "CREATE TABLE IF NOT EXISTS `{$table_name}` (
                       `id` INT(255) NOT NULL AUTO_INCREMENT,
                       `subscription_id` INT(100) NOT NULL,
                       `order_id` INT(100) NOT NULL,
                       `order_item_id` INT(100) NOT NULL,
-                      `stat` VARCHAR(255) NOT NULL,
+                      `type` VARCHAR(50) NOT NULL,
                       PRIMARY KEY (`id`)
                     ) $charset_collate";
 

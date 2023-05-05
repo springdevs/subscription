@@ -9,6 +9,9 @@ namespace SpringDevs\Subscription\Admin;
  */
 class Product {
 
+	/**
+	 * Initialize the class
+	 */
 	public function __construct() {
 		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_assets' ) );
 		add_filter( 'product_type_options', array( $this, 'add_product_type_options' ) );
@@ -16,14 +19,24 @@ class Product {
 		add_action( 'save_post_product', array( $this, 'save_subscrpt_data' ) );
 	}
 
+	/**
+	 * Enqueue Assets.
+	 */
 	public function enqueue_assets() {
 		wp_enqueue_script( 'sdevs_subscription_admin' );
 	}
 
+	/**
+	 * Display Enable Subscription Checkbox on product data tab.
+	 *
+	 * @param array $product_type_options Product Type options on Data tab.
+	 *
+	 * @return array
+	 */
 	public function add_product_type_options( $product_type_options ) {
 		$screen = get_current_screen();
 		$value  = 'no';
-		if ( $screen->parent_base == 'edit' ) {
+		if ( 'edit' === $screen->parent_base ) {
 			$post_meta = get_post_meta( get_the_ID(), '_subscrpt_meta', true );
 			$value     = ! empty( $post_meta ) && $post_meta['enable'] ? 'yes' : 'no';
 		}
@@ -40,6 +53,9 @@ class Product {
 		return $product_type_options;
 	}
 
+	/**
+	 * Display forms on product create/edit.
+	 */
 	public function subscription_forms() {
 		if ( function_exists( 'subscrpt_pro_activated' ) ) {
 			if ( subscrpt_pro_activated() ) {

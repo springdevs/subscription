@@ -104,8 +104,14 @@ class Helper {
 	 */
 	public static function get_subscriptions_from_order( $order_id ) {
 		global $wpdb;
-		$table_name = $wpdb->prefix . 'subscrpt_histories';
-		$histories  = $wpdb->get_results( "SELECT * FROM ${table_name} WHERE order_id=${order_id}" );
+		$table_name = $wpdb->prefix . 'subscrpt_order_relation';
+		$histories  = $wpdb->get_results(
+			$wpdb->prepare(
+				// @phpcs:ignore
+				'SELECT * FROM %i WHERE order_id=%d',
+				array( $table_name, $order_id )
+			)
+		);
 
 		return $histories;
 	}
@@ -178,5 +184,31 @@ class Helper {
 		}
 
 		return apply_filters( 'subscrpt_format_price_with_subscription', $formatted_price, $price, $item_id );
+	}
+
+		/**
+		 * Get total subscriptions by product ID.
+		 *
+		 * @param Int            $product_id Product ID.
+		 * @param String | array $status Status.
+		 *
+		 * @return \WP_Post | false
+		 */
+	public static function get_total_subscriptions_from_product( int $product_id, $status = array( 'active', 'pending', 'expired', 'pe_cancelled', 'cancelled' ) ) {
+		$args = array(
+			'post_type'   => 'subscrpt_order',
+			'post_status' => $status,
+			'fields'      => 'ids',
+			'meta_query'  => array(
+				array(
+					'key'   => '_subscrpt_product_id',
+					'value' => $product_id,
+				),
+			),
+		);
+
+		$posts = get_posts( $args );
+
+		return count( $posts );
 	}
 }

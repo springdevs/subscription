@@ -9,6 +9,7 @@ use SpringDevs\Subscription\Illuminate\Helper;
  */
 class Checkout {
 
+
 	/**
 	 * Initialize the class
 	 */
@@ -23,7 +24,7 @@ class Checkout {
 	 */
 	public function create_subscription_after_checkout( $order_id ) {
 		global $wpdb;
-		$history_table = $wpdb->prefix . 'subscrpt_histories';
+		$history_table = $wpdb->prefix . 'subscrpt_order_relation';
 		$order         = wc_get_order( $order_id );
 
 		// Grab the post status based on order status.

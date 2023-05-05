@@ -49,3 +49,23 @@ function hellochange(index) {
     jQuery("div#show_if_subscription_" + index).hide();
   }
 }
+
+let subscrpt_product_type = jQuery("#product-type");
+let latest_value_of_subscrpt_product_type = subscrpt_product_type.val();
+
+subscrpt_product_type.change(() => {
+  if (
+    "simple" === latest_value_of_subscrpt_product_type &&
+    "simple" !== subscrpt_product_type.val() &&
+    "variable" !== subscrpt_product_type.val()
+  ) {
+    const confirmTypeChange = confirm(
+      "Are you sure to change the product type ? If product type changed then You'll lose related subscriptions beacuse of they can't be renewed !"
+    );
+    if (confirmTypeChange) {
+      latest_value_of_subscrpt_product_type = subscrpt_product_type.val();
+    } else {
+      subscrpt_product_type.val("simple");
+    }
+  }
+});

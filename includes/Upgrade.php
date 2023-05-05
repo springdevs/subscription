@@ -105,7 +105,7 @@ class Upgrade {
 						}
 					}
 
-					$history_table = $wpdb->prefix . 'subscrpt_histories';
+					$history_table = $wpdb->prefix . 'subscrpt_order_relation';
 					$wpdb->insert(
 						$history_table,
 						array(
