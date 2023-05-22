@@ -41,7 +41,7 @@
 		</tr>
 		<tr>
 			<th scope="row">Status:</th>
-			<td><span class="subscrpt-<?php echo get_post_status(); ?>"><?php echo get_post_status(); ?></span></td>
+			<td><span class="subscrpt-<?php echo get_post_status(); ?>"><?php echo get_post_status_object( get_post_status() )->label; ?></span></td>
 		</tr>
 		<tr>
 			<th scope="row">Payment Method:</th>

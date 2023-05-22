@@ -94,8 +94,9 @@ class Subscriptions {
 			} elseif ( $column == 'subscrpt_next_date' ) {
 				echo date( 'F d, Y', $post_meta['next_date'] );
 			} elseif ( $column == 'subscrpt_status' ) {
+				$status_obj = get_post_status_object( get_post_status( $post_id ) );
 				?>
-				<span class="subscrpt-<?php echo esc_html( get_post_status( $post_id ) ); ?>"><?php echo esc_html( get_post_status( $post_id ) ); ?></span>
+				<span class="subscrpt-<?php echo esc_html( $status_obj->name ); ?>"><?php echo esc_html( $status_obj->label ); ?></span>
 				<?php
 			}
 		} else {

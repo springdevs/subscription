@@ -30,17 +30,15 @@ class Checkout {
 		// Grab the post status based on order status.
 		$post_status = 'active';
 		switch ( $order->get_status() ) {
-			case 'on-hold':
-			case 'pending';
+			case 'on-hold' | 'pending':
 				$post_status = 'pending';
 				break;
 
-			case 'failed':
-			case 'cancelled';
+			case 'failed' | 'cancelled':
 				$post_status = 'cancelled';
 				break;
 
-			default;
+			default:
 				break;
 		}
 
@@ -105,7 +103,7 @@ class Checkout {
 								'subscription_id' => $renew_subscription_id,
 								'order_id'        => $order_id,
 								'order_item_id'   => $order_item->get_id(),
-								'stat'            => 'Renewal Order',
+								'type'            => 'renew',
 							)
 						);
 					}
@@ -143,7 +141,7 @@ class Checkout {
 								'subscription_id' => $subscription_id,
 								'order_id'        => $order_id,
 								'order_item_id'   => $order_item->get_id(),
-								'stat'            => 'Parent Order',
+								'type'            => 'new',
 							)
 						);
 					}
