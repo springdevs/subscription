@@ -30,11 +30,13 @@ class Checkout {
 		// Grab the post status based on order status.
 		$post_status = 'active';
 		switch ( $order->get_status() ) {
-			case 'on-hold' | 'pending':
+			case 'on-hold':
+			case 'pending':
 				$post_status = 'pending';
 				break;
 
-			case 'failed' | 'cancelled':
+			case 'failed':
+			case 'cancelled':
 				$post_status = 'cancelled';
 				break;
 
@@ -47,7 +49,7 @@ class Checkout {
 		foreach ( $order_items as $order_item ) {
 			$product = wc_get_product( $order_item['product_id'] );
 
-			if ( ! $product->is_type( 'variable' ) ) {
+			if ( ! $product->is_type( 'variation' ) ) {
 				$post_meta = $product->get_meta( '_subscrpt_meta' );
 
 				if ( is_array( $post_meta ) && $post_meta['enable'] ) {

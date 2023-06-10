@@ -31,6 +31,7 @@ class Cron {
 
 		foreach ( $active_subscriptions as $subscription ) {
 			$post_meta = get_post_meta( $subscription, '_order_subscrpt_meta', true );
+			Action::status( 'expired', $subscription );
 			if ( time() >= $post_meta['next_date'] || ( null !== $post_meta['trial'] && time() >= $post_meta['start_date'] ) ) {
 				if ( 'pe_cancelled' === get_post_status( $subscription ) ) {
 					Action::status( 'cancelled', $subscription );

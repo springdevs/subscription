@@ -24,6 +24,23 @@ class Helper {
 	}
 
 	/**
+	 * Generate start date
+	 *
+	 * @param mixed       $time Time.
+	 * @param Null|String $trial Trial.
+	 *
+	 * @return String
+	 */
+	public static function start_date( $time, $trial = null ) {
+		if ( null === $trial ) {
+			$start_date = time();
+		} else {
+			$start_date = strtotime( $trial );
+		}
+		return wp_date( get_option( 'date_format' ), $start_date );
+	}
+
+	/**
 	 * Generate next date
 	 *
 	 * @param mixed       $time Time.
@@ -37,7 +54,7 @@ class Helper {
 		} else {
 			$start_date = strtotime( $trial );
 		}
-		return gmdate( 'F d, Y', strtotime( $time, $start_date ) );
+		return wp_date( get_option( 'date_format' ), strtotime( $time, $start_date ) );
 	}
 
 	/**
@@ -79,7 +96,7 @@ class Helper {
 	 * @return Boolean
 	 */
 	public static function check_trial( int $product_id ): bool {
-		return ! self::subscription_exists( $product_id, array( 'expired', 'pending', 'active', 'on-hold', 'cancelled' ) );
+		return ! self::subscription_exists( $product_id, array( 'expired', 'pending', 'active', 'on-hold', 'pe_cancelled', 'cancelled' ) );
 	}
 
 	/**

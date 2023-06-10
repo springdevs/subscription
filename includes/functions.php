@@ -71,7 +71,7 @@ function subscrpt_get_renewal_process() {
 	if ( ! subscrpt_pro_activated() ) {
 		return 'manual';
 	} else {
-		return get_option( 'subscrpt_renewal_process', 'manual' );
+		return get_option( 'subscrpt_renewal_process', 'auto' );
 	}
 }
 

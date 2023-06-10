@@ -86,11 +86,14 @@ class Order {
 		$post_status = 'active';
 
 		switch ( $order->get_status() ) {
-			case 'on-hold' | 'pending':
+			case 'on-hold':
+			case 'pending':
 				$post_status = 'pending';
 				break;
 
-			case 'refunded' | 'failed' | 'cancelled':
+			case 'refunded':
+			case 'failed':
+			case 'cancelled':
 				$post_status = 'cancelled';
 				break;
 

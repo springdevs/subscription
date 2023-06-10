@@ -112,7 +112,7 @@ class Upgrade {
 							'subscription_id' => $history_meta['post_id'],
 							'order_id'        => $history_meta['order_id'],
 							'order_item_id'   => $order_item_id,
-							'stat'            => $history_meta['stats'],
+							'type'            => 'Parent Order' === $history_meta['stats'] ? 'new' : 'renew',
 						)
 					);
 				}

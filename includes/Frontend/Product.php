@@ -203,10 +203,7 @@ class Product {
 	 */
 	public function change_single_add_to_cart_text( $text ) {
 		global $product;
-		if ( ! $product ) {
-			return $text;
-		}
-		if ( $product->is_type( 'variable' ) ) {
+		if ( ! $product || $product->is_type( 'variable' ) || '' === $product->get_price() ) {
 			return $text;
 		}
 		$post_meta = get_post_meta( $product->get_id(), '_subscrpt_meta', true );
@@ -228,9 +225,10 @@ class Product {
 	 * @return mixed
 	 */
 	public function change_price_html( $price, $product ) {
-		if ( $product->is_type( 'variable' ) ) {
+		if ( $product->is_type( 'variable' ) || '' === $price ) {
 			return $price;
 		}
+
 		$post_meta = get_post_meta( $product->get_id(), '_subscrpt_meta', true );
 		if ( is_array( $post_meta ) && $post_meta['enable'] ) :
 			$time            = '1' === $post_meta['time'] ? null : $post_meta['time'];
@@ -292,7 +290,11 @@ class Product {
 				$start_date = null;
 				$has_trial  = Helper::check_trial( $cart_item['product_id'] );
 				if ( ! empty( $post_meta['trial_time'] ) && $post_meta['trial_time'] > 0 && $has_trial ) {
-					$trial = $post_meta['trial_time'] . ' ' . Helper::get_typos( $post_meta['trial_time'], $post_meta['trial_type'] );
+					$trial      = $post_meta['trial_time'] . ' ' . Helper::get_typos( $post_meta['trial_time'], $post_meta['trial_type'] );
+					$start_date = Helper::start_date(
+						$post_meta['time'] . ' ' . $type,
+						$trial
+					);
 				}
 				$trial_status = $trial == null ? false : true;
 				$next_date    = Helper::next_date(
@@ -309,7 +311,7 @@ class Product {
 			endif;
 		}
 		$recurrs = apply_filters( 'subscrpt_cart_recurring_items', $recurrs );
-		if ( count( $recurrs ) == 0 ) {
+		if ( 0 === count( $recurrs ) ) {
 			return;
 		}
 		?>
@@ -320,9 +322,9 @@ class Product {
 					<?php if ( $recurr['trial'] ) : ?>
 						<p>
 							<span><?php echo wp_kses_post( $recurr['price_html'] ); ?></span><br />
-							<small><?php echo esc_html_e( 'First billing on', 'sdevs_subscrpt' ); ?>: <?php echo esc_html( date( 'F d, Y', $recurr['start_date'] ) ); ?></small>
+							<small><?php echo esc_html_e( 'First billing on', 'sdevs_subscrpt' ); ?>: <?php echo esc_html( $recurr['start_date'] ?? wp_date( get_option( 'date_format' ) ) ); ?></small>
 						</p>
-					<?php else : ?>
+						<?php else : ?>
 						<p>
 							<span><?php echo wp_kses_post( $recurr['price_html'] ); ?></span><br />
 							<small><?php echo esc_html_e( 'Next billing on', 'sdevs_subscrpt' ); ?>: <?php echo wp_kses_post( $recurr['next_date'] ); ?></small>
