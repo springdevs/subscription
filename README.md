@@ -2,6 +2,27 @@
 
 Allow your customers to order once and get their products and services every month/week.
 
+Install dependencies
+
+```bash
+composer install
+```
+
+Check code styles
+```bash
+composer phpcs
+```
+
+Format code styles
+```bash
+composer phpcbf
+```
+
+Minimize files for Production
+```bash
+bash clean.sh
+```
+
 ## changelog
 
 ### v1.0.4

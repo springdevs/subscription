@@ -150,7 +150,14 @@ class MyAccount {
 	 * Bookable EndPoint Content
 	 */
 	public function subscrpt_endpoint_content() {
-		wc_get_template( 'myaccount/subscriptions.php', array(), 'subscription', SUBSCRPT_TEMPLATES );
+		wc_get_template(
+			'myaccount/subscriptions.php',
+			array(
+				'wp_button_class' => wc_wp_theme_get_element_class_name( 'button' ) ? ' ' . wc_wp_theme_get_element_class_name( 'button' ) : '',
+			),
+			'subscription',
+			SUBSCRPT_TEMPLATES
+		);
 	}
 
 	/**

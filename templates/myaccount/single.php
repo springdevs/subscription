@@ -29,7 +29,7 @@ do_action( 'before_single_subscrpt_content' );
 		margin-bottom: 10px;
 	}
 </style>
-<table class="shop_table subscription_details">
+<table class="woocommerce-table woocommerce-table--order-details shop_table order_details subscription_details">
 	<tbody>
 		<tr>
 			<td><?php esc_html_e( 'Order', 'sdevs_subscrpt' ); ?></td>
@@ -85,7 +85,7 @@ do_action( 'before_single_subscrpt_content' );
 <?php do_action( 'subscrpt_before_subscription_totals', (int) $id ); ?>
 
 <h2><?php echo esc_html_e( 'Subscription totals', 'sdevs_subscrpt' ); ?></h2>
-<table class="shop_table order_details">
+<table class="woocommerce-table woocommerce-table--order-details shop_table order_details">
 	<thead>
 		<tr>
 			<th class="product-name"><?php echo esc_html_e( 'Product', 'sdevs_subscrpt' ); ?></th>

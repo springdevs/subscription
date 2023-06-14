@@ -109,16 +109,15 @@ class Product {
 			if ( 'one' === $post_meta['limit'] ) {
 				if ( ! $unexpired ) {
 					return false;
+				} else {
+					echo '<strong>' . esc_html_e( 'You Already Subscribed These Product!', 'sdevs_subscrpt' ) . '</strong>';
 				}
 			}
 			if ( 'only_one' === $post_meta['limit'] ) {
 				if ( ! Helper::check_trial( $product->get_id() ) ) {
-					echo '<strong>' . esc_html_e( 'You Already Purchased These Product!', 'sdevs_subscrpt' ) . '</strong>';
+					echo '<strong>' . esc_html_e( 'You Already Subscribed These Product!', 'sdevs_subscrpt' ) . '</strong>';
 				}
 			}
-		}
-		if ( $unexpired ) {
-			echo '<strong>' . esc_html_e( 'You Already Purchased These Product!', 'sdevs_subscrpt' ) . '</strong>';
 		}
 	}
 

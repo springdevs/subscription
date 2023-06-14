@@ -20,7 +20,7 @@ $args = array(
 $postslist = new WP_Query( $args );
 ?>
 
-<table class="shop_table my_account_subscrpt">
+<table class="woocommerce-orders-table woocommerce-MyAccount-orders shop_table shop_table_responsive my_account_orders account-orders-table my_account_subscrpt">
 	<thead>
 		<tr>
 			<th scope="col" class="subscrpt-id"><?php esc_html_e( 'Subscription', 'sdevs_subscrpt' ); ?></th>
@@ -57,7 +57,7 @@ $postslist = new WP_Query( $args );
 					<?php endif; ?>
 					<td><?php echo wp_kses_post( $product_price_html ); ?></td>
 					<td>
-						<a href="<?php echo esc_html( wc_get_endpoint_url( 'view-subscription', get_the_ID(), wc_get_page_permalink( 'myaccount' ) ) ); ?>" class="woocommerce-button button view">View</a>
+						<a href="<?php echo esc_html( wc_get_endpoint_url( 'view-subscription', get_the_ID(), wc_get_page_permalink( 'myaccount' ) ) ); ?>" class="woocommerce-button <?php echo esc_attr( $wp_button_class ); ?> button view">View</a>
 					</td>
 				</tr>
 				<?php
