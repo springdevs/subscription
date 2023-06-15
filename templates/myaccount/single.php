@@ -74,7 +74,7 @@ do_action( 'before_single_subscrpt_content' );
 											if ( isset( $action_button['class'] ) ) {
 												echo esc_attr( $action_button['class'] );}
 											?>
-						"><?php echo esc_html( $action_button['label'] ); ?></a>
+						<?php echo esc_attr( $wp_button_class ); ?>"><?php echo esc_html( $action_button['label'] ); ?></a>
 						<?php endforeach; ?>
 				</td>
 			</tr>

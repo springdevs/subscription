@@ -11,13 +11,7 @@
   ],
   "minimum-stability": "dev",
   "require-dev": {
-    "symfony/var-dumper": "5.4.x-dev",
-    "wp-coding-standards/wpcs": "dev-develop",
-    "phpcompatibility/phpcompatibility-wp": "dev-master"
-  },
-  "scripts": {
-    "phpcs": "phpcs -p . --standard=PHPCompatibilityWP --ignore=vendor/*",
-    "phpcbf": "phpcbf --ignore=vendor/* ."
+    "symfony/var-dumper": "5.4.x-dev"
   },
   "autoload": {
     "psr-4": {
@@ -26,10 +20,5 @@
     "files": [
       "includes/functions.php"
     ]
-  },
-  "config": {
-    "allow-plugins": {
-      "dealerdirect/phpcodesniffer-composer-installer": true
-    }
   }
 }
