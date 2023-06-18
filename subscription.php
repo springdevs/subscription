@@ -39,7 +39,7 @@ Domain Path: /languages
  */
 
 // don't call the file directly.
-if ( ! defined( 'ABSPATH' ) ) {
+if (!defined('ABSPATH')) {
 	exit;
 }
 
@@ -50,7 +50,8 @@ require_once __DIR__ . '/vendor/autoload.php';
  *
  * @class Sdevs_Subscription The class that holds the entire plugin
  */
-final class Sdevs_Subscription {
+final class Sdevs_Subscription
+{
 
 	/**
 	 * Plugin version
@@ -72,13 +73,14 @@ final class Sdevs_Subscription {
 	 * Sets up all the appropriate hooks and actions
 	 * within our plugin.
 	 */
-	private function __construct() {
+	private function __construct()
+	{
 		$this->define_constants();
 
-		register_activation_hook( __FILE__, array( $this, 'activate' ) );
-		register_deactivation_hook( __FILE__, array( $this, 'deactivate' ) );
+		register_activation_hook(__FILE__, array($this, 'activate'));
+		register_deactivation_hook(__FILE__, array($this, 'deactivate'));
 
-		add_action( 'plugins_loaded', array( $this, 'init_plugin' ) );
+		add_action('plugins_loaded', array($this, 'init_plugin'));
 	}
 
 	/**
@@ -89,10 +91,11 @@ final class Sdevs_Subscription {
 	 *
 	 * @return Sdevs_Subscription|bool
 	 */
-	public static function init() {
+	public static function init()
+	{
 		static $instance = false;
 
-		if ( ! $instance ) {
+		if (!$instance) {
 			$instance = new Sdevs_Subscription();
 		}
 
@@ -106,9 +109,10 @@ final class Sdevs_Subscription {
 	 *
 	 * @return mixed
 	 */
-	public function __get( $prop ) {
-		if ( array_key_exists( $prop, $this->container ) ) {
-			return $this->container[ $prop ];
+	public function __get($prop)
+	{
+		if (array_key_exists($prop, $this->container)) {
+			return $this->container[$prop];
 		}
 
 		return $this->{$prop};
@@ -121,8 +125,9 @@ final class Sdevs_Subscription {
 	 *
 	 * @return bool
 	 */
-	public function __isset( $prop ) {
-		return isset( $this->{$prop} ) || isset( $this->container[ $prop ] );
+	public function __isset($prop)
+	{
+		return isset($this->{$prop}) || isset($this->container[$prop]);
 	}
 
 	/**
@@ -130,14 +135,15 @@ final class Sdevs_Subscription {
 	 *
 	 * @return void
 	 */
-	public function define_constants() {
-		define( 'SUBSCRPT_VERSION', self::version );
-		define( 'SUBSCRPT_FILE', __FILE__ );
-		define( 'SUBSCRPT_PATH', dirname( SUBSCRPT_FILE ) );
-		define( 'SUBSCRPT_INCLUDES', SUBSCRPT_PATH . '/includes' );
-		define( 'SUBSCRPT_TEMPLATES', SUBSCRPT_PATH . '/templates/' );
-		define( 'SUBSCRPT_URL', plugins_url( '', SUBSCRPT_FILE ) );
-		define( 'SUBSCRPT_ASSETS', SUBSCRPT_URL . '/assets' );
+	public function define_constants()
+	{
+		define('SUBSCRPT_VERSION', self::version);
+		define('SUBSCRPT_FILE', __FILE__);
+		define('SUBSCRPT_PATH', dirname(SUBSCRPT_FILE));
+		define('SUBSCRPT_INCLUDES', SUBSCRPT_PATH . '/includes');
+		define('SUBSCRPT_TEMPLATES', SUBSCRPT_PATH . '/templates/');
+		define('SUBSCRPT_URL', plugins_url('', SUBSCRPT_FILE));
+		define('SUBSCRPT_ASSETS', SUBSCRPT_URL . '/assets');
 	}
 
 	/**
@@ -145,7 +151,8 @@ final class Sdevs_Subscription {
 	 *
 	 * @return void
 	 */
-	public function init_plugin() {
+	public function init_plugin()
+	{
 		$this->includes();
 		$this->init_hooks();
 	}
@@ -155,7 +162,8 @@ final class Sdevs_Subscription {
 	 *
 	 * Nothing being called here yet.
 	 */
-	public function activate() {
+	public function activate()
+	{
 		$installer = new SpringDevs\Subscription\Installer();
 		$installer->run();
 	}
@@ -165,8 +173,9 @@ final class Sdevs_Subscription {
 	 *
 	 * Nothing being called here yet.
 	 */
-	public function deactivate() {
-		wp_clear_scheduled_hook( 'subscrpt_daily_cron' );
+	public function deactivate()
+	{
+		wp_clear_scheduled_hook('subscrpt_daily_cron');
 	}
 
 	/**
@@ -174,16 +183,17 @@ final class Sdevs_Subscription {
 	 *
 	 * @return void
 	 */
-	public function includes() {
-		if ( $this->is_request( 'admin' ) ) {
+	public function includes()
+	{
+		if ($this->is_request('admin')) {
 			$this->container['admin'] = new SpringDevs\Subscription\Admin();
 		}
 
-		if ( $this->is_request( 'frontend' ) ) {
+		if ($this->is_request('frontend')) {
 			$this->container['frontend'] = new SpringDevs\Subscription\Frontend();
 		}
 
-		if ( $this->is_request( 'ajax' ) ) {
+		if ($this->is_request('ajax')) {
 			// require_once SUBSCRPT_INCLUDES . '/class-ajax.php';
 		}
 	}
@@ -193,10 +203,11 @@ final class Sdevs_Subscription {
 	 *
 	 * @return void
 	 */
-	public function init_hooks() {
-		add_action( 'init', array( $this, 'init_classes' ) );
-		add_action( 'init', array( $this, 'localization_setup' ) );
-		add_action( 'init', array( $this, 'run_update' ) );
+	public function init_hooks()
+	{
+		add_action('init', array($this, 'init_classes'));
+		add_action('init', array($this, 'localization_setup'));
+		add_action('init', array($this, 'run_update'));
 	}
 
 	/**
@@ -204,7 +215,8 @@ final class Sdevs_Subscription {
 	 *
 	 * @return void
 	 */
-	public function run_update() {
+	public function run_update()
+	{
 		$upgrade = new \SpringDevs\Subscription\Upgrade();
 		$upgrade->run();
 	}
@@ -214,8 +226,9 @@ final class Sdevs_Subscription {
 	 *
 	 * @return void
 	 */
-	public function init_classes() {
-		if ( $this->is_request( 'ajax' ) ) {
+	public function init_classes()
+	{
+		if ($this->is_request('ajax')) {
 			$this->container['ajax'] = new SpringDevs\Subscription\Ajax();
 		}
 
@@ -228,8 +241,9 @@ final class Sdevs_Subscription {
 	 *
 	 * @uses load_plugin_textdomain()
 	 */
-	public function localization_setup() {
-		load_plugin_textdomain( 'sdevs_subscrpt', false, dirname( plugin_basename( __FILE__ ) ) . '/languages/' );
+	public function localization_setup()
+	{
+		load_plugin_textdomain('sdevs_subscrpt', false, dirname(plugin_basename(__FILE__)) . '/languages/');
 	}
 
 	/**
@@ -239,22 +253,23 @@ final class Sdevs_Subscription {
 	 *
 	 * @return bool
 	 */
-	private function is_request( $type ) {
-		switch ( $type ) {
+	private function is_request($type)
+	{
+		switch ($type) {
 			case 'admin':
 				return is_admin();
 
 			case 'ajax':
-				return defined( 'DOING_AJAX' );
+				return defined('DOING_AJAX');
 
 			case 'rest':
-				return defined( 'REST_REQUEST' );
+				return defined('REST_REQUEST');
 
 			case 'cron':
-				return defined( 'DOING_CRON' );
+				return defined('DOING_CRON');
 
 			case 'frontend':
-				return ( ! is_admin() || defined( 'DOING_AJAX' ) ) && ! defined( 'DOING_CRON' );
+				return (!is_admin() || defined('DOING_AJAX')) && !defined('DOING_CRON');
 		}
 	}
 } // Sdevs_Wc_Subscription
@@ -264,7 +279,8 @@ final class Sdevs_Subscription {
  *
  * @return Sdevs_Subscription|bool
  */
-function sdevs_subscription() {
+function sdevs_subscription()
+{
 	return Sdevs_Subscription::init();
 }
 

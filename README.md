@@ -8,22 +8,18 @@ Install dependencies
 composer install
 ```
 
-Check code styles
-```bash
-composer phpcs
-```
-
-Format code styles
-```bash
-composer phpcbf
-```
-
 Minimize files for Production
+
 ```bash
 bash clean.sh
 ```
 
 ## changelog
+
+### v1.1
+
+- We rebuild our plugin from scratch to provide better & long terms supports
+- Severals UI & compatibility issues solved
 
 ### v1.0.4
 
