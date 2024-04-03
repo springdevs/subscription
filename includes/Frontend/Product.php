@@ -230,7 +230,7 @@ class Product {
 
 		$post_meta = get_post_meta( $product->get_id(), '_subscrpt_meta', true );
 		if ( is_array( $post_meta ) && $post_meta['enable'] ) :
-			$time            = '1' === $post_meta['time'] ? null : $post_meta['time'];
+			$time            = 1 === intval( $post_meta['time'] ) ? null : $post_meta['time'];
 			$type            = Helper::get_typos( $post_meta['time'], $post_meta['type'] );
 			$has_trial       = Helper::check_trial( $product->get_id() );
 			$trial           = null;
@@ -241,7 +241,7 @@ class Product {
 					$signup_fee_html = '<br/> + Signup fee of ' . wc_price( $post_meta['signup_fee'] );
 				}
 			}
-			$price_html = $price . ' / ' . $time . ' ' . $type . $signup_fee_html . $trial;
+			$price_html = $price . '/' . $time . $type . $signup_fee_html . $trial;
 			return $price_html;
 		else :
 			return $price;
