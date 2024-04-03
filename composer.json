@@ -10,9 +10,6 @@
     }
   ],
   "minimum-stability": "dev",
-  "require-dev": {
-    "symfony/var-dumper": "5.4.x-dev"
-  },
   "autoload": {
     "psr-4": {
       "SpringDevs\\Subscription\\": "includes/"
