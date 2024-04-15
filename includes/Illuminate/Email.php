@@ -9,10 +9,20 @@ namespace SpringDevs\Subscription\Illuminate;
  */
 class Email {
 
+	/**
+	 * The contsructor method.
+	 */
 	public function __construct() {
 		add_action( 'woocommerce_email_after_order_table', array( $this, 'add_subscription_table' ) );
 	}
 
+	/**
+	 * Add subscription sections inside order mail.
+	 *
+	 * @param \WC_Order $order Order Object.
+	 *
+	 * @return void
+	 */
 	public function add_subscription_table( $order ) {
 		$histories = Helper::get_subscriptions_from_order( $order->get_id() );
 
@@ -22,7 +32,7 @@ class Email {
 				<table class="td" cellspacing="0" cellpadding="6" style="width: 100%; font-family: 'Helvetica Neue', Helvetica, Roboto, Arial, sans-serif;" border="1">
 					<tbody>
 						<tr>
-							<h2><?php _e( 'Related Subscriptions', 'sdevs_subscrpt' ); ?></h2>
+							<h2><?php esc_html_e( 'Related Subscriptions', 'sdevs_subscrpt' ); ?></h2>
 						</tr>
 						<?php
 						foreach ( $histories as $history ) :

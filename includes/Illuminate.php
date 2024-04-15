@@ -9,14 +9,13 @@ use SpringDevs\Subscription\Illuminate\Post;
 /**
  * Globally Load Scripts.
  */
-class Illuminate
-{
+class Illuminate {
+
 
 	/**
 	 * Initialize the Class.
 	 */
-	public function __construct()
-	{
+	public function __construct() {
 		new Cron();
 		new Post();
 		new Checkout();

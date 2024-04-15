@@ -3,8 +3,8 @@ Contributors: naminbd, ok9xnirab
 Donate link:
 Tags: woocommerce, subscription, missing addons, woocommerce subscription
 Requires at least: 4.0
-Tested up to: 6.2
-Stable tag: 1.1
+Tested up to: 6.5
+Stable tag: 1.1.1
 Requires PHP: 7.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -65,6 +65,9 @@ A powerfull plugin that allow to enable subscription on woocommerce products.
 
 
 == Changelog ==
+
+= 1.1.1 =
+- **Fix:** Displaying `/1{type}` inside product details.
 
 = 1.1 =
 - **Update:** We rebuild our plugin from scratch to provide better & long terms supports
