@@ -44,7 +44,7 @@
             "step": "importWxr",
             "file": {
                 "resource": "url",
-                "url": "https://github.com/springdevs/subscription/blob/next/site-content.xml"
+                "url": "https://raw.githubusercontent.com/springdevs/subscription/next/site-content.xml"
             }
         },
         {
