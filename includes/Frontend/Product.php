@@ -241,7 +241,7 @@ class Product {
 					$signup_fee_html = '<br/> + Signup fee of ' . wc_price( $post_meta['signup_fee'] );
 				}
 			}
-			$price_html = $price . '/' . $time . $type . $signup_fee_html . $trial;
+			$price_html = $price . ' / ' . $time . $type . $signup_fee_html . $trial;
 			return $price_html;
 		else :
 			return $price;

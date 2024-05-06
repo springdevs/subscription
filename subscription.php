@@ -6,6 +6,7 @@ Description: Allow your customers to order once and get their products and servi
 Version: 1.1.1
 Author: SpringDevs
 Author URI: https://springdevs.com/
+Requires Plugins: woocommerce
 License: GPLv2
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 Text Domain: sdevs_subscrpt

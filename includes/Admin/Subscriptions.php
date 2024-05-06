@@ -218,6 +218,11 @@ class Subscriptions {
 		include 'views/subscription-customer.php';
 	}
 
+	/**
+	 * Display subscription info.
+	 *
+	 * @return void
+	 */
 	public function subscrpt_order_info() {
 		$post_meta = get_post_meta( get_the_ID(), '_order_subscrpt_meta', true );
 		$order     = wc_get_order( $post_meta['order_id'] );
@@ -281,11 +286,12 @@ class Subscriptions {
 		);
 
 		$post_meta = get_post_meta( $post_id, '_order_subscrpt_meta', true );
-		if ( $action === 'active' ) {
+		if ( 'active' === $action ) {
 			$order = wc_get_order( $post_meta['order_id'] );
 			$order->update_status( 'completed' );
+			Action::status( $action, $post_id, false );
+		} else {
+			Action::status( $action, $post_id );
 		}
-
-		Action::status( $action, $post_id );
 	}
 }

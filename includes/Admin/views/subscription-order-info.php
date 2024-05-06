@@ -47,9 +47,20 @@
 			<th scope="row">Payment Method:</th>
 			<td><?php echo esc_html( $order->get_payment_method_title() ); ?></td>
 		</tr>
+		<?php if ( class_exists( 'WC_Stripe' ) && 'stripe' === $order->get_payment_method() ) : ?>
+		<tr>
+			<?php
+			$is_auto_renew = get_post_meta( get_the_ID(), '_subscrpt_auto_renew', true );
+			?>
+			<th scope="row">Stripe Auto Renewal:</th>
+			<td>
+				<?php echo esc_html( '0' !== $is_auto_renew ? 'On' : 'Off' ); ?>
+			</td>
+		</tr>
+		<?php endif; ?>
 		<tr>
 			<th scope="row">Billing:</th>
-			<td><?php echo wp_kses_post( $order->get_formatted_billing_address() ); ?></td>
+			<td><?php echo wp_kses_post( $order->get_formatted_billing_address() ? $order->get_formatted_billing_address() : 'No billing address set.' ); ?></td>
 		</tr>
 		<tr>
 			<th scope="row">Shipping:</th>

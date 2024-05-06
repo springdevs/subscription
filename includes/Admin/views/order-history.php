@@ -19,7 +19,7 @@
 			$order_item = $order->get_item( $order_history->order_item_id );
 			?>
 			<tr>
-				<td><a href="<?php echo wp_kses_post( get_edit_post_link( $order_history->order_id ) ); ?>" target="_blank"><?php echo wp_kses_post( $order_history->order_id ); ?></a></td>
+				<td><a href="<?php echo wp_kses_post( $order->get_edit_order_url() ); ?>" target="_blank"><?php echo wp_kses_post( $order_history->order_id ); ?></a></td>
 				<td><?php echo wp_kses_post( order_relation_type_cast( $order_history->type ) ); ?></td>
 				<td>
 					<?php

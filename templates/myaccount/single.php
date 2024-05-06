@@ -3,6 +3,7 @@
  * Single subscription page
  *
  * @var WC_Order $order
+ * @var WC_Order_Item $order_item
  * @var array $post_meta
  * @var stdClass $status
  * @var array $action_buttons
@@ -95,7 +96,7 @@ do_action( 'before_single_subscrpt_content' );
 	<tbody>
 		<?php
 		$product_name       = $order_item->get_name();
-		$product_link       = get_permalink( $order_item->get_product_id() );
+		$product_link       = get_permalink( $order_item->get_variation_id() !== 0 ? $order_item->get_variation_id() : $order_item->get_product_id() );
 		$order_item_meta    = $order_item->get_meta( '_subscrpt_meta', true );
 		$time               = '1' === $order_item_meta['time'] ? null : $order_item_meta['time'];
 		$type               = subscrpt_get_typos( $order_item_meta['time'], $order_item_meta['type'] );

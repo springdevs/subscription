@@ -35,6 +35,7 @@ class Post {
 			'view_item'         => __( 'View Subscription', 'sdevs_subscrpt' ),
 			'view_items'        => __( 'View Subscription', 'sdevs_subscrpt' ),
 			'search_items'      => __( 'Search Subscription', 'sdevs_subscrpt' ),
+			'not_found'         => __( 'No subscriptions found.', 'sdevs_subscrpt' ),
 		);
 
 		$args = array(

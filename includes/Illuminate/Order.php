@@ -18,6 +18,7 @@ class Order {
 		add_action( 'woocommerce_admin_order_item_values', array( $this, 'admin_order_item_value' ), 10, 2 );
 		add_action( 'woocommerce_before_order_itemmeta', array( $this, 'add_order_item_data' ), 10, 3 );
 		add_action( 'woocommerce_order_status_changed', array( $this, 'order_status_changed' ) );
+		add_action( 'woocommerce_before_delete_order', array( $this, 'delete_the_subscription' ) );
 	}
 
 	public function format_order_price( $subtotal, $item, $order ) {
@@ -121,5 +122,28 @@ class Order {
 				do_action( 'subscrpt_order_status_changed', $order, $history );
 			}
 		}
+	}
+
+	/**
+	 * Delete the subscription.
+	 *
+	 * @param int $order_id Order ID.
+	 *
+	 * @return void
+	 */
+	public function delete_the_subscription( $order_id ) {
+		global $wpdb;
+		$table_name = $wpdb->prefix . 'subscrpt_order_relation';
+
+		$histories = Helper::get_subscriptions_from_order( $order_id );
+		foreach ( (array) $histories as $history ) {
+			$subscription_meta = get_post_meta( $history->subscription_id, '_order_subscrpt_meta', true );
+			if ( (int) $subscription_meta['order_id'] === $order_id ) {
+				wp_delete_post( $history->subscription_id, true );
+			}
+		}
+
+		// phpcs:ignore
+		$wpdb->delete( $table_name, array( 'order_id' => $order_id ), array( '%d' ) );
 	}
 }

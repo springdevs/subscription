@@ -7,40 +7,37 @@ namespace SpringDevs\Subscription\Illuminate;
  *
  * @package SpringDevs\Subscription\Illuminate
  */
-class Cron
-{
+class Cron {
 
 	/**
 	 * Initialize the class.
 	 */
-	public function __construct()
-	{
-		add_action('subscrpt_daily_cron', array($this, 'daily_cron_task'));
+	public function __construct() {
+		add_action( 'subscrpt_daily_cron', array( $this, 'daily_cron_task' ) );
 	}
 
 	/**
 	 * Run daily cron task to check if subscription expired.
 	 */
-	public function daily_cron_task()
-	{
+	public function daily_cron_task() {
 		$args = array(
 			'post_type'   => 'subscrpt_order',
-			'post_status' => array('active', 'pe_cancelled'),
+			'post_status' => array( 'active', 'pe_cancelled' ),
 			'fields'      => 'ids',
 			'author'      => get_current_user_id(),
 		);
 
-		$active_subscriptions = get_posts($args);
+		$active_subscriptions = get_posts( $args );
 
-		if ($active_subscriptions && count($active_subscriptions) > 0) {
-			foreach ($active_subscriptions as $subscription) {
-				$post_meta = get_post_meta($subscription, '_order_subscrpt_meta', true);
+		if ( $active_subscriptions && count( $active_subscriptions ) > 0 ) {
+			foreach ( $active_subscriptions as $subscription ) {
+				$post_meta = get_post_meta( $subscription, '_order_subscrpt_meta', true );
 
-				if (time() >= $post_meta['next_date'] || (null !== $post_meta['trial'] && time() >= $post_meta['start_date'])) {
-					if ('pe_cancelled' === get_post_status($subscription)) {
-						Action::status('cancelled', $subscription);
+				if ( time() >= $post_meta['next_date'] || ( null !== $post_meta['trial'] && time() >= $post_meta['start_date'] ) ) {
+					if ( 'pe_cancelled' === get_post_status( $subscription ) ) {
+						Action::status( 'cancelled', $subscription );
 					} else {
-						Action::status('expired', $subscription);
+						Action::status( 'expired', $subscription );
 					}
 				}
 			}

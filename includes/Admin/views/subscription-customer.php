@@ -19,7 +19,7 @@
 			</tr>
 			<tr class="view">
 				<th>&nbsp;</th>
-				<td><a class="button button-small" target="_blank" href="<?php echo esc_html( get_edit_post_link( $post_meta['order_id'] ) ); ?>">View Order</a></td>
+				<td><a class="button button-small" target="_blank" href="<?php echo esc_html( $order->get_edit_order_url() ); ?>">View Order</a></td>
 			</tr>
 		</tbody>
 	</table>

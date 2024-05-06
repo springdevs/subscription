@@ -15,6 +15,7 @@ class Checkout {
 	 */
 	public function __construct() {
 		add_action( 'woocommerce_checkout_order_processed', array( $this, 'create_subscription_after_checkout' ) );
+		add_action( 'woocommerce_resume_order', array( $this, 'remove_subscriptions' ) );
 	}
 
 	/**
@@ -62,15 +63,14 @@ class Checkout {
 
 					if ( ! empty( $post_meta['trial_time'] ) && $post_meta['trial_time'] > 0 && ! $is_renew && $has_trial ) {
 						$trial      = $post_meta['trial_time'] . ' ' . Helper::get_typos( $post_meta['trial_time'], $post_meta['trial_type'] );
-						$start_date = strtotime( $trial );
+						$start_date = sdevs_wp_strtotime( $trial );
 					}
-
 					$order_item_meta = array(
 						'order_id'      => $order_id,
 						'order_item_id' => $order_item->get_id(),
 						'trial'         => $trial,
 						'start_date'    => $start_date,
-						'next_date'     => strtotime( $post_meta['time'] . ' ' . $type, $start_date ),
+						'next_date'     => sdevs_wp_strtotime( $post_meta['time'] . ' ' . $type, $start_date ),
 					);
 
 					wc_update_order_item_meta(
@@ -87,11 +87,15 @@ class Checkout {
 
 					// Renew subscription if need!
 					$renew_subscription_id = Helper::subscription_exists( $product->get_id(), 'expired' );
-					if ( $is_renew && $renew_subscription_id && $post_status !== 'cancelled' ) {
+					if ( $is_renew && $renew_subscription_id && 'cancelled' !== $post_status ) {
 						$comment_id = wp_insert_comment(
 							array(
 								'comment_author'  => 'Subscription for WooCommerce',
-								'comment_content' => sprintf( __( 'The order %s has been created for the subscription', 'sdevs_subscrpt' ), $order_id ),
+								'comment_content' => sprintf(
+									// translators: order id.
+									__( 'The order %s has been created for the subscription', 'sdevs_subscrpt' ),
+									$order_id
+								),
 								'comment_post_ID' => $renew_subscription_id,
 								'comment_type'    => 'order_note',
 							)
@@ -152,5 +156,33 @@ class Checkout {
 
 			do_action( 'subscrpt_product_checkout', $order, $order_item, $post_status );
 		}
+	}
+
+	/**
+	 * Remove subscriptions for resumed orders.
+	 *
+	 * @param int $order_id Order id.
+	 *
+	 * @return void
+	 */
+	public function remove_subscriptions( $order_id ) {
+		global $wpdb;
+		// delete subscriptions & order item meta.
+		$histories = Helper::get_subscriptions_from_order( $order_id );
+		foreach ( $histories as $history ) {
+			$table_name = $wpdb->prefix . 'subscrpt_order_relation';
+			// @phpcs:ignore
+			$relation_count = $wpdb->get_var( $wpdb->prepare( 'SELECT COUNT(*) FROM %i WHERE subscription_id=%d', array( $table_name, $history->subscription_id ) ) );
+			if ( 1 === (int) $relation_count ) {
+				wp_delete_post( $history->subscription_id, true );
+			}
+			wc_delete_order_item_meta( $history->order_item_id, '_subscrpt_meta' );
+		}
+
+		// delete order subscription relation.
+		global $wpdb;
+		$table_name = $wpdb->prefix . 'subscrpt_order_relation';
+		// phpcs:ignore
+		$wpdb->delete( $table_name, array( 'order_id' => $order_id ), array( '%d' ) );
 	}
 }

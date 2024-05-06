@@ -66,6 +66,10 @@ class Helper {
 	 * @return \WP_Post | false
 	 */
 	public static function subscription_exists( int $product_id, $status ) {
+		if ( 0 === get_current_user_id() ) {
+			return false;
+		}
+
 		$args = array(
 			'post_type'   => 'subscrpt_order',
 			'post_status' => $status,
@@ -203,14 +207,14 @@ class Helper {
 		return apply_filters( 'subscrpt_format_price_with_subscription', $formatted_price, $price, $item_id );
 	}
 
-		/**
-		 * Get total subscriptions by product ID.
-		 *
-		 * @param Int            $product_id Product ID.
-		 * @param String | array $status Status.
-		 *
-		 * @return \WP_Post | false
-		 */
+	/**
+	 * Get total subscriptions by product ID.
+	 *
+	 * @param Int            $product_id Product ID.
+	 * @param String | array $status Status.
+	 *
+	 * @return \WP_Post | false
+	 */
 	public static function get_total_subscriptions_from_product( int $product_id, $status = array( 'active', 'pending', 'expired', 'pe_cancelled', 'cancelled' ) ) {
 		$args = array(
 			'post_type'   => 'subscrpt_order',

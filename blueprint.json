@@ -33,19 +33,23 @@
             }
         },
         {
-            "step": "setSiteOptions",
-            "options": {
-                "woocommerce_onboarding_profile": "a:1:{s:7:\"skipped\";b:1;}",
-                "woocommerce_currency": "BDT",
-                "woocommerce_default_country": "BD:BD-13"
-            }
-        },
-        {
             "step": "importWxr",
             "file": {
                 "resource": "url",
                 "url": "https://raw.githubusercontent.com/springdevs/subscription/next/site-content.xml"
             }
+        },
+        {
+            "step": "wp-cli",
+            "command": "wp option patch insert woocommerce_onboarding_profile skipped 1"
+        },
+        {
+            "step": "wp-cli",
+            "command": "wp option patch insert woocommerce_currency BDT"
+        },
+        {
+            "step": "wp-cli",
+            "command": "wp option patch insert woocommerce_default_country BD:BD-13"
         },
         {
             "step": "login",
