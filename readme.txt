@@ -47,6 +47,10 @@ A powerfull plugin that allow to enable subscription on woocommerce products.
         2. Visit 'Plugins'.
         3. Activate the `WooCommerce Subscription` plugin.
 
+== Frequently Asked Questions ==
+=Is this plugin compatible with WooCommerce block pages?=
+No, This plugin isn't compatible with WooCommerce block pages. You need to continue with shortcode pages.
+
 
 == Screenshots ==
 
