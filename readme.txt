@@ -48,8 +48,17 @@ A powerfull plugin that allow to enable subscription on woocommerce products.
         3. Activate the `WooCommerce Subscription` plugin.
 
 == Frequently Asked Questions ==
-=Is this plugin compatible with WooCommerce block pages?=
+=Is this plugin compatible with WooCommerce block pages ?=
 No, This plugin isn't compatible with WooCommerce block pages. You need to continue with shortcode pages.
+=How to overwrite the frontend templates ?=
+Just copy `myaccount` directory which is located in the `templates` folder & paste it to `yourtheme/subscription/`.
+=Is it compatible with all WordPress themes ?=
+Compatibility with all themes is impossible, because there are too many, but generally if themes are developed according to WordPress and WooCommerce guidelines, **Subscription for WooCommerce** is compatible with them.
+Sometimes, especially when new versions are released, it might only require some time for them to be all updated, but you can be sure that they will be tested and will be working in a few days.
+=Can I create subscriptions from the backend ?=
+**No**, Currently this feature is not available.
+=Is it possible to set a minimum subscription time ?=
+Customer can set status to **Pending cancellation**, which subscription will be cancelled automatically when the period end. This feature only work when subscribed product's user-cancell option is set to **yes**.
 
 
 == Screenshots ==
