@@ -89,6 +89,7 @@ class Order {
 		switch ( $order->get_status() ) {
 			case 'on-hold':
 			case 'pending':
+			case 'processing':
 				$post_status = 'pending';
 				break;
 
@@ -102,6 +103,7 @@ class Order {
 				$post_status = 'active';
 				break;
 		}
+		$post_status = apply_filters( 'subscript_order_status_to_post_status', $post_status, $order );
 
 		global $wpdb;
 		$table_name = $wpdb->prefix . 'subscrpt_order_relation';
