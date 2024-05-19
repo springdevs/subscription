@@ -4,7 +4,7 @@ Donate link:
 Tags: woocommerce, subscription, woocommerce subscription
 Requires at least: 4.0
 Tested up to: 6.5
-Stable tag: 1.1.3
+Stable tag: 1.1.4
 Requires PHP: 7.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -78,6 +78,10 @@ Customer can set status to **Pending cancellation**, which subscription will be 
 
 
 == Changelog ==
+
+= 1.1.4 =
+- **Update:** Subscription status will be `pending` when order status is `processing`.
+- **New**: `subscript_order_status_to_post_status` hook added to filter post status during order status changed event.
 
 = 1.1.3 =
 - **New**: Subscription storeAPI checkout support added.
