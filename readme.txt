@@ -1,10 +1,10 @@
 === Subscription for WooCommerce ===
 Contributors: naminbd, ok9xnirab
 Donate link:
-Tags: woocommerce, subscription, missing addons, woocommerce subscription
+Tags: woocommerce, subscription, woocommerce subscription
 Requires at least: 4.0
 Tested up to: 6.5
-Stable tag: 1.1.2
+Stable tag: 1.1.3
 Requires PHP: 7.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -49,7 +49,7 @@ A powerfull plugin that allow to enable subscription on woocommerce products.
 
 == Frequently Asked Questions ==
 =Is this plugin compatible with WooCommerce block pages ?=
-No, This plugin isn't compatible with WooCommerce block pages. You need to continue with shortcode pages.
+No, This plugin isn't fully compatible with WooCommerce block pages. You need to continue with shortcode pages.
 =How to overwrite the frontend templates ?=
 Just copy `myaccount` directory which is located in the `templates` folder & paste it to `yourtheme/subscription/`.
 =Is it compatible with all WordPress themes ?=
@@ -78,6 +78,9 @@ Customer can set status to **Pending cancellation**, which subscription will be 
 
 
 == Changelog ==
+
+= 1.1.3 =
+- **New**: Subscription storeAPI checkout support added.
 
 = 1.1.2 = 
 - **Fix:** Handle order deletion.

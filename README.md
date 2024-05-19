@@ -16,6 +16,20 @@ bash clean.sh
 
 ## changelog
 
+### 1.1.3
+
+- **New**: Subscription storeAPI checkout support added.
+
+### 1.1.2
+
+- **Fix:** Handle order deletion.
+- **Update:** WP timezone setting support added.
+- **New:** Compatible with pro version.
+
+### 1.1.1
+
+- **Fix:** Displaying `/1{type}` inside product details.
+
 ### v1.1
 
 - We rebuild our plugin from scratch to provide better & long terms supports
