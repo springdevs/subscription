@@ -9,13 +9,22 @@ use SpringDevs\Subscription\Illuminate\Helper;
  */
 class Checkout {
 
-
 	/**
 	 * Initialize the class
 	 */
 	public function __construct() {
 		add_action( 'woocommerce_checkout_order_processed', array( $this, 'create_subscription_after_checkout' ) );
+		add_action( 'woocommerce_store_api_checkout_order_processed', array( $this, 'create_subscription_after_checkout_storeapi' ) );
 		add_action( 'woocommerce_resume_order', array( $this, 'remove_subscriptions' ) );
+	}
+
+	/**
+	 * Create subscription during checkout on storeAPI.
+	 *
+	 * @param \WC_Order $order Order Object.
+	 */
+	public function create_subscription_after_checkout_storeapi( $order ) {
+		$this->create_subscription_after_checkout( $order->get_id() );
 	}
 
 	/**
