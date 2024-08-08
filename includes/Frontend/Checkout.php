@@ -16,6 +16,7 @@ class Checkout {
 		add_action( 'woocommerce_checkout_order_processed', array( $this, 'create_subscription_after_checkout' ) );
 		add_action( 'woocommerce_store_api_checkout_order_processed', array( $this, 'create_subscription_after_checkout_storeapi' ) );
 		add_action( 'woocommerce_resume_order', array( $this, 'remove_subscriptions' ) );
+		add_action( 'woocommerce_checkout_create_order_line_item', array( $this, 'save_order_item_product_meta' ), 10, 3 );
 	}
 
 	/**
@@ -30,12 +31,10 @@ class Checkout {
 	/**
 	 * Create subscription during checkout.
 	 *
-	 * @param Int $order_id Order ID.
+	 * @param int $order_id Order ID.
 	 */
 	public function create_subscription_after_checkout( $order_id ) {
-		global $wpdb;
-		$history_table = $wpdb->prefix . 'subscrpt_order_relation';
-		$order         = wc_get_order( $order_id );
+		$order = wc_get_order( $order_id );
 
 		// Grab the post status based on order status.
 		$post_status = 'active';
@@ -59,111 +58,62 @@ class Checkout {
 		foreach ( $order_items as $order_item ) {
 			$product = wc_get_product( $order_item['product_id'] );
 
-			if ( ! $product->is_type( 'variation' ) ) {
-				$post_meta = $product->get_meta( '_subscrpt_meta' );
+			if ( ! $product->is_type( 'variation' ) && ! subscrpt_pro_activated() ) {
+				$enabled = $product->get_meta( '_subscrpt_enabled' );
 
-				if ( is_array( $post_meta ) && $post_meta['enable'] ) {
-					$is_renew = isset( $order_item['_renew_subscrpt'] );
-					$type     = Helper::get_typos( $post_meta['time'], $post_meta['type'] );
+				if ( $enabled ) {
+					$is_renew = isset( $order_item['renew_subscrpt'] );
+					$type     = Helper::get_typos( 1, $product->get_meta( '_subscrpt_timing_option' ) );
 
-					$start_date = time();
-					$trial      = null;
-					$has_trial  = Helper::check_trial( $product->get_id() );
-
-					if ( ! empty( $post_meta['trial_time'] ) && $post_meta['trial_time'] > 0 && ! $is_renew && $has_trial ) {
-						$trial      = $post_meta['trial_time'] . ' ' . Helper::get_typos( $post_meta['trial_time'], $post_meta['trial_type'] );
-						$start_date = sdevs_wp_strtotime( $trial );
-					}
-					$order_item_meta = array(
-						'order_id'      => $order_id,
-						'order_item_id' => $order_item->get_id(),
-						'trial'         => $trial,
-						'start_date'    => $start_date,
-						'next_date'     => sdevs_wp_strtotime( $post_meta['time'] . ' ' . $type, $start_date ),
-					);
+					$start_date    = time();
+					$next_date     = sdevs_wp_strtotime( 1 . ' ' . $type, $start_date );
+					$timing_option = $product->get_meta( '_subscrpt_timing_option' );
 
 					wc_update_order_item_meta(
 						$order_item->get_id(),
 						'_subscrpt_meta',
 						array(
-							'time'       => $post_meta['time'],
-							'type'       => $post_meta['type'],
-							'trial'      => $trial,
+							'time'       => 1,
+							'type'       => $timing_option,
+							'trial'      => null,
 							'start_date' => $start_date,
-							'next_date'  => strtotime( $post_meta['time'] . ' ' . $type, $start_date ),
+							'next_date'  => $next_date,
 						)
 					);
 
 					// Renew subscription if need!
-					$renew_subscription_id = Helper::subscription_exists( $product->get_id(), 'expired' );
+					$renew_subscription_id    = Helper::subscription_exists( $product->get_id(), 'expired' );
+					$selected_subscription_id = null;
 					if ( $is_renew && $renew_subscription_id && 'cancelled' !== $post_status ) {
-						$comment_id = wp_insert_comment(
-							array(
-								'comment_author'  => 'Subscription for WooCommerce',
-								'comment_content' => sprintf(
-									// translators: order id.
-									__( 'The order %s has been created for the subscription', 'sdevs_subscrpt' ),
-									$order_id
-								),
-								'comment_post_ID' => $renew_subscription_id,
-								'comment_type'    => 'order_note',
-							)
+						$selected_subscription_id = $renew_subscription_id;
+						Helper::process_order_renewal(
+							$selected_subscription_id,
+							$order_id,
+							$order_item->get_id()
 						);
-						update_comment_meta( $comment_id, '_subscrpt_activity', __( 'Renewal Order', 'sdevs_subscrpt' ) );
-
-						update_post_meta( $renew_subscription_id, '_order_subscrpt_meta', $order_item_meta );
-						$wpdb->insert(
-							$history_table,
-							array(
-								'subscription_id' => $renew_subscription_id,
-								'order_id'        => $order_id,
-								'order_item_id'   => $order_item->get_id(),
-								'type'            => 'renew',
-							)
-						);
+					} else {
+						$selected_subscription_id = Helper::process_new_subscription_order( $order_item, $post_status, $product );
 					}
 
-					if ( ! $is_renew && ! $renew_subscription_id ) {
-						$args            = array(
-							'post_title'  => 'Subscription',
-							'post_type'   => 'subscrpt_order',
-							'post_status' => $post_status,
-						);
-						$subscription_id = wp_insert_post( $args );
-						wp_update_post(
-							array(
-								'ID'         => $subscription_id,
-								'post_title' => "Subscription #{$subscription_id}",
-							)
-						);
-						$comment_id = wp_insert_comment(
-							array(
-								'comment_author'  => 'Subscription for WooCommerce',
-								'comment_content' => sprintf( __( 'Subscription successfully created.	order is %s', 'sdevs_subscrpt' ), $order_id ),
-								'comment_post_ID' => $subscription_id,
-								'comment_type'    => 'order_note',
-							)
-						);
-						update_comment_meta( $comment_id, '_subscrpt_activity', __( 'New Subscription', 'sdevs_subscrpt' ) );
+					if ( $selected_subscription_id ) {
+						// product related.
+						update_post_meta( $selected_subscription_id, '_subscrpt_timing_option', $timing_option );
+						update_post_meta( $selected_subscription_id, '_subscrpt_price', $product->get_price() * $order_item['quantity'] );
 
-						update_post_meta( $subscription_id, '_order_subscrpt_meta', $order_item_meta );
-						update_post_meta( $subscription_id, '_subscrpt_product_id', $product->get_id() );
-						update_post_meta( $subscription_id, '_subscrpt_user_cancel', $post_meta['user_cancell'] );
+						// order related.
+						update_post_meta( $selected_subscription_id, '_subscrpt_order_id', $order_id );
+						update_post_meta( $selected_subscription_id, '_subscrpt_order_item_id', $order_item->get_id() );
 
-						$wpdb->insert(
-							$history_table,
-							array(
-								'subscription_id' => $subscription_id,
-								'order_id'        => $order_id,
-								'order_item_id'   => $order_item->get_id(),
-								'type'            => 'new',
-							)
-						);
+						// subscription related.
+						update_post_meta( $selected_subscription_id, '_subscrpt_start_date', $start_date );
+						update_post_meta( $selected_subscription_id, '_subscrpt_next_date', $next_date );
+
+						do_action( 'subscrpt_order_checkout', $selected_subscription_id, $order_item );
 					}
 				}
 			}
 
-			do_action( 'subscrpt_product_checkout', $order, $order_item, $post_status );
+			do_action( 'subscrpt_product_checkout', $order_item, $product, $post_status );
 		}
 	}
 
@@ -193,5 +143,18 @@ class Checkout {
 		$table_name = $wpdb->prefix . 'subscrpt_order_relation';
 		// phpcs:ignore
 		$wpdb->delete( $table_name, array( 'order_id' => $order_id ), array( '%d' ) );
+	}
+
+	/**
+	 * Save renew meta
+	 *
+	 * @param Object $item Item.
+	 * @param String $cart_item_key Cart Item Key.
+	 * @param Array  $cart_item Cart Item.
+	 */
+	public function save_order_item_product_meta( $item, $cart_item_key, $cart_item ) {
+		if ( isset( $cart_item['renew_subscrpt'] ) ) {
+			$item->update_meta_data( '_renew_subscrpt', $cart_item['renew_subscrpt'] );
+		}
 	}
 }

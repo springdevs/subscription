@@ -1,7 +1,7 @@
-<div class="option_group sdevs-form sdevs_panel show_if_simple hide" style="padding: 10px;">
+<div id="sdevs_subscription_options" class="panel woocommerce_options_panel option_group sdevs-form sdevs_panel show_if_simple" style="padding: 10px;">
 <div class="show_if_subscription">
 	<input name="_subscript_nonce" type="hidden" value="<?php echo esc_attr( wp_create_nonce( '_subscript_edit_product_nonce' ) ); ?>" />
-	<strong style="margin: 10px;"><?php _e( 'Subscription Settings', 'sdevs_subscrpt' ); ?></strong>
+	<strong style="margin: 10px;"><?php esc_html_e( 'Subscription Settings', 'sdevs_subscrpt' ); ?></strong>
 	<?php
 
 	woocommerce_wp_select(
@@ -28,8 +28,8 @@
 
 	woocommerce_wp_select(
 		array(
-			'id'          => 'subscrpt_user_cancell',
-			'label'       => __( 'Can User Cancell', 'sdevs_subscrpt' ),
+			'id'          => 'subscrpt_user_cancel',
+			'label'       => __( 'Can User Cancel', 'sdevs_subscrpt' ),
 			'value'       => $subscrpt_user_cancell,
 			'options'     => array(
 				'yes' => __( 'Yes', 'sdevs_subscrpt' ),

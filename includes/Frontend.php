@@ -3,6 +3,7 @@
 namespace SpringDevs\Subscription;
 
 use SpringDevs\Subscription\Frontend\ActionController;
+use SpringDevs\Subscription\Frontend\Cart;
 use SpringDevs\Subscription\Frontend\Downloadable;
 use SpringDevs\Subscription\Frontend\MyAccount;
 use SpringDevs\Subscription\Frontend\Order as FrontendOrder;
@@ -14,16 +15,16 @@ use SpringDevs\Subscription\Illuminate\Order;
 /**
  * Frontend handler class
  */
-class Frontend
-{
+class Frontend {
+
 
 	/**
 	 * Frontend constructor.
 	 */
-	public function __construct()
-	{
+	public function __construct() {
 		new Illuminate();
 		new Product();
+		new Cart();
 		new FrontendOrder();
 		new ActionController();
 		new MyAccount();

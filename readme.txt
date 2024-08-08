@@ -3,7 +3,7 @@ Contributors: naminbd, ok9xnirab
 Donate link:
 Tags: woocommerce, subscription, woocommerce subscription
 Requires at least: 4.0
-Tested up to: 6.5
+Tested up to: 6.6
 Stable tag: trunk
 Requires PHP: 7.0
 License: GPLv2 or later
@@ -78,6 +78,10 @@ Customer can set status to **Pending cancellation**, which subscription will be 
 
 
 == Changelog ==
+
+= 1.2 =
+- **New**: Block pages support added.
+- **Update**: Rebuild the plugin for better long term support.
 
 = 1.1.4 =
 - **Update:** Subscription status will be `pending` when order status is `processing`.

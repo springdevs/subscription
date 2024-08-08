@@ -13,9 +13,9 @@ class Order {
 	 * Initialize the class.
 	 */
 	public function __construct() {
-		add_filter( 'woocommerce_order_formatted_line_subtotal', array( $this, 'format_order_price' ), 10, 3 );
-		add_action( 'woocommerce_admin_order_item_headers', array( $this, 'admin_order_item_header' ) );
-		add_action( 'woocommerce_admin_order_item_values', array( $this, 'admin_order_item_value' ), 10, 2 );
+		// add_filter( 'woocommerce_order_formatted_line_subtotal', array( $this, 'format_order_price' ), 10, 3 );
+		add_action( 'woocommerce_admin_order_item_headers', array( $this, 'register_custom_column' ) );
+		add_action( 'woocommerce_admin_order_item_values', array( $this, 'add_column_value' ), 10, 2 );
 		add_action( 'woocommerce_before_order_itemmeta', array( $this, 'add_order_item_data' ), 10, 3 );
 		add_action( 'woocommerce_order_status_changed', array( $this, 'order_status_changed' ) );
 		add_action( 'woocommerce_before_delete_order', array( $this, 'delete_the_subscription' ) );
@@ -35,20 +35,35 @@ class Order {
 		return $price_html;
 	}
 
-	public function admin_order_item_header( $order ) {
+	/**
+	 * Add custom column on order item.
+	 *
+	 * @return void
+	 */
+	public function register_custom_column() {
 		?>
 		<th class="item_recurring sortable" data-sort="float"><?php esc_html_e( 'Recurring', 'sdevs_subscrpt' ); ?></th>
 		<?php
 	}
 
-	public function admin_order_item_value( $product, $item ) {
+	/**
+	 * Display data for custom column.
+	 *
+	 * @param \WC_Product    $product Product Object.
+	 * @param \WC_Order_Item $item Order Item.
+	 *
+	 * @return void
+	 */
+	public function add_column_value( $product, $item ) {
 		if ( ! method_exists( $item, 'get_id' ) || ! method_exists( $item, 'get_subtotal' ) ) {
 			return;
 		}
 
-		$subtotal = '-';
-		$item_id  = $item->get_id();
-		$subtotal = Helper::format_price_with_order_item( $item->get_subtotal(), $item_id );
+		$subtotal        = '-';
+		$item_id         = $item->get_id();
+		$subscription_id = Helper::get_subscription_from_order_item_id( $item->get_id() )->subscription_id;
+		$price           = get_post_meta( $subscription_id, '_subscrpt_price', true );
+		$subtotal        = Helper::format_price_with_order_item( $price, $item_id );
 		?>
 		<td class="item_recurring" width="15%">
 			<div class="view">
@@ -139,8 +154,8 @@ class Order {
 
 		$histories = Helper::get_subscriptions_from_order( $order_id );
 		foreach ( (array) $histories as $history ) {
-			$subscription_meta = get_post_meta( $history->subscription_id, '_order_subscrpt_meta', true );
-			if ( (int) $subscription_meta['order_id'] === $order_id ) {
+			$subscription_order_id = get_post_meta( $history->subscription_id, '_subscrpt_order_id', true );
+			if ( (int) $subscription_order_id === $order_id ) {
 				wp_delete_post( $history->subscription_id, true );
 			}
 		}

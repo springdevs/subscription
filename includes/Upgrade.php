@@ -7,7 +7,7 @@ use SpringDevs\Subscription\Installer;
 class Upgrade {
 
 	public function run() {
-		if ( version_compare( SUBSCRPT_VERSION, get_option( 'subscrpt_version' ), '>' ) ) {
+		if ( version_compare( '1.1.0', get_option( 'subscrpt_version' ), '>' ) ) {
 
 			// create histories table
 			$installer = new Installer();

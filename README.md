@@ -16,6 +16,11 @@ bash clean.sh
 
 ## changelog
 
+### v1.2
+
+- **New**: Block pages support added.
+- **Update**: Rebuild the plugin for better long term support.
+
 ### v1.1.4
 
 - **Update:** Subscription status will be `pending` when order status is `processing`.

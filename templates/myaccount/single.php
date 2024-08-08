@@ -4,7 +4,9 @@
  *
  * @var WC_Order $order
  * @var WC_Order_Item $order_item
- * @var array $post_meta
+ * @var string $start_date
+ * @var string $next_date
+ * @var string|null $trial
  * @var stdClass $status
  * @var array $action_buttons
  *
@@ -34,7 +36,7 @@ do_action( 'before_single_subscrpt_content' );
 	<tbody>
 		<tr>
 			<td><?php esc_html_e( 'Order', 'sdevs_subscrpt' ); ?></td>
-			<td><a href="<?php echo esc_html( wc_get_endpoint_url( 'view-order', $order->get_id(), wc_get_page_permalink( 'myaccount' ) ) ); ?>" target="_blank"># <?php echo esc_html( $post_meta['order_id'] ); ?></a></td>
+			<td><a href="<?php echo esc_html( wc_get_endpoint_url( 'view-order', $order->get_id(), wc_get_page_permalink( 'myaccount' ) ) ); ?>" target="_blank"># <?php echo esc_html( $order->get_id() ); ?></a></td>
 		</tr>
 		<tr>
 			<td><?php esc_html_e( 'Status', 'sdevs_subscrpt' ); ?></td>
@@ -42,21 +44,21 @@ do_action( 'before_single_subscrpt_content' );
 		</tr>
 		<tr>
 			<td><?php esc_html_e( 'Start date', 'sdevs_subscrpt' ); ?></td>
-			<td><?php echo esc_html( gmdate( 'F d, Y', $post_meta['start_date'] ) ); ?></td>
+			<td><?php echo esc_html( gmdate( 'F d, Y', $start_date ) ); ?></td>
 		</tr>
-		<?php if ( null === $post_meta['trial'] ) : ?>
+		<?php if ( null == $trial ) : ?>
 			<tr>
 				<td><?php esc_html_e( 'Next payment date', 'sdevs_subscrpt' ); ?></td>
-				<td><?php echo esc_html( gmdate( 'F d, Y', $post_meta['next_date'] ) ); ?></td>
+				<td><?php echo esc_html( gmdate( 'F d, Y', $next_date ) ); ?></td>
 			</tr>
 		<?php else : ?>
 			<tr>
 				<td><?php esc_html_e( 'Trial', 'sdevs_subscrpt' ); ?></td>
-				<td><?php echo esc_html( $post_meta['trial'] ); ?></td>
+				<td><?php echo esc_html( $trial ); ?></td>
 			</tr>
 			<tr>
 				<td><?php esc_html_e( 'Trial End & First Billing', 'sdevs_subscrpt' ); ?></td>
-				<td><?php echo esc_html( gmdate( 'F d, Y', $post_meta['start_date'] ) ); ?></td>
+				<td><?php echo esc_html( gmdate( 'F d, Y', $next_date ) ); ?></td>
 			</tr>
 		<?php endif; ?>
 		<tr>
@@ -100,7 +102,7 @@ do_action( 'before_single_subscrpt_content' );
 		$order_item_meta    = $order_item->get_meta( '_subscrpt_meta', true );
 		$time               = '1' === $order_item_meta['time'] ? null : $order_item_meta['time'];
 		$type               = subscrpt_get_typos( $order_item_meta['time'], $order_item_meta['type'] );
-		$product_price_html = Helper::format_price_with_order_item( $order_item->get_total(), $order_item->get_id() );
+		$product_price_html = Helper::format_price_with_order_item( get_post_meta( $id, '_subscrpt_price', true ), $order_item->get_id() );
 		?>
 		<tr class="order_item">
 			<td class="product-name">
@@ -110,7 +112,7 @@ do_action( 'before_single_subscrpt_content' );
 			<td class="product-total">
 				<span class="woocommerce-Price-amount amount">
 					<?php
-					echo wp_kses_post( Helper::format_price_with_order_item( $order_item->get_total(), $order_item->get_id() ) );
+					echo wp_kses_post( Helper::format_price_with_order_item( get_post_meta( $id, '_subscrpt_price', true ), $order_item->get_id() ) );
 					?>
 				</span>
 			</td>
@@ -120,7 +122,7 @@ do_action( 'before_single_subscrpt_content' );
 		<tr>
 			<th scope="row"><?php _e( 'Subtotal', 'sdevs_subscrpt' ); ?>:</th>
 			<td>
-				<span class="woocommerce-Price-amount amount"><?php echo wc_price( $order_item->get_subtotal(), array( 'currency' => $order->get_currency() ) ); ?></span>
+				<span class="woocommerce-Price-amount amount"><?php echo wc_price( get_post_meta( $id, '_subscrpt_price', true ), array( 'currency' => $order->get_currency() ) ); ?></span>
 			</td>
 		</tr>
 		<tr>

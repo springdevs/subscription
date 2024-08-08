@@ -42,11 +42,15 @@ class MyAccount {
 	 * @param Int $id Post ID.
 	 */
 	public function view_subscrpt_content( int $id ) {
-		$post_meta   = get_post_meta( $id, '_order_subscrpt_meta', true );
-		$order       = wc_get_order( $post_meta['order_id'] );
-		$order_item  = $order->get_item( $post_meta['order_item_id'] );
-		$status      = get_post_status( $id );
-		$user_cancel = get_post_meta( $id, '_subscrpt_user_cancel', true );
+		$order_id      = get_post_meta( $id, '_subscrpt_order_id', true );
+		$order_item_id = get_post_meta( $id, '_subscrpt_order_item_id', true );
+		$order         = wc_get_order( $order_id );
+		$order_item    = $order->get_item( $order_item_id );
+		$status        = get_post_status( $id );
+		$user_cancel   = get_post_meta( $id, '_subscrpt_user_cancel', true );
+		$start_date    = get_post_meta( $id, '_subscrpt_start_date', true );
+		$next_date     = get_post_meta( $id, '_subscrpt_next_date', true );
+		$trial         = get_post_meta( $id, '_subscrpt_trial', true );
 
 		$subscrpt_nonce = wp_create_nonce( 'subscrpt_nonce' );
 		$action_buttons = array();
@@ -85,7 +89,9 @@ class MyAccount {
 			'myaccount/single.php',
 			array(
 				'id'              => $id,
-				'post_meta'       => $post_meta,
+				'start_date'      => $start_date,
+				'next_date'       => $next_date,
+				'trial'           => $trial,
 				'order'           => $order,
 				'order_item'      => $order_item,
 				'status'          => $post_status_object,

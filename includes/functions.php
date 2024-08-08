@@ -5,11 +5,11 @@ use Automattic\WooCommerce\Internal\DataStores\Orders\CustomOrdersTableControlle
 /**
  * Generate Url for Subscription Action.
  *
- * @param String $action Action.
- * @param String $nonce nonce.
- * @param Int    $subscription_id Subscription ID.
+ * @param string $action Action.
+ * @param string $nonce nonce.
+ * @param int    $subscription_id Subscription ID.
  *
- * @return String
+ * @return string
  */
 function subscrpt_get_action_url( $action, $nonce, $subscription_id ) {
 	return add_query_arg(
@@ -93,7 +93,7 @@ function order_relation_type_cast( string $key ) {
 		)
 	);
 
-	return $relational_type_keys[ $key ];
+	return isset( $relational_type_keys[ $key ] ) ? $relational_type_keys[ $key ] : '-';
 }
 
 if ( ! function_exists( 'is_wc_order_hpos_enabled' ) ) {

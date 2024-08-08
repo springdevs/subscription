@@ -68,15 +68,29 @@ class Assets {
 	public function get_scripts() {
 		$plugin_js_assets_path = SUBSCRPT_ASSETS . '/js/';
 
+		$block_script_asset_path = SUBSCRPT_PATH . '/build/index.asset.php';
+		$block_script_asset      = file_exists( $block_script_asset_path )
+			? require $block_script_asset_path
+			: array(
+				'dependencies' => false,
+				'version'      => SUBSCRPT_VERSION,
+			);
+
 		$scripts = array(
-			'sdevs_subscription_admin' => array(
+			'sdevs_subscription_admin'  => array(
 				'src'       => $plugin_js_assets_path . 'admin.js',
-				'deps'      => 'jquery',
+				'deps'      => array( 'jquery' ),
 				'in_footer' => true,
 			),
-			'sdevs_installer'          => array(
+			'sdevs_installer'           => array(
 				'src'       => $plugin_js_assets_path . 'installer.js',
 				'deps'      => array( 'jquery' ),
+				'in_footer' => true,
+			),
+			'sdevs_subscrpt_cart_block' => array(
+				'src'       => SUBSCRPT_URL . '/build/index.js',
+				'deps'      => $block_script_asset['dependencies'],
+				'version'   => $block_script_asset['version'],
 				'in_footer' => true,
 			),
 		);

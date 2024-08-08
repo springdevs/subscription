@@ -31,9 +31,11 @@ class Cron {
 
 		if ( $active_subscriptions && count( $active_subscriptions ) > 0 ) {
 			foreach ( $active_subscriptions as $subscription ) {
-				$post_meta = get_post_meta( $subscription, '_order_subscrpt_meta', true );
+				$start_date = get_post_meta( $subscription, '_subscrpt_start_date', true );
+				$next_date  = get_post_meta( $subscription, '_subscrpt_next_date', true );
+				$trial      = get_post_meta( $subscription, '_subscrpt_trial', true );
 
-				if ( time() >= $post_meta['next_date'] || ( null !== $post_meta['trial'] && time() >= $post_meta['start_date'] ) ) {
+				if ( time() >= $next_date || ( null !== $trial && time() >= $start_date ) ) {
 					if ( 'pe_cancelled' === get_post_status( $subscription ) ) {
 						Action::status( 'cancelled', $subscription );
 					} else {

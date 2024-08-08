@@ -4,7 +4,6 @@
 namespace SpringDevs\Subscription\Frontend;
 
 use SpringDevs\Subscription\Illuminate\Action;
-use SpringDevs\Subscription\Illuminate\AutoRenewal;
 
 /**
  * Class ActionController
@@ -61,12 +60,12 @@ class ActionController {
 	 * @param Int $subscrpt_id Subscription ID.
 	 */
 	public function manual_renew_product( $subscrpt_id ) {
-		$post_meta  = get_post_meta( $subscrpt_id, '_order_subscrpt_meta', true );
-		$product_id = get_post_meta( $subscrpt_id, '_subscrpt_product_id', true );
+		$product_id                = get_post_meta( $subscrpt_id, '_subscrpt_product_id', true );
+		$subscription_variation_id = get_post_meta( $subscrpt_id, '_subscrpt_variation_id', true );
 
 		$variation_id = 0;
-		if ( isset( $post_meta['variation_id'] ) ) {
-			$variation_id = $post_meta['variation_id'];
+		if ( isset( $variation_id ) ) {
+			$variation_id = $variation_id;
 		}
 
 		WC()->cart->empty_cart();

@@ -4,17 +4,30 @@ namespace SpringDevs\Subscription\Frontend;
 
 use SpringDevs\Subscription\Illuminate\Helper;
 
+/**
+ * Order class of frontend.
+ */
 class Order {
+	/**
+	 * Initialize the class.
+	 */
 	public function __construct() {
 		add_action( 'woocommerce_order_details_after_order_table', array( $this, 'display_subscrpt_details' ) );
 	}
 
+	/**
+	 * Display subscriptions related to the order.
+	 *
+	 * @param \WC_Order $order Order Object.
+	 *
+	 * @return void
+	 */
 	public function display_subscrpt_details( $order ) {
 		$histories = Helper::get_subscriptions_from_order( $order->get_id() );
 
 		if ( is_array( $histories ) && count( $histories ) > 0 ) :
 			?>
-			<h2 class="woocommerce-order-details__title"><?php _e( 'Related Subscriptions', 'sdevs_subscrpt' ); ?></h2>
+			<h2 class="woocommerce-order-details__title"><?php esc_html_e( 'Related Subscriptions', 'sdevs_subscrpt' ); ?></h2>
 			<?php
 			foreach ( $histories as $history ) :
 					$order_item      = $order->get_item( $history->order_item_id );
@@ -23,8 +36,9 @@ class Order {
 					$product_name = $order_item->get_name();
 					$product_link = get_the_permalink( $order_item->get_product_id() );
 					$post         = $history->subscription_id;
+					$cost         = get_post_meta( $post, '_subscrpt_price', true );
 
-					$trial_status = $order_item_meta['trial'] == null ? false : true;
+					$trial_status = null !== $order_item_meta['trial'];
 				?>
 					<table class="woocommerce-table woocommerce-table--order-details shop_table order_details">
 						<thead>
@@ -45,34 +59,36 @@ class Order {
 						</tbody>
 						<tfoot>
 						<tr>
-							<th scope="row"><?php _e( 'Status', 'sdevs_subscrpt' ); ?>:</th>
-							<td><?php echo get_post_status( $post ); ?></td>
+							<th scope="row"><?php esc_html_e( 'Status', 'sdevs_subscrpt' ); ?>:</th>
+							<td><?php echo esc_html( get_post_status( $post ) ); ?></td>
 						</tr>
 						<tr>
-							<th scope="row"><?php _e( 'Recurring amount', 'sdevs_subscrpt' ); ?>:</th>
+							<th scope="row"><?php esc_html_e( 'Recurring amount', 'sdevs_subscrpt' ); ?>:</th>
 							<td class="woocommerce-table__product-total product-total">
-								<?php echo wp_kses_post( Helper::format_price_with_order_item( $order_item->get_total(), $history->order_item_id ) ); ?>
+								<?php echo wp_kses_post( Helper::format_price_with_order_item( $cost, $history->order_item_id ) ); ?>
 							</td>
 						</tr>
-						<?php if ( $trial_status == null ) { ?>
+						<?php
+						if ( null == $trial_status ) {
+							?>
 							<tr>
-								<th scope="row"><?php _e( 'Next billing on', 'sdevs_subscrpt' ); ?>:</th>
-								<td><?php echo esc_html( date( 'F d, Y', $order_item_meta['next_date'] ) ); ?></td>
+								<th scope="row"><?php esc_html_e( 'Next billing on', 'sdevs_subscrpt' ); ?>:</th>
+								<td><?php echo esc_html( gmdate( 'F d, Y', $order_item_meta['next_date'] ) ); ?></td>
 							</tr>
 						<?php } else { ?>
 							<tr>
-								<th scope="row"><?php _e( 'Trial', 'sdevs_subscrpt' ); ?>:</th>
+								<th scope="row"><?php esc_html_e( 'Trial', 'sdevs_subscrpt' ); ?>:</th>
 								<td><?php echo esc_html( $order_item_meta['trial'] ); ?></td>
 							</tr>
 							<tr>
-								<th scope="row"><?php _e( 'First billing on', 'sdevs_subscrpt' ); ?>:</th>
-								<td><?php echo esc_html( date( 'F d, Y', $order_item_meta['start_date'] ) ); ?></td>
+								<th scope="row"><?php esc_html_e( 'First billing on', 'sdevs_subscrpt' ); ?>:</th>
+								<td><?php echo esc_html( gmdate( 'F d, Y', $order_item_meta['start_date'] ) ); ?></td>
 							</tr>
 						<?php } ?>
 						</tfoot>
 					</table>
 				<?php
-			endforeach;
-		endif;
+				endforeach;
+				endif;
 	}
 }

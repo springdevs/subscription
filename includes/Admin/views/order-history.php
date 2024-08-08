@@ -2,14 +2,11 @@
 	<thead>
 		<tr>
 			<th><?php
-
-			use SpringDevs\Subscription\Illuminate\Helper;
-
-			_e( 'Order', 'sdevs_subscrpt' ); ?></th>
+			esc_html_e( 'Order', 'sdevs_subscrpt' ); ?></th>
 			<th></th>
-			<th><?php _e( 'Date', 'sdevs_subscrpt' ); ?></th>
-			<th><?php _e( 'Status', 'sdevs_subscrpt' ); ?></th>
-			<th><?php _e( 'Amount', 'sdevs_subscrpt' ); ?></th>
+			<th><?php esc_html_e( 'Date', 'sdevs_subscrpt' ); ?></th>
+			<th><?php esc_html_e( 'Status', 'sdevs_subscrpt' ); ?></th>
+			<th><?php esc_html_e( 'Amount', 'sdevs_subscrpt' ); ?></th>
 		</tr>
 	</thead>
 	<tbody>
@@ -30,10 +27,20 @@
 				<td>
 				<?php
 				if ( $order ) {
-					echo esc_html( $order->get_status() );}
+					$order_statuses = wc_get_order_statuses();
+					echo esc_html( isset( $order_statuses[ "wc-{$order->get_status()}" ] ) ? $order_statuses[ "wc-{$order->get_status()}" ] : $order->get_status() );}
 				?>
 				</td>
-				<td><?php echo wp_kses_post( Helper::format_price_with_order_item( $order_item->get_total(), $order_item->get_id() ) ); ?></td>
+				<td>
+				<?php
+				echo wc_price(
+					$order_item->get_total(),
+					array(
+						'currency' => $order->get_currency(),
+					)
+				);
+				?>
+			</td>
 			</tr>
 		<?php endforeach; ?>
 	</tbody>

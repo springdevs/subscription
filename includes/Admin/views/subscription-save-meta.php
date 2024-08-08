@@ -1,6 +1,6 @@
 <p class="subscrpt_sub_box">
 			<select id="subscrpt_order_type" name="subscrpt_order_action">
-				<option value=""><?php esc_html_e( 'Choose Action', 'sdevs_subscrpt' ); ?></option>
+				<option value="" disabled><?php esc_html_e( 'Choose Action', 'sdevs_subscrpt' ); ?></option>
 				<?php foreach ( $actions as $action ) : ?>
 					<option value="<?php echo esc_html( $action['value'] ); ?>" 
 												<?php

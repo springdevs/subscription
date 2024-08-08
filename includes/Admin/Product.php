@@ -14,8 +14,9 @@ class Product {
 	 */
 	public function __construct() {
 		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_assets' ) );
+		add_filter( 'woocommerce_product_data_tabs', array( $this, 'register_tab' ) );
+		add_action( 'woocommerce_product_data_panels', array( $this, 'subscription_forms' ) );
 		add_filter( 'product_type_options', array( $this, 'add_product_type_options' ) );
-		add_action( 'woocommerce_product_options_general_product_data', array( $this, 'subscription_forms' ) );
 		add_action( 'save_post_product', array( $this, 'save_subscrpt_data' ) );
 	}
 
@@ -24,6 +25,23 @@ class Product {
 	 */
 	public function enqueue_assets() {
 		wp_enqueue_script( 'sdevs_subscription_admin' );
+	}
+
+	/**
+	 * Register "Subscription" option tab.
+	 *
+	 * @param array $tabs Tabs.
+	 *
+	 * @return array
+	 */
+	public function register_tab( $tabs ) {
+		$tabs['sdevs_subscription'] = array(
+			'label'    => __( 'Subscription', 'sdevs_subscrpt' ),
+			'class'    => array( 'show_if_simple', 'show_if_subscription' ),
+			'target'   => 'sdevs_subscription_options',
+			'priority' => 11,
+		);
+		return $tabs;
 	}
 
 	/**
@@ -37,8 +55,10 @@ class Product {
 		$screen = get_current_screen();
 		$value  = 'no';
 		if ( 'edit' === $screen->parent_base ) {
-			$post_meta = get_post_meta( get_the_ID(), '_subscrpt_meta', true );
-			$value     = ! empty( $post_meta ) && $post_meta['enable'] ? 'yes' : 'no';
+			$product = wc_get_product( get_the_ID() );
+			if ( $product ) {
+				$value = $product->get_meta( '_subscrpt_enabled' ) ? 'yes' : 'no';
+			}
 		}
 
 		$wrapper_class                           = apply_filters( 'subscrpt_simple_enable_checkbox_classes', 'show_if_simple' );
@@ -72,12 +92,12 @@ class Product {
 				$subscrpt_user_cancell = 'yes';
 
 				$screen = get_current_screen();
-				if ( $screen->parent_base == 'edit' ) {
-					$post_meta = get_post_meta( get_the_ID(), '_subscrpt_meta', true );
-					if ( ! empty( $post_meta ) && is_array( $post_meta ) ) {
-						$subscrpt_timing       = $post_meta['type'];
-						$subscrpt_cart_txt     = $post_meta['cart_txt'];
-						$subscrpt_user_cancell = $post_meta['user_cancell'];
+				if ( 'edit' === $screen->parent_base ) {
+					$product = wc_get_product( get_the_ID() );
+					if ( $product ) {
+						$subscrpt_timing       = $product->get_meta( '_subscrpt_timing_option' );
+						$subscrpt_cart_txt     = $product->get_meta( '_subscrpt_cart_btn_label' );
+						$subscrpt_user_cancell = $product->get_meta( '_subscrpt_user_cancel' );
 					}
 				}
 				include 'views/product-form.php';
@@ -85,32 +105,38 @@ class Product {
 		}
 	}
 
-	public function save_subscrpt_data( $post_id ) {
-		if ( ! isset( $_POST['subscrpt_enable'] ) ) {
-			return;
-		}
+	/**
+	 * Save subscription settings.
+	 *
+	 * @param int $product_id Product Id.
+	 *
+	 * @return void
+	 */
+	public function save_subscrpt_data( $product_id ) {
 		if ( function_exists( 'subscrpt_pro_activated' ) ) {
 			if ( subscrpt_pro_activated() ) {
 				return;
 			}
 		}
-		$subscrpt_enable       = (bool) $_POST['subscrpt_enable'];
-		$subscrpt_time         = 1;
-		$subscrpt_timing       = sanitize_text_field( $_POST['subscrpt_timing'] );
-		$subscrpt_trial_time   = null;
-		$subscrpt_trial_timing = null;
-		$subscrpt_cart_txt     = sanitize_text_field( $_POST['subscrpt_cart_txt'] );
-		$subscrpt_user_cancell = sanitize_text_field( $_POST['subscrpt_user_cancell'] );
-		$data                  = array(
-			'enable'       => $subscrpt_enable,
-			'time'         => $subscrpt_time,
-			'type'         => $subscrpt_timing,
-			'trial_time'   => $subscrpt_trial_time,
-			'trial_type'   => $subscrpt_trial_timing,
-			'cart_txt'     => $subscrpt_cart_txt,
-			'user_cancell' => $subscrpt_user_cancell,
-		);
 
-		update_post_meta( $post_id, '_subscrpt_meta', $data );
+		if ( ! isset( $_POST['_subscript_nonce'], $_POST['subscrpt_timing'], $_POST['subscrpt_cart_txt'], $_POST['subscrpt_user_cancel'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['_subscript_nonce'] ) ), '_subscript_edit_product_nonce' ) ) {
+			return;
+		}
+
+		remove_action( 'save_post_product', array( $this, 'save_subscrpt_data' ) );
+
+		$subscrpt_enable      = isset( $_POST['subscrpt_enable'] );
+		$subscrpt_timing      = sanitize_text_field( wp_unslash( $_POST['subscrpt_timing'] ) );
+		$subscrpt_cart_txt    = sanitize_text_field( wp_unslash( $_POST['subscrpt_cart_txt'] ) );
+		$subscrpt_user_cancel = sanitize_text_field( wp_unslash( $_POST['subscrpt_user_cancel'] ) );
+		$product              = wc_get_product( $product_id );
+
+		$product->update_meta_data( '_subscrpt_enabled', $subscrpt_enable );
+		$product->update_meta_data( '_subscrpt_timing_option', $subscrpt_timing );
+		$product->update_meta_data( '_subscrpt_cart_btn_label', $subscrpt_cart_txt );
+		$product->update_meta_data( '_subscrpt_user_cancel', $subscrpt_user_cancel );
+		$product->save();
+
+		add_action( 'save_post_product', array( $this, 'save_subscrpt_data' ) );
 	}
 }

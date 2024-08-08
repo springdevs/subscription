@@ -1,0 +1,3 @@
+.sdevs_subscription_tab > a::before {
+  content: "\f531" !important;
+}
