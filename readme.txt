@@ -48,8 +48,6 @@ A powerfull plugin that allow to enable subscription on woocommerce products.
         3. Activate the `WooCommerce Subscription` plugin.
 
 == Frequently Asked Questions ==
-=Is this plugin compatible with WooCommerce block pages ?=
-No, This plugin isn't fully compatible with WooCommerce block pages. You need to continue with shortcode pages.
 =How to overwrite the frontend templates ?=
 Just copy `myaccount` directory which is located in the `templates` folder & paste it to `yourtheme/subscription/`.
 =Is it compatible with all WordPress themes ?=
@@ -66,15 +64,18 @@ Customer can set status to **Pending cancellation**, which subscription will be 
 1. Create product with subscription
 2. Subscription product view
 3. Cart page
-4. Checkout Page
-5. Thank you Page
-6. Manage wooCommerce order from user
-7. My Account subscription lists
-8. Manage subscription from user
-9. Subscription lists from wp-admin
-10. Manage subscription from wp-admin
-11. Subscription settings
-12. Manage wooCommerce order from admin
+4. Cart page [ block ]
+5. Mini Cart [ block ]
+6. Checkout Page
+7. Checkout Page [ block ]
+8. Thank you Page
+9. Manage wooCommerce order from user
+10. My Account subscription lists
+11. Manage subscription from user
+12. Subscription lists from wp-admin
+13. Manage subscription from wp-admin
+14. Subscription settings
+15. Manage wooCommerce order from admin
 
 
 == Changelog ==
