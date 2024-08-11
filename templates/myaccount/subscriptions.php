@@ -1,24 +1,16 @@
 <?php
-
 /**
  * Subscriptions Table
  *
+ * @var int $current_page
+ * @var \WP_Query $postslist
+ *
  * This template can be overridden by copying it to yourtheme/simple-booking/myaccount/subscriptions.php
+ *
+ * @package SpringDevs\Subscription
  */
 
 use SpringDevs\Subscription\Illuminate\Helper;
-
-$page_num = ( get_query_var( 'paged' ) ) ? get_query_var( 'paged' ) : 1;
-
-$args = array(
-	'author'         => get_current_user_id(),
-	'posts_per_page' => 10,
-	'paged'          => $page_num,
-	'post_type'      => 'subscrpt_order',
-	'post_status'    => array( 'pending', 'active', 'on_hold', 'cancelled', 'expired', 'pe_cancelled' ),
-);
-
-$postslist = new WP_Query( $args );
 ?>
 
 <table class="woocommerce-orders-table woocommerce-MyAccount-orders shop_table shop_table_responsive my_account_orders account-orders-table my_account_subscrpt">
@@ -56,9 +48,9 @@ $postslist = new WP_Query( $args );
 					<td><span class="subscrpt-<?php echo esc_attr( $post_status_object->name ); ?>"><?php echo esc_html( strlen( $post_status_object->label ) > 9 ? substr( $post_status_object->label, 0, 6 ) . '...' : $post_status_object->label ); ?></span></td>
 					<td><a href="<?php echo esc_html( $product_link ); ?>" target="_blank"><?php echo esc_html( $product_name ); ?></a></td>
 					<?php if ( null == $trial ) : ?>
-						<td><?php echo gmdate( 'F d, Y', $next_date ); ?></td>
+						<td><?php echo esc_html( gmdate( 'F d, Y', $next_date ) ); ?></td>
 					<?php else : ?>
-						<td><small>First Billing : </small><?php echo gmdate( 'F d, Y', $start_date ); ?></td>
+						<td><small>First Billing : </small><?php echo esc_html( gmdate( 'F d, Y', $start_date ) ); ?></td>
 					<?php endif; ?>
 					<td><?php echo wp_kses_post( $product_price_html ); ?></td>
 					<td>
@@ -67,10 +59,20 @@ $postslist = new WP_Query( $args );
 				</tr>
 				<?php
 			endwhile;
-			next_posts_link( 'Older Entries', $postslist->max_num_pages );
-			previous_posts_link( 'Next Entries &raquo;' );
 			wp_reset_postdata();
 		endif;
 		?>
 	</tbody>
 </table>
+
+<?php if ( 1 < $postslist->max_num_pages ) : ?>
+	<div class="woocommerce-pagination woocommerce-pagination--without-numbers woocommerce-Pagination">
+		<?php if ( 1 !== $current_page ) : ?>
+			<a class="woocommerce-button woocommerce-button--previous woocommerce-Button woocommerce-Button--previous button<?php echo esc_attr( $wp_button_class ); ?>" href="<?php echo esc_url( wc_get_endpoint_url( 'subscriptions', $current_page - 1 ) ); ?>"><?php esc_html_e( 'Previous', 'sdevs_subscrpt' ); ?></a>
+		<?php endif; ?>
+
+		<?php if ( intval( $postslist->max_num_pages ) !== $current_page ) : ?>
+			<a class="woocommerce-button woocommerce-button--next woocommerce-Button woocommerce-Button--next button<?php echo esc_attr( $wp_button_class ); ?>" href="<?php echo esc_url( wc_get_endpoint_url( 'subscriptions', $current_page + 1 ) ); ?>"><?php esc_html_e( 'Next', 'sdevs_subscrpt' ); ?></a>
+		<?php endif; ?>
+	</div>
+<?php endif; ?>

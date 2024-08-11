@@ -46,7 +46,13 @@ class Cart {
 				 */
 				$product = $value['data'];
 				if ( isset( $value['subscription'] ) ) {
-					if ( Helper::get_typos( 1, $product->get_meta( '_subscrpt_timing_option' ) ) !== $value['subscription']['type'] ) {
+					if ( $product->is_type( 'simple' ) ) {
+						if ( Helper::get_typos( 1, $product->get_meta( '_subscrpt_timing_option' ) ) !== $value['subscription']['type'] ) {
+							// remove the item.
+							wc_add_notice( __( 'An item which is no longer available was removed from your cart.', 'sdevs_subscrpt' ), 'error' );
+							WC()->cart->remove_cart_item( $key );
+						}
+					} else {
 						// remove the item.
 						wc_add_notice( __( 'An item which is no longer available was removed from your cart.', 'sdevs_subscrpt' ), 'error' );
 						WC()->cart->remove_cart_item( $key );

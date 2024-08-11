@@ -122,3 +122,17 @@ if ( ! function_exists( 'sdevs_wp_strtotime' ) ) {
 		return strtotime( wp_date( 'Y-m-d H:i:s', strtotime( $str, $base_timestamp ) ) );
 	}
 }
+
+if ( ! function_exists( 'sdevs_order_status_label' ) ) {
+	/**
+	 * Get order status label from slug.
+	 *
+	 * @param string $status Status.
+	 *
+	 * @return string
+	 */
+	function sdevs_order_status_label( $status ) {
+		$order_statuses = wc_get_order_statuses();
+		return ( isset( $order_statuses[ "wc-{$status}" ] ) ? $order_statuses[ "wc-{$status}" ] : $status );
+	}
+}

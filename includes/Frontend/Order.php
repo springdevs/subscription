@@ -28,6 +28,9 @@ class Order {
 		if ( is_array( $histories ) && count( $histories ) > 0 ) :
 			?>
 			<h2 class="woocommerce-order-details__title"><?php esc_html_e( 'Related Subscriptions', 'sdevs_subscrpt' ); ?></h2>
+			<?php if ( ! $order->has_status( 'completed' ) ) : ?> 
+				<p><small>Your subscription will be activated when order status is completed.</small></p>
+			<?php endif; ?>
 			<?php
 			foreach ( $histories as $history ) :
 					$order_item      = $order->get_item( $history->order_item_id );
@@ -60,7 +63,7 @@ class Order {
 						<tfoot>
 						<tr>
 							<th scope="row"><?php esc_html_e( 'Status', 'sdevs_subscrpt' ); ?>:</th>
-							<td><?php echo esc_html( get_post_status( $post ) ); ?></td>
+							<td><?php echo esc_html( get_post_status_object( get_post_status( $post ) )->label ); ?></td>
 						</tr>
 						<tr>
 							<th scope="row"><?php esc_html_e( 'Recurring amount', 'sdevs_subscrpt' ); ?>:</th>

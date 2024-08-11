@@ -16,6 +16,12 @@ bash clean.sh
 
 ## changelog
 
+### v1.2.1
+
+- **Fix**: pagination bug on `subscriptions` template.
+- **Fix**: Variable product exists on cart when pro plugin is deactivated!
+- **Update**: Improve order's **Related Subscriptions** description and status.
+
 ### v1.2
 
 - **New**: Block pages support added.

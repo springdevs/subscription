@@ -44,13 +44,16 @@ class MyAccount {
 	public function view_subscrpt_content( int $id ) {
 		$order_id      = get_post_meta( $id, '_subscrpt_order_id', true );
 		$order_item_id = get_post_meta( $id, '_subscrpt_order_item_id', true );
-		$order         = wc_get_order( $order_id );
-		$order_item    = $order->get_item( $order_item_id );
-		$status        = get_post_status( $id );
-		$user_cancel   = get_post_meta( $id, '_subscrpt_user_cancel', true );
-		$start_date    = get_post_meta( $id, '_subscrpt_start_date', true );
-		$next_date     = get_post_meta( $id, '_subscrpt_next_date', true );
-		$trial         = get_post_meta( $id, '_subscrpt_trial', true );
+		if ( ! $order_id || ! $order_item_id ) {
+			return wp_safe_redirect( '/404' );
+		}
+		$order       = wc_get_order( $order_id );
+		$order_item  = $order->get_item( $order_item_id );
+		$status      = get_post_status( $id );
+		$user_cancel = get_post_meta( $id, '_subscrpt_user_cancel', true );
+		$start_date  = get_post_meta( $id, '_subscrpt_start_date', true );
+		$next_date   = get_post_meta( $id, '_subscrpt_next_date', true );
+		$trial       = get_post_meta( $id, '_subscrpt_trial', true );
 
 		$subscrpt_nonce = wp_create_nonce( 'subscrpt_nonce' );
 		$action_buttons = array();
@@ -155,13 +158,27 @@ class MyAccount {
 	}
 
 	/**
-	 * Subscription Single EndPoint Content
+	 * Subscription Single EndPoint Content.
+	 *
+	 * @param int $current_page Current Page.
 	 */
-	public function subscrpt_endpoint_content() {
+	public function subscrpt_endpoint_content( $current_page ) {
+		$current_page = empty( $current_page ) ? 1 : absint( $current_page );
+		$args         = array(
+			'author'         => get_current_user_id(),
+			'posts_per_page' => 10,
+			'paged'          => $current_page,
+			'post_type'      => 'subscrpt_order',
+			'post_status'    => array( 'pending', 'active', 'on_hold', 'cancelled', 'expired', 'pe_cancelled' ),
+		);
+
+		$postslist = new \WP_Query( $args );
 		wc_get_template(
 			'myaccount/subscriptions.php',
 			array(
 				'wp_button_class' => wc_wp_theme_get_element_class_name( 'button' ) ? ' ' . wc_wp_theme_get_element_class_name( 'button' ) : '',
+				'postslist'       => $postslist,
+				'current_page'    => $current_page,
 			),
 			'subscription',
 			SUBSCRPT_TEMPLATES

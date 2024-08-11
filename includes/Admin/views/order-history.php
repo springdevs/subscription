@@ -27,8 +27,8 @@
 				<td>
 				<?php
 				if ( $order ) {
-					$order_statuses = wc_get_order_statuses();
-					echo esc_html( isset( $order_statuses[ "wc-{$order->get_status()}" ] ) ? $order_statuses[ "wc-{$order->get_status()}" ] : $order->get_status() );}
+					echo esc_html( sdevs_order_status_label( $order->get_status() ) );
+				}
 				?>
 				</td>
 				<td>
