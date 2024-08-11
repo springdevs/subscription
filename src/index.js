@@ -22,7 +22,9 @@ const modifyCartItemPrice = (defaultValue, extensions, args, validation) => {
   }
   if (sdevs_subscription.type) {
     return `<price/> / ${
-      sdevs_subscription.time ? " " + sdevs_subscription.time + "-" : ""
+      sdevs_subscription.time && sdevs_subscription.time > 1
+        ? " " + sdevs_subscription.time + "-"
+        : ""
     }${sdevs_subscription.type}`;
   }
   return defaultValue;
@@ -70,7 +72,7 @@ const RecurringTotals = ({ cart, extensions }) => {
             <FormattedMonetaryAmount
               currency={currency}
               value={parseInt(recurring.price, 10)}
-            />
+            />{" "}
             /{" "}
             {recurring.time && recurring.time > 1
               ? `${recurring.time + "-" + recurring.type} `

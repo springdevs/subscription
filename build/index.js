@@ -172,7 +172,7 @@ const modifyCartItemPrice = (defaultValue, extensions, args, validation) => {
     return `<price/> Due Today`;
   }
   if (sdevs_subscription.type) {
-    return `<price/> / ${sdevs_subscription.time ? " " + sdevs_subscription.time + "-" : ""}${sdevs_subscription.type}`;
+    return `<price/> / ${sdevs_subscription.time && sdevs_subscription.time > 1 ? " " + sdevs_subscription.time + "-" : ""}${sdevs_subscription.type}`;
   }
   return defaultValue;
 };
@@ -221,7 +221,7 @@ const RecurringTotals = ({
     }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_woocommerce_blocks_components__WEBPACK_IMPORTED_MODULE_2__.FormattedMonetaryAmount, {
       currency: currency,
       value: parseInt(recurring.price, 10)
-    }), "/", " ", recurring.time && recurring.time > 1 ? `${recurring.time + "-" + recurring.type} ` : recurring.type), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("small", null, recurring.description)))
+    }), " ", "/", " ", recurring.time && recurring.time > 1 ? `${recurring.time + "-" + recurring.type} ` : recurring.type), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("small", null, recurring.description)))
   });
 };
 const render = () => {
