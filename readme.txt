@@ -83,6 +83,7 @@ Customer can set status to **Pending cancellation**, which subscription will be 
 = 1.2.1 =
 - **Fix**: pagination bug on `subscriptions` template.
 - **Fix**: Variable product exists on cart when pro plugin is deactivated!
+- **Fix**: Display '1' inside cart-price after recurring type.
 - **Update**: Improve order's **Related Subscriptions** description and status.
 
 = 1.2 =
