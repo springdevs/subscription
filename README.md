@@ -8,6 +8,10 @@ Install dependencies
 composer install
 ```
 
+```bash
+pnpm install
+```
+
 Minimize files for Production
 
 ```bash
