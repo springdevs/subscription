@@ -16,7 +16,7 @@ rm -r .eslintignore
 rm -r .eslintrc.js
 rm -r .nvmrc
 rm -r package.json
-rm -r package-lock.json
+rm -r pnpm-lock.yaml
 rm -r webpack.config.js
 rm -rf node_modules/
 rm -rf src/
