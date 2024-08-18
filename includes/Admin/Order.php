@@ -16,6 +16,23 @@ class Order {
 	 */
 	public function __construct() {
 		add_action( 'add_meta_boxes', array( $this, 'add_meta_boxes' ) );
+		add_action( 'woocommerce_admin_order_data_after_payment_info', array( $this, 'add_subscription_label' ) );
+	}
+
+	/**
+	 * Add subscriotion label after order title.
+	 *
+	 * @param \WC_Order $order Order object.
+	 *
+	 * @return void
+	 */
+	public function add_subscription_label( $order ) {
+		$histories = Helper::get_subscriptions_from_order( $order->get_id() );
+		if ( count( $histories ) > 0 ) :
+			?>
+			<div class="subscrpt-order-label"><?php echo esc_html_e( 'Subscription order', 'sdevs_subscrpt' ); ?></div>
+			<?php
+		endif;
 	}
 
 	/**
@@ -48,7 +65,7 @@ class Order {
 	 * Display content related subscriptions.
 	 *
 	 * @param mixed $order_post Current Order.
-	 * @param mixed $info Meta box Info.
+	 * @param array $info Meta box Info.
 	 */
 	public function subscrpt_order_related( $order_post, $info ) {
 		$histories = $info['args']['histories'];

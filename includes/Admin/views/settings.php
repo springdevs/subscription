@@ -14,26 +14,17 @@
 						</label>
 					</th>
 					<td>
-						<select name="subscrpt_renewal_process" id="subscrpt_renewal_process" 
-						<?php
-						if ( ! subscrpt_pro_activated() ) {
-							echo esc_attr( 'disabled' );}
-						?>
-						>
+						<select name="subscrpt_renewal_process" id="subscrpt_renewal_process">
 							<option value="auto">Automatic</option>
 							<option value="manual" 
 							<?php
-							if ( ! subscrpt_pro_activated() || 'manual' === get_option( 'subscrpt_renewal_process', 'auto' ) ) {
+							if ( 'manual' === get_option( 'subscrpt_renewal_process', 'auto' ) ) {
 								echo esc_attr( 'selected' );
 							}
 							?>
 							>Manual</option>
 						</select>
-						<?php if ( ! subscrpt_pro_activated() ) : ?>
-						<p style="color: red;" class="description"><?php echo wp_kses_post( '<b>Automatic</b> renewal is available for Pro version only !!' ); ?></p>
-						<?php else : ?>
 						<p class="description"><?php esc_html_e( 'How renewal process will be done after Subscription Expired !!', 'sdevs_subscrpt' ); ?></p>
-						<?php endif; ?>
 					</td>
 				</tr>
 				<tr id="sdevs_renewal_cart_tr">
@@ -73,6 +64,54 @@
 						<p class="description"><?php esc_html_e( "If a subscriber's subscription is manually cancelled or expires, will be assigned this role.", 'sdevs_subscrpt' ); ?></p>
 					</td>
 				</tr>
+				<tr id="subscrpt_stripe_auto_renew_tr" valign="top">
+			<th scope="row" class="titledesc"><?php echo esc_html_e( 'Stripe Auto Renewal', 'sdevs_subscrpt' ); ?></th>
+			<td class="forminp forminp-checkbox">
+				<fieldset>
+					<legend class="screen-reader-text"><span><?php echo esc_html_e( 'Accept Stripe Auto Renewals', 'sdevs_subscrpt' ); ?></span></legend>
+					<label for="subscrpt_stripe_auto_renew">
+						<input name="subscrpt_stripe_auto_renew" id="subscrpt_stripe_auto_renew" type="checkbox" value="1" 
+		<?php
+		if ( '1' === get_option( 'subscrpt_stripe_auto_renew', '1' ) ) {
+			echo 'checked';
+		}
+		?>
+		> <?php echo esc_html_e( 'Accept Stripe Auto Renewals', 'sdevs_subscrpt' ); ?> </label>
+					<p class="description">
+		<?php
+		echo wp_kses_post(
+			sprintf(
+			/* translators: HTML tags */
+				__(
+					'%1$s WooCommerce Stripe Payment Gateway %2$s plugin is required !',
+					'sdevs_subscrpt'
+				),
+				'<a href="https://wordpress.org/plugins/woocommerce-gateway-stripe/" target="_blank">',
+				'</a>'
+			)
+		);
+		?>
+					</p>
+				</fieldset>
+			</td>
+		</tr>
+		<tr id="subscrpt_auto_renewal_toggle_tr" valign="top">
+			<th scope="row" class="titledesc"><?php echo esc_html_e( 'Auto Renewal Toggle', 'sdevs_subscrpt' ); ?></th>
+			<td class="forminp forminp-checkbox">
+				<fieldset>
+					<legend class="screen-reader-text"><span><?php echo esc_html_e( 'Auto Renewal Toggle', 'sdevs_subscrpt' ); ?></span></legend>
+					<label for="subscrpt_auto_renewal_toggle">
+						<input name="subscrpt_auto_renewal_toggle" id="subscrpt_auto_renewal_toggle" type="checkbox" value="1" 
+		<?php
+		if ( '1' === get_option( 'subscrpt_auto_renewal_toggle', '1' ) ) {
+			echo 'checked';
+		}
+		?>
+						> <?php echo esc_html_e( 'Display the auto renewal toggle', 'sdevs_subscrpt' ); ?> </label>
+					<p class="description"><?php echo esc_html_e( 'Allow customers to turn on and off automatic renewals from their  Subscription details page.', 'sdevs_subscrpt' ); ?></p>
+				</fieldset>
+			</td>
+		</tr>
 				<?php do_action( 'subscrpt_setting_fields' ); ?>
 			</tbody>
 		</table>

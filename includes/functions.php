@@ -67,14 +67,10 @@ function subscrpt_pro_activated(): bool {
 /**
  * Get renewal process settings.
  *
- * @return string
+ * @return bool
  */
-function subscrpt_get_renewal_process() {
-	if ( ! subscrpt_pro_activated() ) {
-		return 'manual';
-	} else {
-		return get_option( 'subscrpt_renewal_process', 'auto' );
-	}
+function subscrpt_is_auto_renew_enabled() {
+	return 'auto' === get_option( 'subscrpt_renewal_process', 'auto' );
 }
 
 /**
@@ -134,5 +130,40 @@ if ( ! function_exists( 'sdevs_order_status_label' ) ) {
 	function sdevs_order_status_label( $status ) {
 		$order_statuses = wc_get_order_statuses();
 		return ( isset( $order_statuses[ "wc-{$status}" ] ) ? $order_statuses[ "wc-{$status}" ] : $status );
+	}
+}
+
+if ( ! function_exists( 'get_timing_types' ) ) {
+	/**
+	 * Get labels.
+	 *
+	 * @param bool $key_value key_value.
+	 *
+	 * @return array
+	 */
+	function get_timing_types( $key_value = false ): array {
+		return $key_value ? array(
+			'days'   => 'Daily',
+			'weeks'  => 'Weekly',
+			'months' => 'Monthly',
+			'years'  => 'Yearly',
+		) : array(
+			array(
+				'label' => __( 'day(s)', 'sdevs_subscrpt' ),
+				'value' => 'days',
+			),
+			array(
+				'label' => __( 'week(s)', 'sdevs_subscrpt' ),
+				'value' => 'weeks',
+			),
+			array(
+				'label' => __( 'month(s)', 'sdevs_subscrpt' ),
+				'value' => 'months',
+			),
+			array(
+				'label' => __( 'year(s)', 'sdevs_subscrpt' ),
+				'value' => 'years',
+			),
+		);
 	}
 }

@@ -58,26 +58,30 @@ class Checkout {
 		foreach ( $order_items as $order_item ) {
 			$product = wc_get_product( $order_item['product_id'] );
 
-			if ( ! $product->is_type( 'variation' ) && ! subscrpt_pro_activated() ) {
+			if ( $product->is_type( 'simple' ) && ! subscrpt_pro_activated() ) {
 				$enabled = $product->get_meta( '_subscrpt_enabled' );
 
 				if ( $enabled ) {
 					$is_renew = isset( $order_item['renew_subscrpt'] );
 					$type     = Helper::get_typos( 1, $product->get_meta( '_subscrpt_timing_option' ) );
 
-					$start_date    = time();
-					$next_date     = sdevs_wp_strtotime( 1 . ' ' . $type, $start_date );
 					$timing_option = $product->get_meta( '_subscrpt_timing_option' );
+					$trial         = null;
+					$has_trial     = Helper::check_trial( $product->get_id() );
+
+					$trial_per    = $product->get_meta( '_subscrpt_trial_timing_per' );
+					$trial_option = $product->get_meta( '_subscrpt_trial_timing_option' );
+					if ( ! empty( $trial_per ) && $trial_per > 0 && ! $is_renew && $has_trial ) {
+						$trial = $trial_per . ' ' . Helper::get_typos( $trial_per, $trial_option );
+					}
 
 					wc_update_order_item_meta(
 						$order_item->get_id(),
 						'_subscrpt_meta',
 						array(
-							'time'       => 1,
-							'type'       => $timing_option,
-							'trial'      => null,
-							'start_date' => $start_date,
-							'next_date'  => $next_date,
+							'time'  => 1,
+							'type'  => $timing_option,
+							'trial' => $trial,
 						)
 					);
 
@@ -99,14 +103,29 @@ class Checkout {
 						// product related.
 						update_post_meta( $selected_subscription_id, '_subscrpt_timing_option', $timing_option );
 						update_post_meta( $selected_subscription_id, '_subscrpt_price', $product->get_price() * $order_item['quantity'] );
+						update_post_meta( $selected_subscription_id, '_subscrpt_user_cancel', $product->get_meta( '_subscrpt_user_cancel' ) );
 
 						// order related.
 						update_post_meta( $selected_subscription_id, '_subscrpt_order_id', $order_id );
 						update_post_meta( $selected_subscription_id, '_subscrpt_order_item_id', $order_item->get_id() );
 
 						// subscription related.
-						update_post_meta( $selected_subscription_id, '_subscrpt_start_date', $start_date );
-						update_post_meta( $selected_subscription_id, '_subscrpt_next_date', $next_date );
+						update_post_meta( $selected_subscription_id, '_subscrpt_trial', $trial );
+						if ( $trial ) {
+							update_post_meta( $selected_subscription_id, '_subscrpt_trial_mode', 'active' === $post_status ? 'on' : 'off' );
+						}
+						if ( 'active' === $post_status ) {
+							$start_date = time();
+							$next_date  = sdevs_wp_strtotime( 1 . ' ' . $type, $start_date );
+
+							if ( $trial ) {
+								$start_date = sdevs_wp_strtotime( $trial );
+								$next_date  = $start_date;
+							}
+
+							update_post_meta( $selected_subscription_id, '_subscrpt_start_date', $start_date );
+							update_post_meta( $selected_subscription_id, '_subscrpt_next_date', $next_date );
+						}
 
 						do_action( 'subscrpt_order_checkout', $selected_subscription_id, $order_item );
 					}

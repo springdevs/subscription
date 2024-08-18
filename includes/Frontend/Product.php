@@ -22,6 +22,90 @@ class Product {
 		add_filter( 'woocommerce_store_api_product_quantity_minimum', array( $this, 'update_quantity_min_max' ), 10, 2 );
 		add_filter( 'woocommerce_store_api_product_quantity_maximum', array( $this, 'update_quantity_min_max' ), 10, 2 );
 		add_action( 'woocommerce_after_cart_item_quantity_update', array( $this, 'validate_quantity_on_manual_renewal' ), 10, 2 );
+		add_filter( 'woocommerce_is_purchasable', array( $this, 'check_if_purchasable' ), 20, 2 );
+		add_action( 'woocommerce_single_product_summary', array( $this, 'text_if_active' ) );
+		add_filter( 'woocommerce_loop_add_to_cart_link', array( $this, 'remove_button_active_products' ), 10, 2 );
+	}
+
+	/**
+	 * Remove button if product already subscribed.
+	 *
+	 * @param mixed       $button Button.
+	 * @param \WC_Product $product Product.
+	 *
+	 * @return mixed
+	 */
+	public function remove_button_active_products( $button, $product ) {
+		if ( ! $product->is_type( 'simple' ) ) {
+			return $button;
+		}
+		$enabled = $product->get_meta( '_subscrpt_enabled' );
+		if ( $enabled ) {
+			$limit = $product->get_meta( '_subscrpt_limit' );
+			if ( 'one' === $limit ) {
+				$unexpired = Helper::subscription_exists( $product->get_id(), array( 'active', 'pending' ) );
+				if ( $unexpired ) {
+					return;
+				}
+			} elseif ( 'only_one' === $limit && ! Helper::check_trial( $product->get_id() ) ) {
+				return;
+			}
+		}
+
+		return $button;
+	}
+
+	/**
+	 * Display notice if already purchased.
+	 */
+	public function text_if_active() {
+		global $product;
+		if ( ! $product->is_type( 'simple' ) ) {
+			return;
+		}
+		$enabled = $product->get_meta( '_subscrpt_enabled' );
+		if ( $enabled ) {
+			$limit = $product->get_meta( '_subscrpt_limit' );
+			if ( 'unlimited' === $limit ) {
+				return;
+			}
+			if ( 'one' === $limit ) {
+				$unexpired = Helper::subscription_exists( $product->get_id(), array( 'active', 'pending' ) );
+				if ( ! $unexpired ) {
+					return false;
+				} else {
+					echo '<strong>' . esc_html_e( 'You Already Subscribed These Product!', 'sdevs_subscrpt' ) . '</strong>';
+				}
+			}
+			if ( 'only_one' === $limit ) {
+				if ( ! Helper::check_trial( $product->get_id() ) ) {
+					echo '<strong>' . esc_html_e( 'You Already Subscribed These Product!', 'sdevs_subscrpt' ) . '</strong>';
+				}
+			}
+		}
+	}
+
+	/**
+	 * Check if product pruchasable.
+	 *
+	 * @param boolean     $is_purchasable True\False.
+	 * @param \WC_Product $product        Product.
+	 *
+	 * @return boolean
+	 */
+	public function check_if_purchasable( $is_purchasable, $product ) {
+		$enabled = $product->get_meta( '_subscrpt_enabled' );
+		if ( $enabled ) {
+			$limit = $product->get_meta( '_subscrpt_limit' );
+			if ( 'unlimited' === $limit ) {
+				return true;
+			} elseif ( 'only_one' === $limit ) {
+				return Helper::check_trial( $product->get_id() );
+			} elseif ( 'one' === $limit ) {
+				return ! Helper::subscription_exists( $product->get_id(), array( 'active', 'pending' ) );
+			}
+		}
+		return $is_purchasable;
 	}
 
 	/**
@@ -137,16 +221,22 @@ class Product {
 	 * @return mixed
 	 */
 	public function change_price_html( $price, $product ) {
-		if ( $product->is_type( 'variable' ) || '' === $price || subscrpt_pro_activated() ) {
+		if ( ! $product->is_type( 'simple' ) || '' === $price ) {
 			return $price;
 		}
 
 		$enabled = $product->get_meta( '_subscrpt_enabled' );
 		if ( $enabled ) :
-			$type = Helper::get_typos( 1, $product->get_meta( '_subscrpt_timing_option' ) );
+			$timing_option   = $product->get_meta( '_subscrpt_timing_option' );
+			$type            = Helper::get_typos( 1, $timing_option );
+			$meta_trial_time = $product->get_meta( '_subscrpt_trial_timing_per' );
+			$has_trial       = Helper::check_trial( $product->get_id() );
+			$trial           = null;
+			if ( ! empty( $meta_trial_time ) && $meta_trial_time > 0 && $has_trial ) {
+				$trial = '<br/><small> + Get ' . $meta_trial_time . ' ' . Helper::get_typos( $meta_trial_time, $product->get_meta( '_subscrpt_trial_timing_option' ) ) . ' free trial!</small>';
+			}
 
-			$price_html = $price . ' / ' . $type;
-			return $price_html;
+			return apply_filters( 'subscrpt_simple_price_html', ( $price . ' / ' . $type . $trial ), $product, $price, $timing_option, $trial );
 		else :
 			return $price;
 		endif;

@@ -3,48 +3,44 @@
 namespace SpringDevs\Subscription;
 
 use SpringDevs\Subscription\Frontend\Checkout;
+use SpringDevs\Subscription\Illuminate\AutoRenewal;
+use SpringDevs\Subscription\Illuminate\Block;
 use SpringDevs\Subscription\Illuminate\Cron;
+use SpringDevs\Subscription\Illuminate\Order;
 use SpringDevs\Subscription\Illuminate\Post;
+use SpringDevs\Subscription\Illuminate\Stripe;
 
 /**
  * Globally Load Scripts.
  */
 class Illuminate {
 
-
 	/**
 	 * Initialize the Class.
 	 */
 	public function __construct() {
-		$this->dispatch_actions();
+		$this->stripe_initialization();
+		new Order();
 		new Cron();
 		new Post();
+		new Block();
 		new Checkout();
+		new AutoRenewal();
 	}
 
 	/**
-	 * Dispatch and bind actions
+	 * Stripe Initialization.
 	 *
 	 * @return void
 	 */
-	public function dispatch_actions() {
-		add_action(
-			'woocommerce_blocks_loaded',
-			function () {
-				require_once __DIR__ . '/Illuminate/wc-block-integration.php';
-				add_action(
-					'woocommerce_blocks_cart_block_registration',
-					function ( $integration_registry ) {
-						$integration_registry->register( new \Sdevs_Subscrpt_WC_Integration() );
-					}
-				);
-				add_action(
-					'woocommerce_blocks_checkout_block_registration',
-					function ( $integration_registry ) {
-						$integration_registry->register( new \Sdevs_Subscrpt_WC_Integration() );
-					}
-				);
-			}
-		);
+	public function stripe_initialization() {
+		if ( function_exists( 'woocommerce_gateway_stripe' ) ) {
+			include_once dirname( WC_STRIPE_MAIN_FILE ) . '/includes/compat/trait-wc-stripe-subscriptions-utilities.php';
+			include_once dirname( WC_STRIPE_MAIN_FILE ) . '/includes/compat/trait-wc-stripe-pre-orders.php';
+			include_once dirname( WC_STRIPE_MAIN_FILE ) . '/includes/compat/trait-wc-stripe-subscriptions.php';
+			include_once dirname( WC_STRIPE_MAIN_FILE ) . '/includes/abstracts/abstract-wc-stripe-payment-gateway.php';
+
+			new Stripe();
+		}
 	}
 }

@@ -31,14 +31,22 @@ jQuery(document).ready(() => {
   subscrpt_renewal_process.change(() => {
     if (subscrpt_renewal_process.val() === "manual") {
       jQuery("#sdevs_renewal_cart_tr").show();
+      jQuery("#subscrpt_stripe_auto_renew_tr").hide();
+      jQuery("#subscrpt_auto_renewal_toggle_tr").hide();
     } else {
       jQuery("#sdevs_renewal_cart_tr").hide();
+      jQuery("#subscrpt_stripe_auto_renew_tr").show();
+      jQuery("#subscrpt_auto_renewal_toggle_tr").show();
     }
   });
   if (subscrpt_renewal_process.val() === "manual") {
     jQuery("#sdevs_renewal_cart_tr").show();
+    jQuery("#subscrpt_stripe_auto_renew_tr").hide();
+    jQuery("#subscrpt_auto_renewal_toggle_tr").hide();
   } else {
     jQuery("#sdevs_renewal_cart_tr").hide();
+    jQuery("#subscrpt_stripe_auto_renew_tr").show();
+    jQuery("#subscrpt_auto_renewal_toggle_tr").show();
   }
 });
 

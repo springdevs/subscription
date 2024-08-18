@@ -9,12 +9,11 @@ namespace SpringDevs\Subscription\Illuminate;
  */
 class Action {
 
-
 	/**
 	 * Did when status changes.
 	 *
 	 * @param string $status Status.
-	 * @param Int    $subscription_id Subscription ID.
+	 * @param int    $subscription_id Subscription ID.
 	 * @param bool   $write_comment Write comment?.
 	 */
 	public static function status( string $status, int $subscription_id, bool $write_comment = true ) {
@@ -92,7 +91,6 @@ class Action {
 			)
 		);
 		update_comment_meta( $comment_id, '_subscrpt_activity', 'Subscription Activated' );
-
 		do_action( 'subscrpt_subscription_activated', $subscription_id );
 	}
 

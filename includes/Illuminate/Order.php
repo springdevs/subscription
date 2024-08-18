@@ -13,26 +13,63 @@ class Order {
 	 * Initialize the class.
 	 */
 	public function __construct() {
-		// add_filter( 'woocommerce_order_formatted_line_subtotal', array( $this, 'format_order_price' ), 10, 3 );
 		add_action( 'woocommerce_admin_order_item_headers', array( $this, 'register_custom_column' ) );
 		add_action( 'woocommerce_admin_order_item_values', array( $this, 'add_column_value' ), 10, 2 );
 		add_action( 'woocommerce_before_order_itemmeta', array( $this, 'add_order_item_data' ), 10, 3 );
 		add_action( 'woocommerce_order_status_changed', array( $this, 'order_status_changed' ) );
 		add_action( 'woocommerce_before_delete_order', array( $this, 'delete_the_subscription' ) );
+		add_action( 'subscrpt_subscription_activated', array( $this, 'generate_dates_for_subscription' ) );
 	}
 
-	public function format_order_price( $subtotal, $item, $order ) {
-		$price_html = Helper::format_price_with_order_item(
-			$item->get_subtotal(),
-			$item->get_id(),
-			true
-		);
+	/**
+	 * Generate start, next and trial dates.
+	 *
+	 * @param int $subscription_id Subscription Id.
+	 *
+	 * @return void
+	 */
+	public function generate_dates_for_subscription( $subscription_id ) {
+		$order_item_id        = get_post_meta( $subscription_id, '_subscrpt_order_item_id', true );
+		$subscription_history = Helper::get_subscription_from_order_item_id( $order_item_id );
 
-		if ( ! $price_html ) {
-			return $subtotal;
+		$order_item_meta = wc_get_order_item_meta( $order_item_id, '_subscrpt_meta' );
+		$type            = Helper::get_typos( 1, $order_item_meta['type'] );
+		$trial           = get_post_meta( $subscription_id, '_subscrpt_trial', true );
+		if ( 'new' === $subscription_history->type ) {
+			$start_date = time();
+			$next_date  = sdevs_wp_strtotime( 1 . ' ' . $type, $start_date );
+			if ( $trial && ! empty( $trial ) ) {
+				$trial_started = get_post_meta( $subscription_id, '_subscrpt_trial_started', true );
+				$trial_ended   = get_post_meta( $subscription_id, '_subscrpt_trial_ended', true );
+				if ( empty( $trial_started ) && empty( $trial_ended ) ) {
+					$start_date = sdevs_wp_strtotime( $trial );
+					update_post_meta( $subscription_id, '_subscrpt_trial_started', time() );
+					update_post_meta( $subscription_id, '_subscrpt_trial_ended', $start_date );
+					update_post_meta( $subscription_id, '_subscrpt_trial_mode', 'on' );
+					update_post_meta( $subscription_id, '_subscrpt_start_date', $start_date );
+					$next_date = $start_date;
+				}
+			}
+		} elseif ( 'renew' === $subscription_history->type ) {
+			if ( $trial ) {
+				delete_post_meta( $subscription_id, '_subscrpt_trial' );
+				delete_post_meta( $subscription_id, '_subscrpt_trial_mode' );
+				delete_post_meta( $subscription_id, '_subscrpt_trial_started' );
+				delete_post_meta( $subscription_id, '_subscrpt_trial_ended' );
+			}
+			$next_date = sdevs_wp_strtotime( 1 . ' ' . $type, time() );
+		} elseif ( 'early-renew' === $subscription_history->type ) {
+			$next_date = sdevs_wp_strtotime( 1 . ' ' . $type, get_post_meta( $subscription_id, '_subscrpt_next_date', true ) );
+
+			if ( $trial ) {
+				$trial_mode = get_post_meta( $subscription_id, '_subscrpt_trial_mode', true );
+				if ( 'on' === $trial_mode ) {
+					update_post_meta( $subscription_id, '_subscrpt_trial_mode', 'extended' );
+					$next_date = sdevs_wp_strtotime( 1 . ' ' . $type, get_post_meta( $subscription_id, '_subscrpt_trial_ended', true ) );
+				}
+			}
 		}
-
-		return $price_html;
+		update_post_meta( $subscription_id, '_subscrpt_next_date', $next_date );
 	}
 
 	/**

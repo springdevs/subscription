@@ -33,6 +33,8 @@ use SpringDevs\Subscription\Illuminate\Helper;
 				$order_id      = get_post_meta( get_the_ID(), '_subscrpt_order_id', true );
 				$order_item_id = get_post_meta( get_the_ID(), '_subscrpt_order_item_id', true );
 				$trial         = get_post_meta( get_the_ID(), '_subscrpt_trial', true );
+				$trial_mode    = get_post_meta( get_the_ID(), '_subscrpt_trial_mode', true );
+				$trial_mode    = empty( $trial_mode ) ? 'off' : $trial_mode;
 				$start_date    = get_post_meta( get_the_ID(), '_subscrpt_start_date', true );
 				$next_date     = get_post_meta( get_the_ID(), '_subscrpt_next_date', true );
 				$order         = wc_get_order( $order_id );
@@ -47,8 +49,8 @@ use SpringDevs\Subscription\Illuminate\Helper;
 					<td><?php the_ID(); ?></td>
 					<td><span class="subscrpt-<?php echo esc_attr( $post_status_object->name ); ?>"><?php echo esc_html( strlen( $post_status_object->label ) > 9 ? substr( $post_status_object->label, 0, 6 ) . '...' : $post_status_object->label ); ?></span></td>
 					<td><a href="<?php echo esc_html( $product_link ); ?>" target="_blank"><?php echo esc_html( $product_name ); ?></a></td>
-					<?php if ( null == $trial ) : ?>
-						<td><?php echo esc_html( gmdate( 'F d, Y', $next_date ) ); ?></td>
+					<?php if ( 'on' !== $trial_mode ) : ?>
+						<td><?php echo esc_html( $next_date ? gmdate( 'F d, Y', $next_date ) : '-' ); ?></td>
 					<?php else : ?>
 						<td><small>First Billing : </small><?php echo esc_html( gmdate( 'F d, Y', $start_date ) ); ?></td>
 					<?php endif; ?>
@@ -60,6 +62,16 @@ use SpringDevs\Subscription\Illuminate\Helper;
 				<?php
 			endwhile;
 			wp_reset_postdata();
+		else :
+			?>
+			<tr>
+				<td colspan="6">
+					<p style="text-align: center;">
+						<?php echo esc_html_e( 'No subscriptions available yet.', 'sdevs_subscrpt' ); ?>
+					</p>
+				</td>
+			</tr>
+			<?php
 		endif;
 		?>
 	</tbody>

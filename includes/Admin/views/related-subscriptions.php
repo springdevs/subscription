@@ -21,6 +21,7 @@
 				$trial         = get_post_meta( $history->subscription_id, '_subscrpt_trial', true );
 				$start_date    = get_post_meta( $history->subscription_id, '_subscrpt_start_date', true );
 				$next_date     = get_post_meta( $history->subscription_id, '_subscrpt_next_date', true );
+				$status_object = get_post_status_object( get_post_status( $history->subscription_id ) );
 			?>
 				<tr>
 					<td>
@@ -31,7 +32,7 @@
 					</td>
 					<td><?php echo wp_kses_post( Helper::format_price_with_order_item( $price, $order_item->get_id() ) ); ?></td>
 					<td><?php echo esc_html( $trial == null ? date( 'F d, Y', $next_date ) : gmdate( 'F d, Y', $start_date ) ); ?></td>
-					<td><?php echo esc_html( get_post_status( $history->subscription_id ) ); ?></td>
+					<td><span class="subscrpt-<?php echo esc_attr( $status_object->name ); ?>"><?php echo esc_html( $status_object->label ); ?></span></td>
 				</tr>
 				<?php
 		endforeach;

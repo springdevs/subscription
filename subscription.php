@@ -185,9 +185,7 @@ final class Sdevs_Subscription {
 			$this->container['frontend'] = new SpringDevs\Subscription\Frontend();
 		}
 
-		if ( $this->is_request( 'ajax' ) ) {
-			// require_once SUBSCRPT_INCLUDES . '/class-ajax.php';
-		}
+		$this->container['illuminate'] = new SpringDevs\Subscription\Illuminate();
 	}
 
 	/**

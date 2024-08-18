@@ -54,6 +54,7 @@ class MyAccount {
 		$start_date  = get_post_meta( $id, '_subscrpt_start_date', true );
 		$next_date   = get_post_meta( $id, '_subscrpt_next_date', true );
 		$trial       = get_post_meta( $id, '_subscrpt_trial', true );
+		$trial_mode  = get_post_meta( $id, '_subscrpt_trial_mode', true );
 
 		$subscrpt_nonce = wp_create_nonce( 'subscrpt_nonce' );
 		$action_buttons = array();
@@ -85,6 +86,25 @@ class MyAccount {
 			}
 		}
 
+		$is_auto_renew   = get_post_meta( $id, '_subscrpt_auto_renew', true );
+		$renewal_setting = get_option( 'subscrpt_auto_renewal_toggle', '1' );
+		if ( '' === $is_auto_renew && '1' === $renewal_setting ) {
+			update_post_meta( $id, '_subscrpt_auto_renew', 1 );
+		}
+		if ( '1' === $renewal_setting && class_exists( 'WC_Stripe' ) && $order && 'stripe' === $order->get_payment_method() ) {
+			if ( '0' === $is_auto_renew ) {
+				$action_buttons['auto-renew-on'] = array(
+					'url'   => subscrpt_get_action_url( 'renew-on', $subscrpt_nonce, $id ),
+					'label' => __( 'Turn on Auto Renewal', 'sdevs_subscrpt' ),
+				);
+			} else {
+				$action_buttons['auto-renew-off'] = array(
+					'url'   => subscrpt_get_action_url( 'renew-off', $subscrpt_nonce, $id ),
+					'label' => __( 'Turn off Auto Renewal', 'sdevs_subscrpt' ),
+				);
+			}
+		}
+
 		$post_status_object = get_post_status_object( $status );
 		$action_buttons     = apply_filters( 'subscrpt_single_action_buttons', $action_buttons, $id, $subscrpt_nonce, $status );
 
@@ -95,6 +115,7 @@ class MyAccount {
 				'start_date'      => $start_date,
 				'next_date'       => $next_date,
 				'trial'           => $trial,
+				'trial_mode'      => empty( $trial_mode ) ? 'off' : $trial_mode,
 				'order'           => $order,
 				'order_item'      => $order_item,
 				'status'          => $post_status_object,
@@ -118,9 +139,9 @@ class MyAccount {
 	/**
 	 * Change View Subscription Title
 	 *
-	 * @param String $title Title.
+	 * @param string $title Title.
 	 *
-	 * @return String
+	 * @return string
 	 */
 	public function change_single_title( string $title ): string {
 		/* translators: %s: Subscription ID */
@@ -130,9 +151,9 @@ class MyAccount {
 	/**
 	 * Change Subscription Lists Title
 	 *
-	 * @param String $title Title.
+	 * @param string $title Title.
 	 *
-	 * @return String
+	 * @return string
 	 */
 	public function change_lists_title( string $title ): string {
 		global $wp_query;

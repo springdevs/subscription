@@ -1,6 +1,6 @@
 {
-	"name": "test_wc",
-	"version": "0.1.0",
+	"name": "springdevs-subscription",
+	"version": "1.0.0",
 	"author": "The WordPress Contributors",
 	"license": "GPL-2.0-or-later",
 	"main": "build/index.js",

@@ -39,7 +39,7 @@ const modifySubtotalPriceFormat = (
   const { sdevs_subscription } = extensions;
   if (sdevs_subscription && sdevs_subscription.type) {
     return `<price/> every ${
-      sdevs_subscription.time && sdevs_subscription.time === 1
+      sdevs_subscription.time && sdevs_subscription.time > 1
         ? " " + sdevs_subscription.time + "-"
         : ""
     }${sdevs_subscription.type}`;
@@ -66,21 +66,31 @@ const RecurringTotals = ({ cart, extensions }) => {
     <TotalsItem
       className="wc-block-components-totals-footer-item"
       label={__("Recurring totals", "sdevs_subscrpt")}
-      description={recurrings.map((recurring) => (
-        <div style={{ margin: "20px 0", float: "right" }}>
-          <div style={{ fontSize: "18px" }}>
-            <FormattedMonetaryAmount
-              currency={currency}
-              value={parseInt(recurring.price, 10)}
-            />{" "}
-            /{" "}
-            {recurring.time && recurring.time > 1
-              ? `${recurring.time + "-" + recurring.type} `
-              : recurring.type}
-          </div>
-          <small>{recurring.description}</small>
+      description={
+        <div style={{ display: "grid" }}>
+          {recurrings.map((recurring) => (
+            <div style={{ margin: "20px 0", float: "right" }}>
+              <div style={{ fontSize: "18px" }}>
+                <FormattedMonetaryAmount
+                  currency={currency}
+                  value={parseInt(recurring.price, 10)}
+                />{" "}
+                /{" "}
+                {recurring.time && recurring.time > 1
+                  ? `${recurring.time + "-" + recurring.type} `
+                  : recurring.type}
+              </div>
+              <small>{recurring.description}</small>
+              {recurring.can_user_cancel === "yes" && (
+                <>
+                  <br />
+                  <small>You can cancel subscription at any time! </small>
+                </>
+              )}
+            </div>
+          ))}
         </div>
-      ))}
+      }
     ></TotalsItem>
   );
 };

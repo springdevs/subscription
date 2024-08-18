@@ -50,10 +50,10 @@ class Helper {
 	/**
 	 * Generate next date
 	 *
-	 * @param mixed       $time Time.
-	 * @param Null|String $trial Trial.
+	 * @param string      $time Time.
+	 * @param null|string $trial Trial.
 	 *
-	 * @return String
+	 * @return string
 	 */
 	public static function next_date( $time, $trial = null ) {
 		if ( null === $trial ) {
@@ -238,8 +238,8 @@ class Helper {
 	/**
 	 * Get total subscriptions by product ID.
 	 *
-	 * @param Int            $product_id Product ID.
-	 * @param String | array $status Status.
+	 * @param int            $product_id Product ID.
+	 * @param string | array $status Status.
 	 *
 	 * @return \WP_Post | false
 	 */
@@ -351,5 +351,184 @@ class Helper {
 		);
 
 		return $subscription_id;
+	}
+
+	/**
+	 * Get recurrings items from cart items.
+	 *
+	 * @param array $cart_items Cart items.
+	 *
+	 * @return array
+	 */
+	public static function get_recurrs_for_cart( $cart_items ) {
+		$recurrs = array();
+		foreach ( $cart_items as $key => $cart_item ) {
+			$product = $cart_item['data'];
+			if ( $product->is_type( 'simple' ) && isset( $cart_item['subscription'] ) ) {
+				$cart_subscription = $cart_item['subscription'];
+				$type              = $cart_subscription['type'];
+
+				$price_html      = wc_price( $cart_subscription['per_cost'] * $cart_item['quantity'] ) . '/ ' . $type;
+				$recurrs[ $key ] = array(
+					'trial_status'    => ! is_null( $cart_subscription['trial'] ),
+					'price_html'      => $price_html,
+					'start_date'      => self::start_date( $cart_subscription['trial'] ),
+					'next_date'       => self::next_date( ( $cart_subscription['time'] ?? 1 ) . ' ' . $cart_subscription['type'], $cart_subscription['trial'] ),
+					'can_user_cancel' => $cart_item['data']->get_meta( '_subscrpt_user_cancel' ),
+				);
+			}
+		}
+
+		return apply_filters( 'subscrpt_cart_recurring_items', $recurrs, $cart_items );
+	}
+
+	/**
+	 * Create renewal order when subscription expired. [wip]
+	 *
+	 * @param  int $subscription_id Subscription ID.
+	 * @throws \WC_Data_Exception Exception.
+	 * @throws \Exception Exception.
+	 */
+	public static function create_renewal_order( $subscription_id ) {
+		$order_item_id = get_post_meta( $subscription_id, '_subscrpt_order_item_id', true );
+		$order_id      = wc_get_order_id_by_order_item_id( $order_item_id );
+		$old_order     = wc_get_order( $order_id );
+
+		if ( ! $old_order || 'completed' !== $old_order->get_status() ) {
+			if ( ! is_admin() ) {
+				return wc_add_notice( __( 'Subscription renewal isn\'t possible due to previous order not completed or deletion.', 'sdevs_subscrpt' ), 'error' );
+			}
+			return;
+		}
+
+		$order_item         = $old_order->get_item( $order_item_id );
+		$subscription_price = get_post_meta( $subscription_id, '_subscrpt_price', true );
+		$product_args       = array(
+			'name'     => $order_item->get_name(),
+			'subtotal' => $subscription_price,
+			'total'    => $subscription_price,
+		);
+
+		// creating new order.
+		$product      = $order_item->get_product();
+		$user_id      = $old_order->get_user_id();
+		$new_order    = wc_create_order(
+			array(
+				'customer_id' => $user_id,
+				'status'      => 'pending',
+			)
+		);
+		$order_id     = $new_order->get_id();
+		$product_meta = wc_get_order_item_meta( $order_item_id, '_subscrpt_meta', true );
+
+		$type       = subscrpt_get_typos( $product_meta['time'], $product_meta['type'] );
+		$start_date = get_post_meta( $subscription_id, '_subscrpt_start_date', true );
+		$next_date  = get_post_meta( $subscription_id, '_subscrpt_next_date', true );
+		if ( time() <= $next_date ) {
+			$next_date = sdevs_wp_strtotime( $product_meta['time'] . ' ' . $type, $next_date );
+		} else {
+			$next_date = sdevs_wp_strtotime( $product_meta['time'] . ' ' . $type );
+		}
+
+		$new_order_item_id = $new_order->add_product(
+			$product,
+			$order_item->get_quantity(),
+			$product_args
+		);
+		wc_update_order_item_meta(
+			$new_order_item_id,
+			'_subscrpt_meta',
+			array(
+				'time'       => $product_meta['time'],
+				'type'       => $product_meta['type'],
+				'trial'      => null,
+				'start_date' => $start_date,
+				'next_date'  => $next_date,
+			)
+		);
+
+		global $wpdb;
+		$history_table = $wpdb->prefix . 'subscrpt_order_relation';
+		$wpdb->insert(
+			$history_table,
+			array(
+				'subscription_id' => $subscription_id,
+				'order_id'        => $new_order->get_id(),
+				'order_item_id'   => $new_order_item_id,
+				'type'            => 'renew',
+			)
+		);
+
+		update_post_meta( $subscription_id, '_subscrpt_next_date', $next_date );
+		update_post_meta( $subscription_id, '_subscrpt_order_id', $new_order->get_id() );
+		update_post_meta( $subscription_id, '_subscrpt_order_item_id', $new_order_item_id );
+		do_action( 'subscrpt_renewal_order_after_add_product', $subscription_id, $new_order, $new_order_item_id );
+
+		self::clone_order_metadata( $new_order, $old_order );
+		$is_auto_renew = get_post_meta( $subscription_id, '_subscrpt_auto_renew', true );
+
+		$stripe_enabled = ( 'stripe' === $old_order->get_payment_method() && in_array( $is_auto_renew, array( 1, '1' ), true ) && subscrpt_is_auto_renew_enabled() && '1' === get_option( 'subscrpt_stripe_auto_renew', '1' ) );
+		if ( $stripe_enabled ) {
+			$new_order->update_meta_data( '_stripe_customer_id', $old_order->get_meta( '_stripe_customer_id' ) );
+			$new_order->update_meta_data( '_stripe_source_id', $old_order->get_meta( '_stripe_source_id' ) );
+			$new_order->set_payment_method( $old_order->get_payment_method() );
+			$new_order->set_payment_method_title( $old_order->get_payment_method_title() );
+		}
+		$new_order->calculate_totals();
+		$new_order->save();
+
+		// save comment.
+		$comment_id = wp_insert_comment(
+			array(
+				'comment_author'  => 'Subscription for WooCommerce',
+				'comment_content' => sprintf( 'Subscription Renewal order successfully created.	order is %s', $new_order->get_id() ),
+				'comment_post_ID' => $subscription_id,
+				'comment_type'    => 'order_note',
+			)
+		);
+		update_comment_meta( $comment_id, '_subscrpt_activity', 'Renewal Order' );
+		if ( ! is_admin() ) {
+			wc_add_notice( 'Renewal Order(#' . $order_id . ') Created . Please <a href="' . $new_order->get_checkout_payment_url() . '">Pay now</a>', 'success' );
+		}
+
+		do_action( 'subscrpt_after_create_renew_order', $new_order, $old_order, $subscription_id );
+	}
+
+	/**
+	 * Save meta-data from old order
+	 *
+	 * @param \WC_Order $new_order new order object.
+	 * @param \WC_Order $old_order old order object.
+	 *
+	 * @return void
+	 */
+	public static function clone_order_metadata( $new_order, $old_order ) {
+		$new_order->set_customer_id( $old_order->get_customer_id() );
+		$new_order->set_currency( $old_order->get_currency() );
+
+		// 3 Add Billing Fields
+		$customer = new \WC_Customer( $old_order->get_customer_id() );
+		$new_order->set_billing_city( $customer->get_billing_city() );
+		$new_order->set_billing_state( $customer->get_billing_state() );
+		$new_order->set_billing_postcode( $customer->get_billing_postcode() );
+		$new_order->set_billing_email( $customer->get_billing_email() );
+		$new_order->set_billing_phone( $customer->get_billing_phone() );
+		$new_order->set_billing_address_1( $customer->get_billing_address_1() );
+		$new_order->set_billing_address_2( $customer->get_billing_address_2() );
+		$new_order->set_billing_country( $customer->get_billing_country() );
+		$new_order->set_billing_first_name( $customer->get_billing_first_name() );
+		$new_order->set_billing_last_name( $customer->get_billing_last_name() );
+		$new_order->set_billing_company( $customer->get_billing_company() );
+
+		// 4 Add Shipping Fields
+		$new_order->set_shipping_country( $customer->get_shipping_country() );
+		$new_order->set_shipping_first_name( $customer->get_shipping_first_name() );
+		$new_order->set_shipping_last_name( $customer->get_shipping_last_name() );
+		$new_order->set_shipping_company( $customer->get_shipping_company() );
+		$new_order->set_shipping_address_1( $customer->get_shipping_address_1() );
+		$new_order->set_shipping_address_2( $customer->get_shipping_address_2() );
+		$new_order->set_shipping_city( $customer->get_shipping_city() );
+		$new_order->set_shipping_state( $customer->get_shipping_state() );
+		$new_order->set_shipping_postcode( $customer->get_shipping_postcode() );
 	}
 }

@@ -286,11 +286,15 @@ class Subscriptions {
 	 * @return void
 	 */
 	public function subscrpt_order_info() {
-		$order_id      = get_post_meta( get_the_ID(), '_subscrpt_order_id', true );
-		$order_item_id = get_post_meta( get_the_ID(), '_subscrpt_order_item_id', true );
-		$start_date    = get_post_meta( get_the_ID(), '_subscrpt_start_date', true );
-		$next_date     = get_post_meta( get_the_ID(), '_subscrpt_next_date', true );
-		$order         = wc_get_order( $order_id );
+		$order_id         = get_post_meta( get_the_ID(), '_subscrpt_order_id', true );
+		$order_item_id    = get_post_meta( get_the_ID(), '_subscrpt_order_item_id', true );
+		$trial            = get_post_meta( get_the_ID(), '_subscrpt_trial', true );
+		$start_date       = get_post_meta( get_the_ID(), '_subscrpt_start_date', true );
+		$next_date        = get_post_meta( get_the_ID(), '_subscrpt_next_date', true );
+		$trial_start_date = get_post_meta( get_the_ID(), '_subscrpt_trial_started', true );
+		$trial_end_date   = get_post_meta( get_the_ID(), '_subscrpt_trial_ended', true );
+		$trial_mode       = get_post_meta( get_the_ID(), '_subscrpt_trial_mode', true );
+		$order            = wc_get_order( $order_id );
 		if ( ! $order ) {
 			return;
 		}
@@ -313,11 +317,11 @@ class Subscriptions {
 			),
 			'start_date'       => array(
 				'label' => __( 'Started date', 'sdevs_subscrpt' ),
-				'value' => gmdate( 'F d, Y', $start_date ),
+				'value' => gmdate( 'F d, Y', $trial && $trial_start_date ? $trial_start_date : $start_date ),
 			),
 			'next_date'        => array(
 				'label' => __( 'Payment due date', 'sdevs_subscrpt' ),
-				'value' => gmdate( 'F d, Y', $next_date ),
+				'value' => gmdate( 'F d, Y', $trial && $trial_end_date && 'on' === $trial_mode ? $trial_end_date : ( $next_date ?? '-' ) ),
 			),
 			'status'           => array(
 				'label' => __( 'Status', 'sdevs_subscrpt' ),
@@ -325,7 +329,7 @@ class Subscriptions {
 			),
 			'payment_method'   => array(
 				'label' => __( 'Payment Method', 'sdevs_subscrpt' ),
-				'value' => $order->get_payment_method_title(),
+				'value' => empty( $order->get_payment_method_title() ) ? '-' : $order->get_payment_method_title(),
 			),
 			'billing_address'  => array(
 				'label' => __( 'Billing', 'sdevs_subscrpt' ),
@@ -336,7 +340,36 @@ class Subscriptions {
 				'value' => $order->get_formatted_shipping_address() ? $order->get_formatted_shipping_address() : __( 'No shipping address set.', 'sdevs_subscrpt' ),
 			),
 		);
-		$rows         = apply_filters( 'subscrpt_admin_info_rows', $rows, get_the_ID(), $order );
+		if ( $trial ) {
+			$rows = array_slice( $rows, 0, 3, true ) + array(
+				'trial'        => array(
+					'label' => __( 'Trial', 'sdevs_subscrpt' ),
+					'value' => $trial,
+				),
+				'trial_period' => array(
+					'label' => __( 'Trial Period', 'sdevs_subscrpt' ),
+					'value' => ( $trial_start_date && $trial_end_date ? ' [ ' . gmdate( 'F d, Y', $trial_start_date ) . ' - ' . gmdate( 'F d, Y', $trial_end_date ) . ' ] ' : __( 'Trial isn\'t activated yet! ', 'sdevs_subscrpt' ) ),
+				),
+			) + array_slice( $rows, 3, count( $rows ) - 1, true );
+		}
+
+		if ( class_exists( 'WC_Stripe' ) && 'stripe' === $order->get_payment_method() ) {
+			$is_auto_renew = get_post_meta( get_the_ID(), '_subscrpt_auto_renew', true );
+			$new_rows      = array();
+			foreach ( $rows as $key => $value ) {
+				$new_rows[ $key ] = $value;
+				if ( 'payment_method' === $key ) {
+					$new_rows['stripe_auto_renewal'] = array(
+						'label' => __( 'Stripe Auto Renewal', 'sdevs_subscrpt' ),
+						'value' => '0' !== $is_auto_renew ? 'On' : 'Off',
+					);
+				}
+			}
+
+			$rows = $new_rows;
+		}
+
+		$rows = apply_filters( 'subscrpt_admin_info_rows', $rows, get_the_ID(), $order );
 
 		include 'views/subscription-info.php';
 	}
@@ -384,13 +417,7 @@ class Subscriptions {
 	}
 
 	public function save_subscrpt_order( $post_id ) {
-		if ( wp_is_post_revision( $post_id ) ) {
-			return;
-		}
-		if ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE ) {
-			return;
-		}
-		if ( ! isset( $_POST['subscrpt_order_action'] ) ) {
+		if ( wp_is_post_revision( $post_id ) || ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE ) || ! isset( $_POST['subscrpt_order_action'] ) ) {
 			return;
 		}
 		remove_all_actions( 'save_post' );

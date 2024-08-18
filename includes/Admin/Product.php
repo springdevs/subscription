@@ -2,6 +2,8 @@
 
 namespace SpringDevs\Subscription\Admin;
 
+use SpringDevs\Subscription\Illuminate\Helper;
+
 /**
  * Product class
  *
@@ -18,6 +20,36 @@ class Product {
 		add_action( 'woocommerce_product_data_panels', array( $this, 'subscription_forms' ) );
 		add_filter( 'product_type_options', array( $this, 'add_product_type_options' ) );
 		add_action( 'save_post_product', array( $this, 'save_subscrpt_data' ) );
+		add_filter( 'woocommerce_get_price_html', array( $this, 'change_price_html' ), 10, 2 );
+	}
+
+	/**
+	 * Add trial, signup fee etc. with product price.
+	 *
+	 * @param string      $price Price.
+	 * @param \WC_Product $product Product.
+	 *
+	 * @return string
+	 */
+	public function change_price_html( $price, $product ) {
+		if ( $product->is_type( 'variable' ) || '' === $price || subscrpt_pro_activated() ) {
+			return $price;
+		}
+
+		$enabled = $product->get_meta( '_subscrpt_enabled' );
+		if ( $enabled ) :
+			$type            = Helper::get_typos( 1, $product->get_meta( '_subscrpt_timing_option' ) );
+			$meta_trial_time = $product->get_meta( '_subscrpt_trial_timing_per' );
+			$trial           = null;
+			if ( ! empty( $meta_trial_time ) && $meta_trial_time > 0 ) {
+				$trial = '<br/> + Get ' . $meta_trial_time . ' ' . Helper::get_typos( $meta_trial_time, $product->get_meta( '_subscrpt_trial_timing_option' ) ) . ' free trial!';
+			}
+
+			$price_html = $price . ' / ' . $type . $trial;
+			return $price_html;
+		else :
+			return $price;
+		endif;
 	}
 
 	/**
@@ -87,17 +119,24 @@ class Product {
 					'months' => __( 'Monthly', 'sdevs_subscrpt' ),
 					'years'  => __( 'Yearly', 'sdevs_subscrpt' ),
 				);
+				$trial_timing_types    = get_timing_types();
 				$subscrpt_timing       = null;
+				$subscrpt_trial_time   = null;
+				$subscrpt_trial_timing = null;
 				$subscrpt_cart_txt     = 'subscribe';
 				$subscrpt_user_cancell = 'yes';
+				$subscrpt_limit        = 'one';
 
 				$screen = get_current_screen();
 				if ( 'edit' === $screen->parent_base ) {
 					$product = wc_get_product( get_the_ID() );
 					if ( $product ) {
 						$subscrpt_timing       = $product->get_meta( '_subscrpt_timing_option' );
+						$subscrpt_trial_time   = $product->get_meta( '_subscrpt_trial_timing_per' );
+						$subscrpt_trial_timing = $product->get_meta( '_subscrpt_trial_timing_option' );
 						$subscrpt_cart_txt     = $product->get_meta( '_subscrpt_cart_btn_label' );
 						$subscrpt_user_cancell = $product->get_meta( '_subscrpt_user_cancel' );
+						$subscrpt_limit        = $product->get_meta( '_subscrpt_limit' );
 					}
 				}
 				include 'views/product-form.php';
@@ -125,16 +164,22 @@ class Product {
 
 		remove_action( 'save_post_product', array( $this, 'save_subscrpt_data' ) );
 
-		$subscrpt_enable      = isset( $_POST['subscrpt_enable'] );
-		$subscrpt_timing      = sanitize_text_field( wp_unslash( $_POST['subscrpt_timing'] ) );
-		$subscrpt_cart_txt    = sanitize_text_field( wp_unslash( $_POST['subscrpt_cart_txt'] ) );
-		$subscrpt_user_cancel = sanitize_text_field( wp_unslash( $_POST['subscrpt_user_cancel'] ) );
-		$product              = wc_get_product( $product_id );
+		$subscrpt_enable       = isset( $_POST['subscrpt_enable'] );
+		$subscrpt_timing       = sanitize_text_field( wp_unslash( $_POST['subscrpt_timing'] ) );
+		$subscrpt_trial_time   = sanitize_text_field( wp_unslash( $_POST['subscrpt_trial_time'] ) );
+		$subscrpt_trial_timing = sanitize_text_field( wp_unslash( $_POST['subscrpt_trial_timing'] ) );
+		$subscrpt_cart_txt     = sanitize_text_field( wp_unslash( $_POST['subscrpt_cart_txt'] ) );
+		$subscrpt_user_cancel  = sanitize_text_field( wp_unslash( $_POST['subscrpt_user_cancel'] ) );
+		$subscrpt_limit        = isset( $_POST['subscrpt_limit'] ) ? sanitize_text_field( wp_unslash( $_POST['subscrpt_limit'] ) ) : null;
 
+		$product = wc_get_product( $product_id );
 		$product->update_meta_data( '_subscrpt_enabled', $subscrpt_enable );
 		$product->update_meta_data( '_subscrpt_timing_option', $subscrpt_timing );
+		$product->update_meta_data( '_subscrpt_trial_timing_per', $subscrpt_trial_time );
+		$product->update_meta_data( '_subscrpt_trial_timing_option', $subscrpt_trial_timing );
 		$product->update_meta_data( '_subscrpt_cart_btn_label', $subscrpt_cart_txt );
 		$product->update_meta_data( '_subscrpt_user_cancel', $subscrpt_user_cancel );
+		$product->update_meta_data( '_subscrpt_limit', $subscrpt_limit );
 		$product->save();
 
 		add_action( 'save_post_product', array( $this, 'save_subscrpt_data' ) );

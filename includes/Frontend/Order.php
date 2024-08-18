@@ -39,7 +39,8 @@ class Order {
 					$product_name = $order_item->get_name();
 					$product_link = get_the_permalink( $order_item->get_product_id() );
 					$post         = $history->subscription_id;
-					$cost         = get_post_meta( $post, '_subscrpt_price', true );
+					$cost         = get_post_meta( $post, '_subscrpt_price', true ) * $order_item['quantity'];
+					$order        = $order_item->get_order();
 
 					$trial_status = null !== $order_item_meta['trial'];
 				?>
@@ -76,16 +77,16 @@ class Order {
 							?>
 							<tr>
 								<th scope="row"><?php esc_html_e( 'Next billing on', 'sdevs_subscrpt' ); ?>:</th>
-								<td><?php echo esc_html( gmdate( 'F d, Y', $order_item_meta['next_date'] ) ); ?></td>
+								<td><?php echo $order->has_status( 'completed' ) ? esc_html( gmdate( 'F d, Y', get_post_meta( $history->subscription_id, '_subscrpt_next_date', true ) ) ) : '-'; ?></td>
 							</tr>
 						<?php } else { ?>
 							<tr>
 								<th scope="row"><?php esc_html_e( 'Trial', 'sdevs_subscrpt' ); ?>:</th>
-								<td><?php echo esc_html( $order_item_meta['trial'] ); ?></td>
+								<td><?php echo esc_html( get_post_meta( $history->subscription_id, '_subscrpt_trial', true ) ); ?></td>
 							</tr>
 							<tr>
 								<th scope="row"><?php esc_html_e( 'First billing on', 'sdevs_subscrpt' ); ?>:</th>
-								<td><?php echo esc_html( gmdate( 'F d, Y', $order_item_meta['start_date'] ) ); ?></td>
+								<td><?php echo esc_html( gmdate( 'F d, Y', get_post_meta( $history->subscription_id, '_subscrpt_start_date', true ) ) ); ?></td>
 							</tr>
 						<?php } ?>
 						</tfoot>

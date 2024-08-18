@@ -4,6 +4,7 @@
 namespace SpringDevs\Subscription\Frontend;
 
 use SpringDevs\Subscription\Illuminate\Action;
+use SpringDevs\Subscription\Illuminate\Helper;
 
 /**
  * Class ActionController
@@ -11,7 +12,6 @@ use SpringDevs\Subscription\Illuminate\Action;
  * @package SpringDevs\Subscription\Frontend
  */
 class ActionController {
-
 
 	/**
 	 * Initialize the class
@@ -33,11 +33,11 @@ class ActionController {
 		if ( ! wp_verify_nonce( $wpnonce, 'subscrpt_nonce' ) ) {
 			wp_die( esc_html( __( 'Sorry !! You cannot permit to access.', 'sdevs_subscrpt' ) ) );
 		}
-		if ( 'renew' === $action && 'manual' === subscrpt_get_renewal_process() ) {
-				$this->manual_renew_product( $subscrpt_id );
+		if ( 'renew' === $action && ! subscrpt_is_auto_renew_enabled() ) {
+			$this->manual_renew_product( $subscrpt_id );
 		} elseif ( 'cancelled' === $action ) {
-				$status      = get_post_status( $subscrpt_id );
-				$user_cancel = get_post_meta( $subscrpt_id, '_subscrpt_user_cancel', true );
+			$status      = get_post_status( $subscrpt_id );
+			$user_cancel = get_post_meta( $subscrpt_id, '_subscrpt_user_cancel', true );
 			if ( 'no' === $user_cancel ) {
 				return;
 			} elseif ( 'active' === $status ) {
@@ -47,6 +47,12 @@ class ActionController {
 			}
 		} elseif ( 'reactive' === $action ) {
 			Action::status( 'active', $subscrpt_id );
+		} elseif ( 'renew-on' === $action ) {
+			update_post_meta( $subscrpt_id, '_subscrpt_auto_renew', 1 );
+		} elseif ( 'renew-off' === $action ) {
+			update_post_meta( $subscrpt_id, '_subscrpt_auto_renew', 0 );
+		} elseif ( 'renew' === $action && subscrpt_is_auto_renew_enabled() ) {
+			Helper::create_renewal_order( $subscrpt_id );
 		} else {
 			do_action( 'subscrpt_execute_actions', $subscrpt_id, $action );
 		}

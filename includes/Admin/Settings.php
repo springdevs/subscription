@@ -17,6 +17,11 @@ class Settings {
 		add_action( 'admin_init', array( $this, 'register_settings' ) );
 	}
 
+	/**
+	 * Register submenu on `Subscriptions` menu.
+	 *
+	 * @return void
+	 */
 	public function admin_menu() {
 		$post_type_link = 'edit.php?post_type=subscrpt_order';
 		add_submenu_page( $post_type_link, 'Subscription Settings', 'Settings', 'manage_options', 'subscrpt_settings', array( $this, 'settings_content' ) );
@@ -30,6 +35,9 @@ class Settings {
 		register_setting( 'subscrpt_settings', 'subscrpt_manual_renew_cart_notice' );
 		register_setting( 'subscrpt_settings', 'subscrpt_active_role' );
 		register_setting( 'subscrpt_settings', 'subscrpt_unactive_role' );
+		register_setting( 'subscrpt_settings', 'subscrpt_stripe_auto_renew' );
+		register_setting( 'subscrpt_settings', 'subscrpt_auto_renewal_toggle' );
+
 		do_action( 'subscrpt_register_settings', 'subscrpt_settings' );
 	}
 

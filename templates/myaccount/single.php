@@ -7,6 +7,7 @@
  * @var string $start_date
  * @var string $next_date
  * @var string|null $trial
+ * @var string|null $trial_mode
  * @var stdClass $status
  * @var array $action_buttons
  *
@@ -33,6 +34,11 @@ do_action( 'before_single_subscrpt_content' );
 	.auto-renew-off {
 		margin-bottom: 10px;
 	}
+	.subscrpt_action_buttons {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 10px;
+	}
 </style>
 <table class="woocommerce-table woocommerce-table--order-details shop_table order_details subscription_details">
 	<tbody>
@@ -44,35 +50,40 @@ do_action( 'before_single_subscrpt_content' );
 			<td><?php esc_html_e( 'Status', 'sdevs_subscrpt' ); ?></td>
 			<td><span class="subscrpt-<?php echo esc_html( $status->name ); ?>"><?php echo esc_html( $status->label ); ?></span></td>
 		</tr>
+		<?php if ( null != $trial && 'off' !== $trial ) : ?>
 		<tr>
-			<td><?php esc_html_e( 'Start date', 'sdevs_subscrpt' ); ?></td>
+			<td><?php esc_html_e( 'Trial', 'sdevs_subscrpt' ); ?></td>
+			<td><?php echo esc_html( $trial ); ?></td>
+		</tr>
+		<?php endif; ?>
+		<tr>
+			<td><?php esc_html_e( ( 'null' == $trial || 'off' === $trial_mode ? 'Start date' : ( 'extended' === $trial_mode ? 'Trial End & Subscription Start' : 'Trial End & First Billing' ) ), 'sdevs_subscrpt' ); ?></td>
 			<td><?php echo esc_html( gmdate( 'F d, Y', $start_date ) ); ?></td>
 		</tr>
-		<?php if ( null == $trial ) : ?>
+		<?php if ( null == $trial || in_array( $trial_mode, array( 'off', 'extended' ), true ) ) : ?>
 			<tr>
-				<td><?php esc_html_e( 'Next payment date', 'sdevs_subscrpt' ); ?></td>
-				<td><?php echo esc_html( gmdate( 'F d, Y', $next_date ) ); ?></td>
-			</tr>
-		<?php else : ?>
-			<tr>
-				<td><?php esc_html_e( 'Trial', 'sdevs_subscrpt' ); ?></td>
-				<td><?php echo esc_html( $trial ); ?></td>
-			</tr>
-			<tr>
-				<td><?php esc_html_e( 'Trial End & First Billing', 'sdevs_subscrpt' ); ?></td>
-				<td><?php echo esc_html( gmdate( 'F d, Y', $next_date ) ); ?></td>
+				<td>
+				<?php
+					esc_html_e( 'Next payment date', 'sdevs_subscrpt' );
+				?>
+				</td>
+				<td>
+					<?php echo esc_html( gmdate( 'F d, Y', $next_date ) ); ?>
+				</td>
 			</tr>
 		<?php endif; ?>
+		<?php if ( ! empty( $order->get_payment_method_title() ) ) : ?>
 		<tr>
 			<td><?php esc_html_e( 'Payment', 'sdevs_subscrpt' ); ?></td>
 			<td>
 				<span data-is_manual="yes" class="subscription-payment-method"><?php echo esc_html( $order->get_payment_method_title() ); ?></span>
 			</td>
 		</tr>
+		<?php endif; ?>
 		<?php if ( 0 < count( $action_buttons ) ) : ?>
 			<tr>
 				<td><?php echo esc_html_e( 'Actions', 'sdevs_subscrpt' ); ?></td>
-				<td>
+				<td class="subscrpt_action_buttons">
 					<?php foreach ( $action_buttons as $action_button ) : ?>
 						<a href="<?php echo esc_attr( $action_button['url'] ); ?>" class="button
 											<?php
