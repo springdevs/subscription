@@ -33,13 +33,22 @@ class Email {
 					<tbody>
 						<tr>
 							<h2><?php esc_html_e( 'Related Subscriptions', 'sdevs_subscrpt' ); ?></h2>
+							<?php
+							if ( ! $order->has_status( 'completed' ) ) :
+								?>
+								<p><small>Your subscription will be activated when order status is completed.</small></p>
+							<?php endif; ?>
 						</tr>
 						<?php
 						foreach ( $histories as $history ) :
-							$item            = $order->get_item( $history->order_item_id );
-							$item_meta       = wc_get_order_item_meta( $history->order_item_id, '_subscrpt_meta', true );
-							$subscription_id = $history->subscription_id;
-							$has_trial       = isset( $item_meta['trial'] ) && strlen( $item_meta['trial'] ) > 2;
+							$item                       = $order->get_item( $history->order_item_id );
+							$item_meta                  = wc_get_order_item_meta( $history->order_item_id, '_subscrpt_meta', true );
+							$subscription_id            = $history->subscription_id;
+							$subscription_status_object = get_post_status_object( get_post_status( $subscription_id ) );
+							$cost                       = get_post_meta( $subscription_id, '_subscrpt_price', true );
+							$has_trial                  = isset( $item_meta['trial'] ) && strlen( $item_meta['trial'] ) > 2;
+							$start_date                 = get_post_meta( $subscription_id, '_subscrpt_start_date' );
+							$next_date                  = get_post_meta( $subscription_id, '_subscrpt_next_date' );
 							?>
 								<tr>
 									<th class="td" scope="row" colspan="3" style="color: #636363; border: 1px solid #e5e5e5; vertical-align: middle; padding: 12px; text-align: center;"><?php echo get_the_title( $subscription_id ); ?></th>
@@ -50,27 +59,27 @@ class Email {
 									</th>
 								</tr>
 								<tr>
-									<th class="td" scope="row" colspan="2" style="color: #636363; border: 1px solid #e5e5e5; vertical-align: middle; padding: 12px; text-align: left;"><?php _e( 'Status:', 'sdevs_subscrpt' ); ?> </th>
-									<td class="td" style="color: #636363; border: 1px solid #e5e5e5; vertical-align: middle; padding: 12px; text-align: left;"><?php echo get_post_status( $subscription_id ); ?></td>
+									<th class="td" scope="row" colspan="2" style="color: #636363; border: 1px solid #e5e5e5; vertical-align: middle; padding: 12px; text-align: left;"><?php esc_html_e( 'Status:', 'sdevs_subscrpt' ); ?> </th>
+									<td class="td" style="color: #636363; border: 1px solid #e5e5e5; vertical-align: middle; padding: 12px; text-align: left;"><?php echo esc_html( $subscription_status_object->label ); ?></td>
 								</tr>
 								<tr>
 									<th class="td" scope="row" colspan="2" style="color: #636363; border: 1px solid #e5e5e5; vertical-align: middle; padding: 12px; text-align: left;">
-										<?php _e( 'Recurring amount:', 'sdevs_subscrpt' ); ?> </th>
-									<td class="td" style="color: #636363; border: 1px solid #e5e5e5; vertical-align: middle; padding: 12px; text-align: left;"><?php echo Helper::format_price_with_order_item( $item->get_total(), $item->get_id() ); ?></td>
+										<?php esc_html_e( 'Recurring amount:', 'sdevs_subscrpt' ); ?> </th>
+									<td class="td" style="color: #636363; border: 1px solid #e5e5e5; vertical-align: middle; padding: 12px; text-align: left;"><?php echo wp_kses_post( Helper::format_price_with_order_item( $cost, $item->get_id() ) ); ?></td>
 								</tr>
 								<?php if ( ! $has_trial ) { ?>
 									<tr>
-										<th class="td" scope="row" colspan="2" style="color: #636363; border: 1px solid #e5e5e5; vertical-align: middle; padding: 12px; text-align: left;"><?php _e( 'Next billing on', 'sdevs_subscrpt' ); ?>: </th>
-										<td class="td" style="color: #636363; border: 1px solid #e5e5e5; vertical-align: middle; padding: 12px; text-align: left;"><?php echo date( 'F d, Y', $item_meta['next_date'] ); ?></td>
+										<th class="td" scope="row" colspan="2" style="color: #636363; border: 1px solid #e5e5e5; vertical-align: middle; padding: 12px; text-align: left;"><?php esc_html_e( 'Next billing on', 'sdevs_subscrpt' ); ?>: </th>
+										<td class="td" style="color: #636363; border: 1px solid #e5e5e5; vertical-align: middle; padding: 12px; text-align: left;"><?php echo ! empty( $next_date ) ? esc_html( gmdate( 'F d, Y', $next_date ) ) : '-'; ?></td>
 									</tr>
 								<?php } else { ?>
 									<tr>
-										<th class="td" scope="row" colspan="2" style="color: #636363; border: 1px solid #e5e5e5; vertical-align: middle; padding: 12px; text-align: left;"><?php _e( 'Trial', 'sdevs_subscrpt' ); ?>: </th>
+										<th class="td" scope="row" colspan="2" style="color: #636363; border: 1px solid #e5e5e5; vertical-align: middle; padding: 12px; text-align: left;"><?php esc_html_e( 'Trial', 'sdevs_subscrpt' ); ?>: </th>
 										<td class="td" style="color: #636363; border: 1px solid #e5e5e5; vertical-align: middle; padding: 12px; text-align: left;"><?php echo esc_html( $item_meta['trial'] ); ?></td>
 									</tr>
 									<tr>
-										<th class="td" scope="row" colspan="2" style="color: #636363; border: 1px solid #e5e5e5; vertical-align: middle; padding: 12px; text-align: left;"><?php _e( 'First billing on', 'sdevs_subscrpt' ); ?>: </th>
-										<td class="td" style="color: #636363; border: 1px solid #e5e5e5; vertical-align: middle; padding: 12px; text-align: left;"><?php echo date( 'F d, Y', $item_meta['start_date'] ); ?></td>
+										<th class="td" scope="row" colspan="2" style="color: #636363; border: 1px solid #e5e5e5; vertical-align: middle; padding: 12px; text-align: left;"><?php esc_html_e( 'First billing on', 'sdevs_subscrpt' ); ?>: </th>
+										<td class="td" style="color: #636363; border: 1px solid #e5e5e5; vertical-align: middle; padding: 12px; text-align: left;"><?php echo ! empty( $start_date ) ? esc_html( gmdate( 'F d, Y', $start_date ) ) : '-'; ?></td>
 									</tr>
 								<?php } ?>
 								<tr>

@@ -10,7 +10,6 @@ use SpringDevs\Subscription\Admin\Product;
 use SpringDevs\Subscription\Admin\Settings;
 use SpringDevs\Subscription\Admin\Subscriptions;
 use SpringDevs\Subscription\Illuminate\Comments;
-use SpringDevs\Subscription\Illuminate\Email;
 
 /**
  * The admin class
@@ -23,13 +22,11 @@ class Admin {
 	public function __construct() {
 		$this->dispatch_actions();
 		new Required();
-		// new Illuminate();
 		new Menu();
 		new Product();
 		new Subscriptions();
 		new AdminOrder();
 		new Comments();
-		// new Email();
 		new Settings();
 		new Links();
 	}

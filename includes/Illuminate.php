@@ -6,6 +6,7 @@ use SpringDevs\Subscription\Frontend\Checkout;
 use SpringDevs\Subscription\Illuminate\AutoRenewal;
 use SpringDevs\Subscription\Illuminate\Block;
 use SpringDevs\Subscription\Illuminate\Cron;
+use SpringDevs\Subscription\Illuminate\Email;
 use SpringDevs\Subscription\Illuminate\Order;
 use SpringDevs\Subscription\Illuminate\Post;
 use SpringDevs\Subscription\Illuminate\Stripe;
@@ -26,6 +27,7 @@ class Illuminate {
 		new Block();
 		new Checkout();
 		new AutoRenewal();
+		new Email();
 	}
 
 	/**

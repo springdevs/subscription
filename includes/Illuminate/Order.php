@@ -46,10 +46,10 @@ class Order {
 					update_post_meta( $subscription_id, '_subscrpt_trial_started', time() );
 					update_post_meta( $subscription_id, '_subscrpt_trial_ended', $start_date );
 					update_post_meta( $subscription_id, '_subscrpt_trial_mode', 'on' );
-					update_post_meta( $subscription_id, '_subscrpt_start_date', $start_date );
 					$next_date = $start_date;
 				}
 			}
+			update_post_meta( $subscription_id, '_subscrpt_start_date', $start_date );
 		} elseif ( 'renew' === $subscription_history->type ) {
 			if ( $trial ) {
 				delete_post_meta( $subscription_id, '_subscrpt_trial' );

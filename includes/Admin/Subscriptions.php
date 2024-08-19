@@ -115,13 +115,12 @@ class Subscriptions {
 	 * @return void
 	 */
 	public function add_custom_columns_data( $column, $post_id ) {
-		$order_id   = get_post_meta( $post_id, '_subscrpt_order_id', true );
-		$start_date = get_post_meta( $post_id, '_subscrpt_start_date', true );
-		$next_date  = get_post_meta( $post_id, '_subscrpt_next_date', true );
-		$order      = wc_get_order( $order_id );
+		$order_id = get_post_meta( $post_id, '_subscrpt_order_id', true );
+		$order    = wc_get_order( $order_id );
 		if ( $order ) {
 			if ( 'subscrpt_start_date' === $column ) {
-				echo esc_html( gmdate( 'F d, Y', $start_date ) );
+				$start_date = get_post_meta( $post_id, '_subscrpt_start_date', true );
+				echo ! empty( $start_date ) ? esc_html( gmdate( 'F d, Y', $start_date ) ) : '-';
 			} elseif ( 'subscrpt_customer' === $column ) {
 				?>
 				<?php echo wp_kses_post( $order->get_formatted_billing_full_name() ); ?>
@@ -133,7 +132,8 @@ class Subscriptions {
 				<?php endif; ?>
 				<?php
 			} elseif ( 'subscrpt_next_date' === $column ) {
-				echo esc_html( gmdate( 'F d, Y', $next_date ) );
+				$next_date = get_post_meta( $post_id, '_subscrpt_next_date', true );
+				echo ! empty( $next_date ) ? esc_html( gmdate( 'F d, Y', $next_date ) ) : '-';
 			} elseif ( 'subscrpt_status' === $column ) {
 				$status_obj = get_post_status_object( get_post_status( $post_id ) );
 				?>
@@ -317,11 +317,11 @@ class Subscriptions {
 			),
 			'start_date'       => array(
 				'label' => __( 'Started date', 'sdevs_subscrpt' ),
-				'value' => gmdate( 'F d, Y', $trial && $trial_start_date ? $trial_start_date : $start_date ),
+				'value' => ! empty( $start_date ) ? gmdate( 'F d, Y', $trial && $trial_start_date ? $trial_start_date : $start_date ) : '-',
 			),
 			'next_date'        => array(
 				'label' => __( 'Payment due date', 'sdevs_subscrpt' ),
-				'value' => gmdate( 'F d, Y', $trial && $trial_end_date && 'on' === $trial_mode ? $trial_end_date : ( $next_date ?? '-' ) ),
+				'value' => ! empty( $next_date ) ? gmdate( 'F d, Y', $trial && $trial_end_date && 'on' === $trial_mode ? $trial_end_date : ( $next_date ?? '-' ) ) : '-',
 			),
 			'status'           => array(
 				'label' => __( 'Status', 'sdevs_subscrpt' ),

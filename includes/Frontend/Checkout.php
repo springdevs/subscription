@@ -111,21 +111,6 @@ class Checkout {
 
 						// subscription related.
 						update_post_meta( $selected_subscription_id, '_subscrpt_trial', $trial );
-						if ( $trial ) {
-							update_post_meta( $selected_subscription_id, '_subscrpt_trial_mode', 'active' === $post_status ? 'on' : 'off' );
-						}
-						if ( 'active' === $post_status ) {
-							$start_date = time();
-							$next_date  = sdevs_wp_strtotime( 1 . ' ' . $type, $start_date );
-
-							if ( $trial ) {
-								$start_date = sdevs_wp_strtotime( $trial );
-								$next_date  = $start_date;
-							}
-
-							update_post_meta( $selected_subscription_id, '_subscrpt_start_date', $start_date );
-							update_post_meta( $selected_subscription_id, '_subscrpt_next_date', $next_date );
-						}
 
 						do_action( 'subscrpt_order_checkout', $selected_subscription_id, $order_item );
 					}

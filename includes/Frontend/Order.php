@@ -39,8 +39,9 @@ class Order {
 					$product_name = $order_item->get_name();
 					$product_link = get_the_permalink( $order_item->get_product_id() );
 					$post         = $history->subscription_id;
-					$cost         = get_post_meta( $post, '_subscrpt_price', true ) * $order_item['quantity'];
+					$cost         = get_post_meta( $post, '_subscrpt_price', true );
 					$order        = $order_item->get_order();
+					$start_date   = get_post_meta( $history->subscription_id, '_subscrpt_start_date', true );
 
 					$trial_status = null !== $order_item_meta['trial'];
 				?>
@@ -86,7 +87,7 @@ class Order {
 							</tr>
 							<tr>
 								<th scope="row"><?php esc_html_e( 'First billing on', 'sdevs_subscrpt' ); ?>:</th>
-								<td><?php echo esc_html( gmdate( 'F d, Y', get_post_meta( $history->subscription_id, '_subscrpt_start_date', true ) ) ); ?></td>
+								<td><?php echo ! empty( $start_date ) ? esc_html( gmdate( 'F d, Y', $start_date ) ) : '-'; ?></td>
 							</tr>
 						<?php } ?>
 						</tfoot>

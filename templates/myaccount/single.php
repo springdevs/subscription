@@ -58,7 +58,7 @@ do_action( 'before_single_subscrpt_content' );
 		<?php endif; ?>
 		<tr>
 			<td><?php esc_html_e( ( 'null' == $trial || 'off' === $trial_mode ? 'Start date' : ( 'extended' === $trial_mode ? 'Trial End & Subscription Start' : 'Trial End & First Billing' ) ), 'sdevs_subscrpt' ); ?></td>
-			<td><?php echo esc_html( gmdate( 'F d, Y', $start_date ) ); ?></td>
+			<td><?php echo esc_html( ! empty( $start_date ) ? gmdate( 'F d, Y', $start_date ) : '-' ); ?></td>
 		</tr>
 		<?php if ( null == $trial || in_array( $trial_mode, array( 'off', 'extended' ), true ) ) : ?>
 			<tr>
@@ -68,7 +68,7 @@ do_action( 'before_single_subscrpt_content' );
 				?>
 				</td>
 				<td>
-					<?php echo esc_html( gmdate( 'F d, Y', $next_date ) ); ?>
+					<?php echo esc_html( ! empty( $next_date ) ? gmdate( 'F d, Y', $next_date ) : '-' ); ?>
 				</td>
 			</tr>
 		<?php endif; ?>

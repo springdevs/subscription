@@ -8,25 +8,21 @@ use SpringDevs\Subscription\Frontend\Downloadable;
 use SpringDevs\Subscription\Frontend\MyAccount;
 use SpringDevs\Subscription\Frontend\Order as FrontendOrder;
 use SpringDevs\Subscription\Frontend\Product;
-use SpringDevs\Subscription\Illuminate\Email;
 
 /**
  * Frontend handler class
  */
 class Frontend {
 
-
 	/**
 	 * Frontend constructor.
 	 */
 	public function __construct() {
-		// new Illuminate();
 		new Product();
 		new Cart();
 		new FrontendOrder();
 		new ActionController();
 		new MyAccount();
 		new Downloadable();
-		// new Email();
 	}
 }
