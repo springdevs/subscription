@@ -47,8 +47,8 @@ class Email {
 							$subscription_status_object = get_post_status_object( get_post_status( $subscription_id ) );
 							$cost                       = get_post_meta( $subscription_id, '_subscrpt_price', true );
 							$has_trial                  = isset( $item_meta['trial'] ) && strlen( $item_meta['trial'] ) > 2;
-							$start_date                 = get_post_meta( $subscription_id, '_subscrpt_start_date' );
-							$next_date                  = get_post_meta( $subscription_id, '_subscrpt_next_date' );
+							$start_date                 = get_post_meta( $subscription_id, '_subscrpt_start_date', true );
+							$next_date                  = get_post_meta( $subscription_id, '_subscrpt_next_date', true );
 							?>
 								<tr>
 									<th class="td" scope="row" colspan="3" style="color: #636363; border: 1px solid #e5e5e5; vertical-align: middle; padding: 12px; text-align: center;"><?php echo get_the_title( $subscription_id ); ?></th>

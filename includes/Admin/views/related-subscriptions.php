@@ -31,7 +31,7 @@
 						<?php echo null == $trial ? ( ! empty( $start_date ) ? esc_html( gmdate( 'F d, Y', $start_date ) ) : '-' ) : '+' . esc_html( $trial ) . ' ' . __( 'free trial', 'sdevs_subscrpt' ); ?>
 					</td>
 					<td><?php echo wp_kses_post( Helper::format_price_with_order_item( $price, $order_item->get_id() ) ); ?></td>
-					<td><?php echo esc_html( ! empty( $start_date ) && ! empty( $next_date ) ? ( $trial == null ? date( 'F d, Y', $next_date ) : gmdate( 'F d, Y', $start_date ) ) : '-' ); ?></td>
+					<td><?php echo esc_html( ! empty( $start_date ) && ! empty( $next_date ) ? ( $trial == null ? gmdate( 'F d, Y', $next_date ) : gmdate( 'F d, Y', $start_date ) ) : '-' ); ?></td>
 					<td><span class="subscrpt-<?php echo esc_attr( $status_object->name ); ?>"><?php echo esc_html( $status_object->label ); ?></span></td>
 				</tr>
 				<?php

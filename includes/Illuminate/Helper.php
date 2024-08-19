@@ -421,15 +421,6 @@ class Helper {
 		$order_id     = $new_order->get_id();
 		$product_meta = wc_get_order_item_meta( $order_item_id, '_subscrpt_meta', true );
 
-		$type       = subscrpt_get_typos( $product_meta['time'], $product_meta['type'] );
-		$start_date = get_post_meta( $subscription_id, '_subscrpt_start_date', true );
-		$next_date  = get_post_meta( $subscription_id, '_subscrpt_next_date', true );
-		if ( time() <= $next_date ) {
-			$next_date = sdevs_wp_strtotime( $product_meta['time'] . ' ' . $type, $next_date );
-		} else {
-			$next_date = sdevs_wp_strtotime( $product_meta['time'] . ' ' . $type );
-		}
-
 		$new_order_item_id = $new_order->add_product(
 			$product,
 			$order_item->get_quantity(),
@@ -439,11 +430,9 @@ class Helper {
 			$new_order_item_id,
 			'_subscrpt_meta',
 			array(
-				'time'       => $product_meta['time'],
-				'type'       => $product_meta['type'],
-				'trial'      => null,
-				'start_date' => $start_date,
-				'next_date'  => $next_date,
+				'time'  => $product_meta['time'],
+				'type'  => $product_meta['type'],
+				'trial' => null,
 			)
 		);
 
@@ -459,7 +448,6 @@ class Helper {
 			)
 		);
 
-		update_post_meta( $subscription_id, '_subscrpt_next_date', $next_date );
 		update_post_meta( $subscription_id, '_subscrpt_order_id', $new_order->get_id() );
 		update_post_meta( $subscription_id, '_subscrpt_order_item_id', $new_order_item_id );
 		do_action( 'subscrpt_renewal_order_after_add_product', $subscription_id, $new_order, $new_order_item_id );
