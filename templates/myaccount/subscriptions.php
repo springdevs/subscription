@@ -46,16 +46,16 @@ use SpringDevs\Subscription\Illuminate\Helper;
 				$product_price_html = Helper::format_price_with_order_item( get_post_meta( get_the_ID(), '_subscrpt_price', true ), $order_item->get_id() );
 				?>
 				<tr>
-					<td><?php the_ID(); ?></td>
-					<td><span class="subscrpt-<?php echo esc_attr( $post_status_object->name ); ?>"><?php echo esc_html( strlen( $post_status_object->label ) > 9 ? substr( $post_status_object->label, 0, 6 ) . '...' : $post_status_object->label ); ?></span></td>
-					<td><a href="<?php echo esc_html( $product_link ); ?>" target="_blank"><?php echo esc_html( $product_name ); ?></a></td>
+					<td data-title="Subscription"><?php the_ID(); ?></td>
+					<td data-title="Status"><span class="subscrpt-<?php echo esc_attr( $post_status_object->name ); ?>"><?php echo esc_html( strlen( $post_status_object->label ) > 9 ? substr( $post_status_object->label, 0, 6 ) . '...' : $post_status_object->label ); ?></span></td>
+					<td data-title="Product"><a href="<?php echo esc_html( $product_link ); ?>" target="_blank"><?php echo esc_html( $product_name ); ?></a></td>
 					<?php if ( 'on' !== $trial_mode ) : ?>
-						<td><?php echo esc_html( $next_date ? gmdate( 'F d, Y', $next_date ) : '-' ); ?></td>
+						<td data-title="Next Payment"><?php echo esc_html( $next_date ? gmdate( 'F d, Y', $next_date ) : '-' ); ?></td>
 					<?php else : ?>
-						<td><small>First Billing : </small><?php echo esc_html( gmdate( 'F d, Y', $start_date ) ); ?></td>
+						<td data-title="Next Payment"><small>First Billing : </small><?php echo esc_html( gmdate( 'F d, Y', $start_date ) ); ?></td>
 					<?php endif; ?>
-					<td><?php echo wp_kses_post( $product_price_html ); ?></td>
-					<td>
+					<td data-title="Total"><?php echo wp_kses_post( $product_price_html ); ?></td>
+					<td data-title="Actions">
 						<a href="<?php echo esc_html( wc_get_endpoint_url( 'view-subscription', get_the_ID(), wc_get_page_permalink( 'myaccount' ) ) ); ?>" class="woocommerce-button <?php echo esc_attr( $wp_button_class ); ?> button view"><span class="dashicons dashicons-visibility"></span></a>
 					</td>
 				</tr>
