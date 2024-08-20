@@ -392,12 +392,9 @@ class Helper {
 	public static function create_renewal_order( $subscription_id ) {
 		$order_item_id = get_post_meta( $subscription_id, '_subscrpt_order_item_id', true );
 		$order_id      = wc_get_order_id_by_order_item_id( $order_item_id );
-		$old_order     = wc_get_order( $order_id );
+		$old_order     = self::check_order_for_renewal( $order_id );
 
-		if ( ! $old_order || 'completed' !== $old_order->get_status() ) {
-			if ( ! is_admin() ) {
-				return wc_add_notice( __( 'Subscription renewal isn\'t possible due to previous order not completed or deletion.', 'sdevs_subscrpt' ), 'error' );
-			}
+		if ( ! $old_order ) {
 			return;
 		}
 
@@ -410,6 +407,96 @@ class Helper {
 		);
 
 		// creating new order.
+		$new_order_data = self::create_new_order_for_renewal( $old_order, $order_item, $product_args );
+		if ( ! $new_order_data ) {
+			return;
+		}
+		$new_order         = $new_order_data['order'];
+		$new_order_item_id = $new_order_data['order_item_id'];
+
+		self::create_renewal_history( $subscription_id, $new_order->get_id(), $new_order_item_id );
+		update_post_meta( $subscription_id, '_subscrpt_order_id', $new_order->get_id() );
+		update_post_meta( $subscription_id, '_subscrpt_order_item_id', $new_order_item_id );
+
+		self::clone_order_metadata( $new_order, $old_order );
+		self::clone_stripe_metadata_for_renewal( $subscription_id, $old_order, $new_order );
+
+		$new_order->calculate_totals();
+		$new_order->save();
+		if ( ! is_admin() ) {
+			$message = 'Renewal Order(#' . $new_order->get_id() . ') Created.';
+			if ( $new_order->has_status( 'pending' ) ) {
+				$message .= 'Please <a href="' . $new_order->get_checkout_payment_url() . '">Pay now</a>';
+			}
+			wc_add_notice( $message, 'success' );
+		}
+
+		do_action( 'subscrpt_after_create_renew_order', $new_order, $old_order, $subscription_id, false );
+	}
+
+	/**
+	 * Clone stripe metadata from old order.
+	 *
+	 * @param int       $subscription_id Subscription Id.
+	 * @param \WC_Order $old_order Old Order Object.
+	 * @param \WC_Order $new_order New Order Object.
+	 *
+	 * @return void
+	 */
+	public static function clone_stripe_metadata_for_renewal( $subscription_id, $old_order, $new_order ) {
+		$is_auto_renew  = get_post_meta( $subscription_id, '_subscrpt_auto_renew', true );
+		$stripe_enabled = ( 'stripe' === $old_order->get_payment_method() && in_array( $is_auto_renew, array( 1, '1' ), true ) && subscrpt_is_auto_renew_enabled() && '1' === get_option( 'subscrpt_stripe_auto_renew', '1' ) );
+		if ( $stripe_enabled ) {
+			$new_order->update_meta_data( '_stripe_customer_id', $old_order->get_meta( '_stripe_customer_id' ) );
+			$new_order->update_meta_data( '_stripe_source_id', $old_order->get_meta( '_stripe_source_id' ) );
+			$new_order->set_payment_method( $old_order->get_payment_method() );
+			$new_order->set_payment_method_title( $old_order->get_payment_method_title() );
+		}
+	}
+
+	/**
+	 * Create history for renewal.
+	 *
+	 * @param int $subscription_id Subscription Id.
+	 * @param int $new_order_id New Order Id.
+	 * @param int $new_order_item_id New Order Item Id.
+	 *
+	 * @return void
+	 */
+	public static function create_renewal_history( $subscription_id, $new_order_id, $new_order_item_id ) {
+		global $wpdb;
+		$history_table = $wpdb->prefix . 'subscrpt_order_relation';
+		$wpdb->insert(
+			$history_table,
+			array(
+				'subscription_id' => $subscription_id,
+				'order_id'        => $new_order_id,
+				'order_item_id'   => $new_order_item_id,
+				'type'            => 'renew',
+			)
+		);
+
+		$comment_id = wp_insert_comment(
+			array(
+				'comment_author'  => 'Subscription for WooCommerce',
+				'comment_content' => sprintf( 'Subscription Renewal order successfully created.	order is %s', $new_order_id ),
+				'comment_post_ID' => $subscription_id,
+				'comment_type'    => 'order_note',
+			)
+		);
+		update_comment_meta( $comment_id, '_subscrpt_activity', 'Renewal Order' );
+	}
+
+	/**
+	 * Create new order for renewal.
+	 *
+	 * @param \WC_Order      $old_order Old Order Object.
+	 * @param \WC_Order_Item $order_item Old Order Item Object.
+	 * @param array          $product_args Product args for add product.
+	 *
+	 * @return array|false
+	 */
+	public static function create_new_order_for_renewal( \WC_Order $old_order, \WC_Order_Item $order_item, array $product_args ) {
 		$product      = $order_item->get_product();
 		$user_id      = $old_order->get_user_id();
 		$new_order    = wc_create_order(
@@ -418,8 +505,11 @@ class Helper {
 				'status'      => 'pending',
 			)
 		);
-		$order_id     = $new_order->get_id();
-		$product_meta = wc_get_order_item_meta( $order_item_id, '_subscrpt_meta', true );
+		$product_meta = apply_filters( 'subscrpt_renewal_item_meta', wc_get_order_item_meta( $order_item->get_id(), '_subscrpt_meta', true ), $product, $order_item );
+		$product_args = apply_filters( 'subscrpt_renewal_product_args', $product_args, $product, $order_item );
+		if ( ! $product_args ) {
+			return false;
+		}
 
 		$new_order_item_id = $new_order->add_product(
 			$product,
@@ -436,50 +526,29 @@ class Helper {
 			)
 		);
 
-		global $wpdb;
-		$history_table = $wpdb->prefix . 'subscrpt_order_relation';
-		$wpdb->insert(
-			$history_table,
-			array(
-				'subscription_id' => $subscription_id,
-				'order_id'        => $new_order->get_id(),
-				'order_item_id'   => $new_order_item_id,
-				'type'            => 'renew',
-			)
+		return array(
+			'order'         => $new_order,
+			'order_item_id' => $new_order_item_id,
 		);
+	}
 
-		update_post_meta( $subscription_id, '_subscrpt_order_id', $new_order->get_id() );
-		update_post_meta( $subscription_id, '_subscrpt_order_item_id', $new_order_item_id );
-		do_action( 'subscrpt_renewal_order_after_add_product', $subscription_id, $new_order, $new_order_item_id );
-
-		self::clone_order_metadata( $new_order, $old_order );
-		$is_auto_renew = get_post_meta( $subscription_id, '_subscrpt_auto_renew', true );
-
-		$stripe_enabled = ( 'stripe' === $old_order->get_payment_method() && in_array( $is_auto_renew, array( 1, '1' ), true ) && subscrpt_is_auto_renew_enabled() && '1' === get_option( 'subscrpt_stripe_auto_renew', '1' ) );
-		if ( $stripe_enabled ) {
-			$new_order->update_meta_data( '_stripe_customer_id', $old_order->get_meta( '_stripe_customer_id' ) );
-			$new_order->update_meta_data( '_stripe_source_id', $old_order->get_meta( '_stripe_source_id' ) );
-			$new_order->set_payment_method( $old_order->get_payment_method() );
-			$new_order->set_payment_method_title( $old_order->get_payment_method_title() );
-		}
-		$new_order->calculate_totals();
-		$new_order->save();
-
-		// save comment.
-		$comment_id = wp_insert_comment(
-			array(
-				'comment_author'  => 'Subscription for WooCommerce',
-				'comment_content' => sprintf( 'Subscription Renewal order successfully created.	order is %s', $new_order->get_id() ),
-				'comment_post_ID' => $subscription_id,
-				'comment_type'    => 'order_note',
-			)
-		);
-		update_comment_meta( $comment_id, '_subscrpt_activity', 'Renewal Order' );
-		if ( ! is_admin() ) {
-			wc_add_notice( 'Renewal Order(#' . $order_id . ') Created . Please <a href="' . $new_order->get_checkout_payment_url() . '">Pay now</a>', 'success' );
+	/**
+	 * Check if old order is completed or deleted!
+	 *
+	 * @param mixed $old_order_id Old Order Id.
+	 *
+	 * @return \WC_Order|false
+	 */
+	public static function check_order_for_renewal( $old_order_id ) {
+		$old_order = wc_get_order( $old_order_id );
+		if ( ! $old_order || 'completed' !== $old_order->get_status() ) {
+			if ( ! is_admin() ) {
+				return wc_add_notice( __( 'Subscription renewal isn\'t possible due to previous order not completed or deletion.', 'sdevs_subscrpt' ), 'error' );
+			}
+			return false;
 		}
 
-		do_action( 'subscrpt_after_create_renew_order', $new_order, $old_order, $subscription_id );
+		return $old_order;
 	}
 
 	/**
