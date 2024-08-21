@@ -38,28 +38,19 @@ class Stripe extends \WC_Stripe_Payment_Gateway {
 	/**
 	 * Pay renewal Order
 	 *
-	 * @param null|\WC_Order $renewal_order Renewal order.
+	 * @param \WC_Order $renewal_order Renewal order.
 	 * @throws \WC_Stripe_Exception $e excepttion.
 	 */
-	public function pay_renew_order( $renewal_order = null ) {
-		if ( is_null( $renewal_order ) ) {
-			return false;
-		}
-
-		$amount = $renewal_order->get_total();
+	public function pay_renew_order( $renewal_order ) {
 
 		try {
-			if ( $amount * 100 < \WC_Stripe_Helper::get_minimum_amount() ) {
-				/* translators: minimum amount */
-				$message = sprintf( __( 'Sorry, the minimum allowed order total is %1$s to use this payment method.', 'sdevs_subscrpt' ), wc_price( \WC_Stripe_Helper::get_minimum_amount() / 100 ) );
-				return new \WP_Error( 'stripe_error', $message );
-			}
+			$this->validate_minimum_order_amount( $renewal_order );
 
+			$amount   = $renewal_order->get_total();
 			$order_id = $renewal_order->get_id();
 
 			// Get source from order.
 			$prepared_source = $this->prepare_order_source( $renewal_order );
-
 			if ( ! $prepared_source->customer ) {
 				return new \WP_Error( 'stripe_error', __( 'Customer not found', 'sdevs_subscrpt' ) );
 			}
@@ -80,13 +71,10 @@ class Stripe extends \WC_Stripe_Payment_Gateway {
 				$this->throw_localized_message( $intent, $renewal_order );
 			}
 
-			if ( 'succeeded' === $intent->status && ! $this->is_using_saved_payment_method() && ( $this->save_payment_method_requested() ) ) {
-				$this->save_payment_method( $prepared_source->source_object );
-			}
 			if ( ! empty( $intent ) ) {
 				// Use the last charge within the intent to proceed.
-				// $response = end( $intent->charges->data );
-				$this->process_response( $intent, $renewal_order );
+				$response = $this->get_latest_charge_from_intent( $intent );
+				$this->process_response( $response, $renewal_order );
 			}
 			$this->unlock_order_payment( $renewal_order );
 		} catch ( \WC_Stripe_Exception $e ) {

@@ -141,7 +141,6 @@ class Order {
 		switch ( $order->get_status() ) {
 			case 'on-hold':
 			case 'pending':
-			case 'processing':
 				$post_status = 'pending';
 				break;
 
