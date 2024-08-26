@@ -14,64 +14,77 @@ class AutoRenewal {
 	 */
 	public function __construct() {
 		add_action( 'subscrpt_subscription_expired', array( $this, 'after_subscription_expired' ) );
-		add_filter(
-			'subscrpt_renewal_item_meta',
-			function ( $item_meta, $product ) {
-				if ( 'updated' !== get_option( 'subscrpt_renewal_price', 'subscribed' ) || ! $product ) {
-					return $item_meta;
-				}
-				if ( $product->is_type( 'variable' ) ) {
-					$product = wc_get_product( $product->get_meta( '_subscrpt_convertation_default_variation_for_renewal', true ) );
-					if ( ! $product ) {
-						return $item_meta;
-					}
-				}
+		add_filter( 'subscrpt_renewal_item_meta', array( $this, 'filter_renewal_item_meta' ), 10, 2 );
+		add_filter( 'subscrpt_renewal_product_args', array( $this, 'filter_renewal_product_args' ), 10, 3 );
+	}
 
-				$timing_per    = $product->get_meta( '_subscrpt_timing_per' );
-				$timing_option = $product->get_meta( '_subscrpt_timing_option' );
+	/**
+	 * Filter renewal product args.
+	 *
+	 * @param array          $product_args product args.
+	 * @param \WC_Product    $product Product Object.
+	 * @param \WC_Order_Item $order_item Order Item Object.
+	 *
+	 * @return array
+	 */
+	public function filter_renewal_product_args( $product_args, $product, $order_item ) {
+		if ( 'updated' !== get_option( 'subscrpt_renewal_price', 'subscribed' ) ) {
+			return $product_args;
+		}
 
-				return array(
-					'time'  => empty( $timing_per ) ? 1 : $timing_per,
-					'type'  => $timing_option,
-					'trial' => null,
-				);
-			},
-			10,
-			2
+		if ( ! $product ) {
+			if ( ! is_admin() ) {
+				wc_add_notice( __( 'Subscription early renewal order creation failed due to product deletion !', 'sdevs_subscrpt' ), 'error' );
+			}
+			return false;
+		}
+
+		if ( $product->is_type( 'variable' ) ) {
+			$product = wc_get_product( $product->get_meta( '_subscrpt_convertation_default_variation_for_renewal', true ) );
+			if ( ! $product ) {
+				if ( ! is_admin() ) {
+					wc_add_notice( __( 'Subscription early renewal order creation failed due to product deletion !', 'sdevs_subscrpt' ), 'error' );
+				}
+				return false;
+			}
+		}
+
+		$product_args = array(
+			'name'     => $product->get_name(),
+			'subtotal' => $product->get_price() * $order_item->get_quantity(),
+			'total'    => $product->get_price() * $order_item->get_quantity(),
 		);
-		add_filter(
-			'subscrpt_renewal_product_args',
-			function ( $product_args, $product, $order_item ) {
-				if ( 'updated' !== get_option( 'subscrpt_renewal_price', 'subscribed' ) ) {
-					return $product_args;
-				}
 
-				if ( ! $product ) {
-					if ( ! is_admin() ) {
-						wc_add_notice( __( 'Subscription early renewal order creation failed due to product deletion !', 'sdevs_subscrpt' ), 'error' );
-					}
-					return false;
-				}
+		return $product_args;
+	}
 
-				if ( $product->is_type( 'variable' ) ) {
-					$product = wc_get_product( $product->get_meta( '_subscrpt_convertation_default_variation_for_renewal', true ) );
-					if ( ! $product ) {
-						if ( ! is_admin() ) {
-							wc_add_notice( __( 'Subscription early renewal order creation failed due to product deletion !', 'sdevs_subscrpt' ), 'error' );
-						}
-						return false;
-					}
-				}
-				$product_args = array(
-					'name'     => $product->get_name(),
-					'subtotal' => $product->get_price() * $order_item->get_quantity(),
-					'total'    => $product->get_price() * $order_item->get_quantity(),
-				);
+	/**
+	 * Filter renewal item's meta.
+	 *
+	 * @param array       $item_meta Item meta.
+	 * @param \WC_Product $product Product Object.
+	 *
+	 * @return array
+	 */
+	public function filter_renewal_item_meta( $item_meta, $product ) {
+		if ( 'updated' !== get_option( 'subscrpt_renewal_price', 'subscribed' ) || ! $product ) {
+			return $item_meta;
+		}
 
-				return $product_args;
-			},
-			10,
-			3
+		if ( $product->is_type( 'variable' ) ) {
+			$product = wc_get_product( $product->get_meta( '_subscrpt_convertation_default_variation_for_renewal', true ) );
+			if ( ! $product ) {
+				return $item_meta;
+			}
+		}
+
+		$timing_per    = $product->get_meta( '_subscrpt_timing_per' );
+		$timing_option = $product->get_meta( '_subscrpt_timing_option' );
+
+		return array(
+			'time'  => empty( $timing_per ) ? 1 : $timing_per,
+			'type'  => $timing_option,
+			'trial' => null,
 		);
 	}
 

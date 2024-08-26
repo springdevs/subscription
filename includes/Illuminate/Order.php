@@ -35,9 +35,10 @@ class Order {
 		$order_item_meta = wc_get_order_item_meta( $order_item_id, '_subscrpt_meta' );
 		$type            = Helper::get_typos( 1, $order_item_meta['type'] );
 		$trial           = get_post_meta( $subscription_id, '_subscrpt_trial', true );
+		$recurr_timing   = ( $order_item_meta['time'] ?? 1 ) . ' ' . $type;
 		if ( 'new' === $subscription_history->type ) {
 			$start_date = time();
-			$next_date  = sdevs_wp_strtotime( 1 . ' ' . $type, $start_date );
+			$next_date  = sdevs_wp_strtotime( $recurr_timing, $start_date );
 			if ( $trial && ! empty( $trial ) ) {
 				$trial_started = get_post_meta( $subscription_id, '_subscrpt_trial_started', true );
 				$trial_ended   = get_post_meta( $subscription_id, '_subscrpt_trial_ended', true );
@@ -57,15 +58,15 @@ class Order {
 				delete_post_meta( $subscription_id, '_subscrpt_trial_started' );
 				delete_post_meta( $subscription_id, '_subscrpt_trial_ended' );
 			}
-			$next_date = sdevs_wp_strtotime( 1 . ' ' . $type, time() );
+			$next_date = sdevs_wp_strtotime( $recurr_timing, time() );
 		} elseif ( 'early-renew' === $subscription_history->type ) {
-			$next_date = sdevs_wp_strtotime( 1 . ' ' . $type, get_post_meta( $subscription_id, '_subscrpt_next_date', true ) );
+			$next_date = sdevs_wp_strtotime( $recurr_timing, get_post_meta( $subscription_id, '_subscrpt_next_date', true ) );
 
 			if ( $trial ) {
 				$trial_mode = get_post_meta( $subscription_id, '_subscrpt_trial_mode', true );
 				if ( 'on' === $trial_mode ) {
 					update_post_meta( $subscription_id, '_subscrpt_trial_mode', 'extended' );
-					$next_date = sdevs_wp_strtotime( 1 . ' ' . $type, get_post_meta( $subscription_id, '_subscrpt_trial_ended', true ) );
+					$next_date = sdevs_wp_strtotime( $recurr_timing, get_post_meta( $subscription_id, '_subscrpt_trial_ended', true ) );
 				}
 			}
 		}
