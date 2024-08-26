@@ -80,6 +80,13 @@ Customer can set status to **Pending cancellation**, which subscription will be 
 
 == Changelog ==
 
+= 1.3 =
+- **New**: Stripe renewal added.
+- **New**: Trial feature added.
+- **New**: Subscription limit added.
+- **Fix**: Cancel by customer.
+- **Update**: Improve user experience and bug fixing!
+
 = 1.2.1 =
 - **Fix**: pagination bug on `subscriptions` template.
 - **Fix**: Variable product exists on cart when pro plugin is deactivated!

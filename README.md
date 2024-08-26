@@ -20,6 +20,14 @@ bash clean.sh
 
 ## changelog
 
+### v1.3
+
+- **New**: Stripe renewal added.
+- **New**: Trial feature added.
+- **New**: Subscription limit added.
+- **Fix**: Cancel by customer.
+- **Update**: Improve user experience and bug fixing!
+
 ### v1.2.1
 
 - **Fix**: pagination bug on `subscriptions` template.

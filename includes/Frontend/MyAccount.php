@@ -91,7 +91,9 @@ class MyAccount {
 		if ( '' === $is_auto_renew && '1' === $renewal_setting ) {
 			update_post_meta( $id, '_subscrpt_auto_renew', 1 );
 		}
-		if ( '1' === $renewal_setting && class_exists( 'WC_Stripe' ) && $order && 'stripe' === $order->get_payment_method() ) {
+		$saved_methods = wc_get_customer_saved_methods_list( get_current_user_id() );
+		$has_methods   = isset( $saved_methods['cc'] );
+		if ( $has_methods && '1' === $renewal_setting && class_exists( 'WC_Stripe' ) && $order && 'stripe' === $order->get_payment_method() ) {
 			if ( '0' === $is_auto_renew ) {
 				$action_buttons['auto-renew-on'] = array(
 					'url'   => subscrpt_get_action_url( 'renew-on', $subscrpt_nonce, $id ),

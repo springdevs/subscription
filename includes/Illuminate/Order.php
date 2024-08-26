@@ -135,7 +135,7 @@ class Order {
 	 * @param int $order_id Order Id.
 	 */
 	public function order_status_changed( $order_id ) {
-		$order       = new \WC_Order( $order_id );
+		$order       = wc_get_order( $order_id );
 		$post_status = 'active';
 
 		switch ( $order->get_status() ) {

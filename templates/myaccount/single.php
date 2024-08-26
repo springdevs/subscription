@@ -133,13 +133,13 @@ do_action( 'before_single_subscrpt_content' );
 	</tbody>
 	<tfoot>
 		<tr>
-			<th scope="row"><?php _e( 'Subtotal', 'sdevs_subscrpt' ); ?>:</th>
+			<th scope="row"><?php esc_html_e( 'Subtotal', 'sdevs_subscrpt' ); ?>:</th>
 			<td>
-				<span class="woocommerce-Price-amount amount"><?php echo wc_price( get_post_meta( $id, '_subscrpt_price', true ), array( 'currency' => $order->get_currency() ) ); ?></span>
+				<span class="woocommerce-Price-amount amount"><?php echo wp_kses_post( wc_price( get_post_meta( $id, '_subscrpt_price', true ), array( 'currency' => $order->get_currency() ) ) ); ?></span>
 			</td>
 		</tr>
 		<tr>
-			<th scope="row"><?php _e( 'Renew', 'sdevs_subscrpt' ); ?>:</th>
+			<th scope="row"><?php esc_html_e( 'Renew', 'sdevs_subscrpt' ); ?>:</th>
 			<td>
 				<span class="woocommerce-Price-amount amount">
 					<?php echo wp_kses_post( $product_price_html ); ?>
@@ -150,7 +150,7 @@ do_action( 'before_single_subscrpt_content' );
 </table>
 
 <section class="woocommerce-customer-details">
-	<h2 class="woocommerce-column__title"><?php _e( 'Billing address', 'sdevs_subscrpt' ); ?></h2>
+	<h2 class="woocommerce-column__title"><?php esc_html_e( 'Billing address', 'sdevs_subscrpt' ); ?></h2>
 	<address>
 		<?php echo wp_kses_post( $order->get_formatted_billing_address() ); ?>
 		<p class="woocommerce-customer-details--phone"><?php echo esc_html( $order->get_billing_phone() ); ?></p>

@@ -63,7 +63,6 @@ class Checkout {
 
 				if ( $enabled ) {
 					$is_renew = isset( $order_item['renew_subscrpt'] );
-					$type     = Helper::get_typos( 1, $product->get_meta( '_subscrpt_timing_option' ) );
 
 					$timing_option = $product->get_meta( '_subscrpt_timing_option' );
 					$trial         = null;
