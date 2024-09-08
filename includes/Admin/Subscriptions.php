@@ -12,6 +12,7 @@ use SpringDevs\Subscription\Illuminate\Helper;
  */
 class Subscriptions {
 
+
 	/**
 	 * Initialize the class.
 	 */
@@ -128,7 +129,8 @@ class Subscriptions {
 				<a href="mailto:<?php echo wp_kses_post( $order->get_billing_email() ); ?>"><?php echo wp_kses_post( $order->get_billing_email() ); ?></a>
 				<br />
 				<?php if ( ! empty( $order->get_billing_phone() ) ) : ?>
-				Phone : <a href="tel:<?php echo esc_js( $order->get_billing_phone() ); ?>"><?php echo esc_js( $order->get_billing_phone() ); ?></a>
+					Phone : <a
+						href="tel:<?php echo esc_js( $order->get_billing_phone() ); ?>"><?php echo esc_js( $order->get_billing_phone() ); ?></a>
 				<?php endif; ?>
 				<?php
 			} elseif ( 'subscrpt_next_date' === $column ) {
@@ -137,7 +139,8 @@ class Subscriptions {
 			} elseif ( 'subscrpt_status' === $column ) {
 				$status_obj = get_post_status_object( get_post_status( $post_id ) );
 				?>
-				<span class="subscrpt-<?php echo esc_html( $status_obj->name ); ?>"><?php echo esc_html( $status_obj->label ); ?></span>
+				<span
+					class="subscrpt-<?php echo esc_html( $status_obj->name ); ?>"><?php echo esc_html( $status_obj->label ); ?></span>
 				<?php
 			}
 		} else {
@@ -207,8 +210,8 @@ class Subscriptions {
 		$subscription_id = $post->ID;
 		global $wpdb;
 		$table_name = $wpdb->prefix . 'subscrpt_order_relation';
-		// @phpcs:ignore
-		$order_histories = $wpdb->get_results( $wpdb->prepare( 'SELECT * FROM %i WHERE subscription_id=%d', array( $table_name, $subscription_id ) ) );
+        // @phpcs:ignore
+        $order_histories = $wpdb->get_results($wpdb->prepare('SELECT * FROM %i WHERE subscription_id=%d', array($table_name, $subscription_id)));
 
 		include 'views/order-history.php';
 	}
@@ -227,7 +230,8 @@ class Subscriptions {
 			else :
 				?>
 				<a href="https://springdevs.com/subscription" target="_blank">
-					<img style="width: 100%;" src="<?php echo esc_html( SUBSCRPT_ASSETS . '/images/subscrpt-ads.png' ); ?>" />
+					<img style="width: 100%;"
+						src="<?php echo esc_html( SUBSCRPT_ASSETS . '/images/subscrpt-ads.png' ); ?>" />
 				</a>
 				<?php
 			endif;
@@ -409,7 +413,7 @@ class Subscriptions {
 			?>
 			<script>
 				jQuery(document).ready(function() {
-					jQuery(window).off("beforeunload", null);
+					jQuery(window).off('beforeunload', null);
 				});
 			</script>
 			<?php
@@ -422,13 +426,22 @@ class Subscriptions {
 		}
 		remove_all_actions( 'save_post' );
 
-		$action = sanitize_text_field( $_POST['subscrpt_order_action'] );
+		$action     = sanitize_text_field( $_POST['subscrpt_order_action'] );
+		$old_status = get_post_status( $post_id );
+
 		wp_update_post(
 			array(
 				'ID'          => $post_id,
 				'post_status' => $action,
 			)
 		);
+
+		if ( $old_status !== $action ) {
+			$old_status_object = get_post_status_object( $old_status );
+			$new_status_object = get_post_status_object( $action );
+			WC()->mailer();
+			do_action( 'subscrpt_status_changed_admin_email_notification', $post_id, $old_status_object->label, $new_status_object->label );
+		}
 
 		$order_id = get_post_meta( $post_id, '_subscrpt_order_id', true );
 		if ( 'active' === $action ) {

@@ -11,7 +11,7 @@
  * @var stdClass $status
  * @var array $action_buttons
  *
- * This template can be overridden by copying it to yourtheme/subscription/myaccount/single.php
+ * This template can be overridden by copying it to <your_theme>/subscription/myaccount/single.php
  *
  * @package SpringDevs\Subscription
  */

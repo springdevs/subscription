@@ -33,6 +33,7 @@
         <exclude name="WordPress.NamingConventions.PrefixAllGlobals" />
 		<exclude name="WordPress.Security.NonceVerification.Recommended"/>
 		<exclude name="Squiz.Commenting.FileComment.Missing"/>
+        <exclude name="Squiz.Commenting.FileComment.MissingPackageTag" />
     </rule>
 	<rule ref="WordPress.WP.I18n">
 		<properties>

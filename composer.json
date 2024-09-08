@@ -10,6 +10,14 @@
     }
   ],
   "minimum-stability": "dev",
+  "require-dev": {
+    "wp-coding-standards/wpcs": "dev-develop",
+    "dealerdirect/phpcodesniffer-composer-installer": "^1.0",
+    "phpcompatibility/phpcompatibility-wp": "dev-master"
+  },
+  "scripts": {
+    "phpcs": "phpcs -p . --standard=PHPCompatibilityWP --ignore=vendor/*"
+  },
   "autoload": {
     "psr-4": {
       "SpringDevs\\Subscription\\": "includes/"
@@ -17,5 +25,10 @@
     "files": [
       "includes/functions.php"
     ]
+  },
+  "config": {
+    "allow-plugins": {
+      "dealerdirect/phpcodesniffer-composer-installer": true
+    }
   }
 }

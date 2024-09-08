@@ -3,11 +3,9 @@
  * Subscriptions Table
  *
  * @var int $current_page
- * @var \WP_Query $postslist
+ * @var WP_Query $postslist
  *
- * This template can be overridden by copying it to yourtheme/simple-booking/myaccount/subscriptions.php
- *
- * @package SpringDevs\Subscription
+ * This template can be overridden by copying it to <your_theme>/subscription/myaccount/subscriptions.php
  */
 
 use SpringDevs\Subscription\Illuminate\Helper;
