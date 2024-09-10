@@ -66,7 +66,7 @@ final class Sdevs_Subscription {
 	 *
 	 * @var array
 	 */
-	private array $container = array();
+	private $container = array();
 
 	/**
 	 * Constructor for the Sdevs_Wc_Subscription class
