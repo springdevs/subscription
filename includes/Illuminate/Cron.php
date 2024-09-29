@@ -14,6 +14,26 @@ class Cron {
 	 */
 	public function __construct() {
 		add_action( 'subscrpt_daily_cron', array( $this, 'daily_cron_task' ) );
+		// TODO:
+		// add_action(
+		// 'wp_loaded',
+		// function () {
+		// $args = array(
+		// 'post_type'  => 'subscrpt_order',
+		// 'meta_query' => array(
+		// array(
+		// 'key'     => '_subscrpt_next_date',
+		// 'value'   => time(),
+		// 'compare' => '<=',
+		// 'type'    => 'NUMERIC',
+		// ),
+		// ),
+		// );
+		//
+		// $query = new \WP_Query( $args );
+		// dd( $query->have_posts() );
+		// }
+		// );
 	}
 
 	/**
@@ -24,23 +44,38 @@ class Cron {
 			'post_type'   => 'subscrpt_order',
 			'post_status' => array( 'active', 'pe_cancelled' ),
 			'fields'      => 'ids',
+			'meta_query'  => array(
+				'relation' => 'OR',
+				array(
+					'key'     => '_subscrpt_next_date',
+					'value'   => time(),
+					'compare' => '<=',
+				),
+				array(
+					'relation' => 'AND',
+					array(
+						'key'     => '_subscrpt_trial',
+						'value'   => null,
+						'compare' => '!=',
+					),
+					array(
+						'key'     => '_subscrpt_start_date',
+						'value'   => time(),
+						'compare' => '<=',
+					),
+				),
+			),
 			'author'      => get_current_user_id(),
 		);
 
-		$active_subscriptions = get_posts( $args );
+		$expired_subscriptions = get_posts( $args );
 
-		if ( $active_subscriptions && count( $active_subscriptions ) > 0 ) {
-			foreach ( $active_subscriptions as $subscription ) {
-				$start_date = get_post_meta( $subscription, '_subscrpt_start_date', true );
-				$next_date  = get_post_meta( $subscription, '_subscrpt_next_date', true );
-				$trial      = get_post_meta( $subscription, '_subscrpt_trial', true );
-
-				if ( time() >= $next_date || ( null !== $trial && time() >= $start_date ) ) {
-					if ( 'pe_cancelled' === get_post_status( $subscription ) ) {
-						Action::status( 'cancelled', $subscription );
-					} else {
-						Action::status( 'expired', $subscription );
-					}
+		if ( $expired_subscriptions && count( $expired_subscriptions ) > 0 ) {
+			foreach ( $expired_subscriptions as $subscription ) {
+				if ( 'pe_cancelled' === get_post_status( $subscription ) ) {
+					Action::status( 'cancelled', $subscription );
+				} else {
+					Action::status( 'expired', $subscription );
 				}
 			}
 		}

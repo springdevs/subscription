@@ -24,6 +24,10 @@ trait Email {
 			'html'  => 'emails/subscription-cancelled-html.php',
 			'plain' => 'emails/plains/subscription-cancelled-plain.php',
 		),
+		'subscrpt_renew_reminder'               => array(
+			'html'  => 'emails/renew-reminder-html.php',
+			'plain' => 'emails/plains/renew-reminder-plain.php',
+		),
 	);
 	/**
 	 * Template path.

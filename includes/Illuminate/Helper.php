@@ -423,7 +423,7 @@ class Helper {
 
 		$new_order->calculate_totals();
 		$new_order->save();
-		if ( ! is_admin() ) {
+		if ( ! is_admin() && function_exists( 'wc_add_notice' ) ) {
 			$message = 'Renewal Order(#' . $new_order->get_id() . ') Created.';
 			if ( $new_order->has_status( 'pending' ) ) {
 				$message .= 'Please <a href="' . $new_order->get_checkout_payment_url() . '">Pay now</a>';
@@ -542,7 +542,7 @@ class Helper {
 	public static function check_order_for_renewal( $old_order_id ) {
 		$old_order = wc_get_order( $old_order_id );
 		if ( ! $old_order || 'completed' !== $old_order->get_status() ) {
-			if ( ! is_admin() ) {
+			if ( ! is_admin() && function_exists( 'wc_add_notice' ) ) {
 				return wc_add_notice( __( 'Subscription renewal isn\'t possible due to previous order not completed or deletion.', 'sdevs_subscrpt' ), 'error' );
 			}
 			return false;

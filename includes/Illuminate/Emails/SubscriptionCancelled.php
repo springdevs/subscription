@@ -68,4 +68,14 @@ class SubscriptionCancelled extends WC_Email {
 
 		$this->send( $this->get_recipient(), $this->get_subject(), $this->get_content(), $this->get_headers(), $this->get_attachments() );
 	}
+
+	/**
+	 * Initialize form fields for settings.
+	 *
+	 * @return void
+	 */
+	public function init_form_fields() {
+		parent::init_form_fields();
+		unset( $this->form_fields['additional_content'] );
+	}
 }

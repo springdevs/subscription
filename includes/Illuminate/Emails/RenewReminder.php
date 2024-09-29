@@ -6,9 +6,9 @@ use SpringDevs\Subscription\Traits\Email;
 use WC_Email;
 
 /**
- * Subscription Expired Mail to Customer.
+ * Subscription Renewal Reminder Mail to Customer.
  */
-class SubscriptionExpired extends WC_Email {
+class RenewReminder extends WC_Email {
 
 	use Email;
 
@@ -19,15 +19,15 @@ class SubscriptionExpired extends WC_Email {
 	public function __construct() {
 		$this->customer_email = true;
 
-		$this->id          = 'subscrpt_subscription_expired_email';
-		$this->title       = __( 'Subscription expired', 'sdevs_subscrpt' );
-		$this->description = __( 'This email is sent to customer when a subscription expired.', 'sdevs_subscrpt' );
+		$this->id          = 'subscrpt_renew_reminder';
+		$this->title       = __( 'Subscription Renewal Reminder', 'sdevs_subscrpt' );
+		$this->description = __( 'This email is sent to customer for renewing subscription before expire.', 'sdevs_subscrpt' );
 
 		// email template path.
 		$this->set_template( $this->id );
 
 		// Triggers for this email.
-		add_action( 'subscrpt_subscription_expired_email_notification', array( $this, 'trigger' ) );
+		add_action( 'subscrpt_renew_reminder_email_notification', array( $this, 'trigger' ) );
 
 		// Call parent constructor.
 		parent::__construct();
@@ -39,7 +39,7 @@ class SubscriptionExpired extends WC_Email {
 	 * @return string
 	 */
 	public function get_default_subject(): string {
-		return __( '#{subscription_id} subscription expired!', 'sdevs_subscrpt' );
+		return __( 'Reminder for the Subscription renewal #{subscription_id}', 'sdevs_subscrpt' );
 	}
 
 	/**
@@ -65,6 +65,9 @@ class SubscriptionExpired extends WC_Email {
 		$this->placeholders['{subscription_id}'] = $subscription_id;
 		$this->subscription_id                   = $subscription_id;
 
+		$this->extra = array(
+			'num_of_days_before' => $this->get_option( 'num_of_days_before' ),
+		);
 		$this->set_table_data();
 
 		$this->send( $this->get_recipient(), $this->get_subject(), $this->get_content(), $this->get_headers(), $this->get_attachments() );
@@ -78,5 +81,16 @@ class SubscriptionExpired extends WC_Email {
 	public function init_form_fields() {
 		parent::init_form_fields();
 		unset( $this->form_fields['additional_content'] );
+
+		$this->form_fields = array_slice( $this->form_fields, 0, 2 ) + array(
+			'num_of_days_before' => array(
+				'title'   => __(
+					'Number of days before the next subscription payment.',
+					'sdevs_subscrpt'
+				),
+				'type'    => 'number',
+				'default' => 7,
+			),
+		) + array_slice( $this->form_fields, 2, 2 );
 	}
 }
