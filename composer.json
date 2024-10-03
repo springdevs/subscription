@@ -13,10 +13,14 @@
   "require-dev": {
     "wp-coding-standards/wpcs": "dev-develop",
     "dealerdirect/phpcodesniffer-composer-installer": "^1.0",
-    "phpcompatibility/phpcompatibility-wp": "dev-master"
+    "phpcompatibility/phpcompatibility-wp": "dev-master",
+    "phpstan/phpstan": "1.12.x-dev",
+    "szepeviktor/phpstan-wordpress": "dev-master",
+    "php-stubs/woocommerce-stubs": "dev-master"
   },
   "scripts": {
-    "phpcs": "phpcs -p . --standard=PHPCompatibilityWP --ignore=vendor/*"
+    "phpcs": "phpcs -p . --standard=PHPCompatibilityWP --ignore=vendor/*",
+    "phpstan": "phpstan analyse --debug --memory-limit=2048M"
   },
   "autoload": {
     "psr-4": {
