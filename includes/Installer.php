@@ -16,6 +16,7 @@ class Installer {
 	 */
 	public function run() {
 		$this->add_version();
+		$this->register_schedules();
 		$this->create_tables();
 	}
 
@@ -31,11 +32,21 @@ class Installer {
 
 		update_option( 'subscrpt_version', SUBSCRPT_VERSION );
 
+		update_option( 'subscrpt_manual_renew_cart_notice', 'Subscriptional product added to cart. Please complete the checkout to renew subscription.' );
+	}
+
+	/**
+	 * Register cron events.
+	 *
+	 * @return void
+	 */
+	public function register_schedules() {
 		if ( ! wp_next_scheduled( 'subscrpt_daily_cron' ) ) {
 			wp_schedule_event( time(), 'daily', 'subscrpt_daily_cron' );
 		}
-
-		update_option( 'subscrpt_manual_renew_cart_notice', 'Subscriptional product added to cart. Please complete the checkout to renew subscription.' );
+		if ( ! wp_next_scheduled( 'subscrpt_renew_reminder_cron' ) ) {
+			wp_schedule_event( time(), 'daily', 'subscrpt_renew_reminder_cron' );
+		}
 	}
 
 	/**

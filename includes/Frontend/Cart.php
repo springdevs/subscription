@@ -432,10 +432,10 @@ class Cart {
 				<?php foreach ( $recurrs as $recurr ) : ?>
 						<p>
 							<span><?php echo wp_kses_post( $recurr['price_html'] ); ?></span><br />
-							<small><?php echo esc_html_e( ( $recurr['trial_status'] ? 'First billing on' : 'Next billing on' ), 'sdevs_subscrpt' ); ?>: <?php echo esc_html( $recurr['trial_status'] ? $recurr['start_date'] : $recurr['next_date'] ); ?></small>
+							<small><?php esc_html_e( ( $recurr['trial_status'] ? 'First billing on' : 'Next billing on' ), 'sdevs_subscrpt' ); ?>: <?php echo esc_html( $recurr['trial_status'] ? $recurr['start_date'] : $recurr['next_date'] ); ?></small>
 							<?php if ( 'yes' === $recurr['can_user_cancel'] ) : ?>
 								<br>
-								<small><?php echo esc_html_e( 'You can cancel subscription at any time!', 'sdevs_subscrpt' ); ?></small>
+								<small><?php esc_html_e( 'You can cancel subscription at any time!', 'sdevs_subscrpt' ); ?></small>
 							<?php endif; ?>
 						</p>
 				<?php endforeach; ?>

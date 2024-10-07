@@ -14,26 +14,49 @@ class Cron {
 	 */
 	public function __construct() {
 		add_action( 'subscrpt_daily_cron', array( $this, 'daily_cron_task' ) );
-		// TODO:
-		// add_action(
-		// 'wp_loaded',
-		// function () {
-		// $args = array(
-		// 'post_type'  => 'subscrpt_order',
-		// 'meta_query' => array(
-		// array(
-		// 'key'     => '_subscrpt_next_date',
-		// 'value'   => time(),
-		// 'compare' => '<=',
-		// 'type'    => 'NUMERIC',
-		// ),
-		// ),
-		// );
-		//
-		// $query = new \WP_Query( $args );
-		// dd( $query->have_posts() );
-		// }
-		// );
+		add_action( 'subscrpt_renew_reminder_cron', array( $this, 'send_renew_reminder_mail' ) );
+	}
+
+	/**
+	 * Send renew reminder mail.
+	 *
+	 * @return void
+	 */
+	public function send_renew_reminder_mail() {
+		$time = strtotime( '7 days' );
+
+		$args = array(
+			'post_type'   => 'subscrpt_order',
+			'post_status' => array( 'active', 'pe_cancelled' ),
+			'fields'      => 'ids',
+			'meta_query'  => array(
+				'relation' => 'AND',
+				array(
+					'key'     => '_subscrpt_next_date',
+					'value'   => $time,
+					'compare' => '<=',
+				),
+				array(
+					'key'   => '_subscrpt_trial',
+					'compare' => 'NOT EXISTS',
+				),
+                array(
+					'key'   => '_subscrpt_reminder_mail_sent',
+					'compare' => 'NOT EXISTS',
+				),
+			),
+		);
+
+		$subscriptions = get_posts( $args );
+
+        if ( 0 === count($subscriptions) ) {
+            return;
+        }
+
+        WC()->mailer();
+        foreach ( $subscriptions as $subscription_id ) {
+            do_action( 'subscrpt_renew_reminder_email_notification', $subscription_id );
+        }
 	}
 
 	/**
@@ -65,7 +88,6 @@ class Cron {
 					),
 				),
 			),
-			'author'      => get_current_user_id(),
 		);
 
 		$expired_subscriptions = get_posts( $args );
