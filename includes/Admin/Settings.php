@@ -13,7 +13,7 @@ class Settings {
 	 * Initialize the class.
 	 */
 	public function __construct() {
-		add_action( 'admin_menu', array( $this, 'admin_menu' ) );
+		add_action( 'admin_menu', array( $this, 'admin_menu' ), 30 );
 		add_action( 'admin_init', array( $this, 'register_settings' ) );
 	}
 

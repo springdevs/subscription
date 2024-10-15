@@ -154,8 +154,6 @@ final class Sdevs_Subscription {
 
 	/**
 	 * Placeholder for activation function
-	 *
-	 * Nothing being called here yet.
 	 */
 	public function activate() {
 		$installer = new SpringDevs\Subscription\Installer();

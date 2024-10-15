@@ -56,23 +56,15 @@ class Checkout {
 		// Create subscription for order items.
 		$order_items = $order->get_items();
 		foreach ( $order_items as $order_item ) {
-			$product = wc_get_product( $order_item['product_id'] );
+			$product = sdevs_get_subscription_product( $order_item['product_id'] );
 
 			if ( $product->is_type( 'simple' ) && ! subscrpt_pro_activated() ) {
-				$enabled = $product->get_meta( '_subscrpt_enabled' );
 
-				if ( $enabled ) {
+				if ( $product->is_enabled() ) {
 					$is_renew = isset( $order_item['renew_subscrpt'] );
 
-					$timing_option = $product->get_meta( '_subscrpt_timing_option' );
-					$trial         = null;
-					$has_trial     = Helper::check_trial( $product->get_id() );
-
-					$trial_per    = $product->get_meta( '_subscrpt_trial_timing_per' );
-					$trial_option = $product->get_meta( '_subscrpt_trial_timing_option' );
-					if ( ! empty( $trial_per ) && $trial_per > 0 && ! $is_renew && $has_trial ) {
-						$trial = $trial_per . ' ' . Helper::get_typos( $trial_per, $trial_option );
-					}
+					$timing_option = $product->get_timing_option();
+					$trial         = $product->get_trial();
 
 					wc_update_order_item_meta(
 						$order_item->get_id(),
@@ -151,9 +143,9 @@ class Checkout {
 	/**
 	 * Save renew meta
 	 *
-	 * @param Object $item Item.
-	 * @param String $cart_item_key Cart Item Key.
-	 * @param Array  $cart_item Cart Item.
+	 * @param object $item Item.
+	 * @param string $cart_item_key Cart Item Key.
+	 * @param array  $cart_item Cart Item.
 	 */
 	public function save_order_item_product_meta( $item, $cart_item_key, $cart_item ) {
 		if ( isset( $cart_item['renew_subscrpt'] ) ) {
