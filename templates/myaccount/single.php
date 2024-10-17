@@ -149,6 +149,8 @@ do_action( 'before_single_subscrpt_content' );
 	</tfoot>
 </table>
 
+<?php do_action( 'subscrpt_after_subscription_totals', (int) $id ); ?>
+
 <section class="woocommerce-customer-details">
 	<h2 class="woocommerce-column__title"><?php esc_html_e( 'Billing address', 'sdevs_subscrpt' ); ?></h2>
 	<address>
