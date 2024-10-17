@@ -20,9 +20,9 @@ jQuery(document).ready(() => {
 		for (let index = 0; index < total_variations; index++) {
 			let element = document.getElementById("subscrpt_enable[" + index + "]");
 			if (element && element.checked) {
-				jQuery("div#show_if_subscription_" + index).show();
+				jQuery(".show_if_subscription_" + index).show();
 			} else {
-				jQuery("div#show_if_subscription_" + index).hide();
+				jQuery(".show_if_subscription_" + index).hide();
 			}
 		}
 	});
@@ -52,9 +52,9 @@ jQuery(document).ready(() => {
 
 function hellochange(index) {
 	if (document.getElementById("subscrpt_enable[" + index + "]").checked) {
-		jQuery("div#show_if_subscription_" + index).show();
+		jQuery(".show_if_subscription_" + index).show();
 	} else {
-		jQuery("div#show_if_subscription_" + index).hide();
+		jQuery(".show_if_subscription_" + index).hide();
 	}
 }
 
