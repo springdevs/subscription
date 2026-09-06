@@ -72,7 +72,11 @@ class Checkout {
 			// below (resolution order: tied plan first, else classic meta). Skipping
 			// them here keeps the classic path from creating a second subscription.
 			if ( $product->is_type( 'simple' ) && ! subscrpt_pro_activated() && ! $order_item->get_meta( '_subscrpt_plan_id' ) ) {
-				if ( $product->is_enabled() ) {
+				// A plan product bought as One-Time carries no plan id — it is not a
+				// subscription, so never record one for it.
+				$is_one_time = function_exists( 'subscrpt_product_has_plan' ) && subscrpt_product_has_plan( $product->get_id() );
+
+				if ( $product->is_enabled() && ! $is_one_time ) {
 					$is_renew = isset( $order_item['renew_subscrpt'] );
 
 					$timing_option = $product->get_timing_option();
