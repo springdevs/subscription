@@ -263,7 +263,38 @@ class PlanController {
 			return new WP_Error( 'subscrpt_plan_create_failed', __( 'Could not create the plan group.', 'subscription' ), array( 'status' => 500 ) );
 		}
 
+		// Seed a default monthly selling plan (draft) so a new plan opens with a
+		// starting billing term the merchant can edit and publish.
+		$this->create_default_monthly_term( $id, $params['type'] ?? 'recurring' );
+
 		return rest_ensure_response( PlanRepository::get_group_tree( $id ) );
+	}
+
+	/**
+	 * Create a default monthly selling plan, in draft, under a freshly created group.
+	 *
+	 * @param int        $group_id Plan group id.
+	 * @param string|int $type     Group/term type (recurring|subscribe_save|installments, or its int).
+	 * @return void
+	 */
+	private function create_default_monthly_term( $group_id, $type ) {
+		$type_int        = is_numeric( $type ) ? (int) $type : PlanRepository::type_to_int( $type );
+		$is_installments = PlanRepository::TYPE_MAP['installments'] === $type_int;
+
+		$term = array(
+			'plan_group_id'     => (int) $group_id,
+			'title'             => __( 'Monthly', 'subscription' ),
+			'type'              => $type,
+			'billing_frequency' => 1,
+			'billing_interval'  => 3, // Months.
+			'status'            => 'draft',
+		);
+
+		if ( $is_installments ) {
+			$term['data'] = array( 'installment_count' => 3 );
+		}
+
+		PlanRepository::insert_plan( $term );
 	}
 
 	/**
