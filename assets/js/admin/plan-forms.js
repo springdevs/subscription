@@ -1,7 +1,7 @@
 /**
  * Shared plan-group + selling-plan (term) form logic.
  *
- * Owns the Create-Plan-Group modal and the Add / Edit Selling Plan modal:
+ * Owns the Create-Plan-Group modal and the Add / Edit Duration modal:
  * plan-type selection, field collection, the /groups and /terms REST writes,
  * and prefilling. Used by BOTH the Plans admin screen
  * (assets/js/admin/plans.js) and the product-editor Subscription tab
@@ -281,7 +281,7 @@
     toggleDeliveryDay(modal);
     var title = modal.querySelector("[data-subscrpt-term-title]");
     if (title) {
-      title.textContent = term ? i18n.editTerm || "Edit Selling Plan" : i18n.addTerm || "Add Selling Plan";
+      title.textContent = term ? i18n.editTerm || "Edit Duration" : i18n.addTerm || "Add Duration";
     }
   }
 

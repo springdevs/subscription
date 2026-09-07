@@ -655,7 +655,7 @@ class PlanRepository {
 	 *
 	 * Idempotent on the natural key (plan term × product × variation): a repeat
 	 * connect updates the existing relation rather than creating a duplicate, so
-	 * a product never shows the same selling plan twice.
+	 * a product never shows the same duration twice.
 	 *
 	 * @param array $data Column values.
 	 *
@@ -692,7 +692,7 @@ class PlanRepository {
 
 	/**
 	 * Backfill relations for a newly added term so every product already in the
-	 * group is linked to the new selling plan (inheriting the price it uses on a
+	 * group is linked to the new duration (inheriting the price it uses on a
 	 * sibling term). Keeps the Products tab in sync when a term is added later.
 	 *
 	 * @param int $group_id    Plan group id.

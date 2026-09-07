@@ -86,7 +86,7 @@ use SpringDevs\Subscription\Admin\Plans;
 							<th class="wpsubs-col--check"><input type="checkbox" class="wpsubs-checkbox" data-subscrpt-select-all aria-label="<?php esc_attr_e( 'Select all plan groups', 'subscription' ); ?>" /></th>
 							<th><?php esc_html_e( 'Plan', 'subscription' ); ?></th>
 							<th><?php esc_html_e( 'Type', 'subscription' ); ?></th>
-							<th><?php esc_html_e( 'Selling Plans', 'subscription' ); ?></th>
+							<th><?php esc_html_e( 'Durations', 'subscription' ); ?></th>
 							<th><?php esc_html_e( 'Products', 'subscription' ); ?></th>
 							<th><?php esc_html_e( 'Last Edited', 'subscription' ); ?></th>
 							<th style="width:48px;"></th>
@@ -128,8 +128,8 @@ use SpringDevs\Subscription\Admin\Plans;
 							<td>
 								<?php
 								echo $term_count > 0
-									/* translators: %d: number of selling plans. */
-									? esc_html( sprintf( _n( '%d plan', '%d plans', $term_count, 'subscription' ), $term_count ) )
+									/* translators: %d: number of durations. */
+									? esc_html( sprintf( _n( '%d duration', '%d durations', $term_count, 'subscription' ), $term_count ) )
 									: '<span style="color:var(--wpsubs-text-subtle);">' . esc_html__( 'None', 'subscription' ) . '</span>';
 								?>
 							</td>

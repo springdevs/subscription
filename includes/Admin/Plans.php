@@ -109,17 +109,17 @@ class Plans {
 				'i18n'     => array(
 					'saved'                  => __( 'Saved.', 'subscription' ),
 					'deleted'                => __( 'Deleted.', 'subscription' ),
-					'confirmPlan'            => __( 'Delete this plan and all its selling plans? This cannot be undone.', 'subscription' ),
+					'confirmPlan'            => __( 'Delete this plan and all its durations? This cannot be undone.', 'subscription' ),
 					/* translators: %d: number of selected plans. */
-					'confirmBulkDelete'      => __( 'Delete %d selected plan(s) and all their selling plans? This cannot be undone.', 'subscription' ),
+					'confirmBulkDelete'      => __( 'Delete %d selected plan(s) and all their durations? This cannot be undone.', 'subscription' ),
 					'selectPlans'            => __( 'Please select at least one plan.', 'subscription' ),
-					'confirmTerm'            => __( 'Delete this selling plan?', 'subscription' ),
-					'confirmRemoveProduct'   => __( 'Remove this product from the plan? It will be detached from every selling plan.', 'subscription' ),
-					'confirmRemoveVariation' => __( 'Remove this variation from the plan? It will be detached from every selling plan.', 'subscription' ),
+					'confirmTerm'            => __( 'Delete this duration?', 'subscription' ),
+					'confirmRemoveProduct'   => __( 'Remove this product from the plan? It will be detached from every duration.', 'subscription' ),
+					'confirmRemoveVariation' => __( 'Remove this variation from the plan? It will be detached from every duration.', 'subscription' ),
 					'genericError'           => __( 'Something went wrong. Please try again.', 'subscription' ),
 					'nameRequired'           => __( 'Please enter a name.', 'subscription' ),
-					'addTerm'                => __( 'Add Selling Plan', 'subscription' ),
-					'editTerm'               => __( 'Edit Selling Plan', 'subscription' ),
+					'addTerm'                => __( 'Add Duration', 'subscription' ),
+					'editTerm'               => __( 'Edit Duration', 'subscription' ),
 					/* translators: %1$s: first item number, %2$s: last item number, %3$s: total. */
 					'showingRange'           => __( 'Showing %1-%2 of %3', 'subscription' ),
 				),
@@ -141,8 +141,8 @@ class Plans {
 			'i18n'    => array(
 				'genericError' => __( 'Something went wrong. Please try again.', 'subscription' ),
 				'nameRequired' => __( 'Please enter a name.', 'subscription' ),
-				'addTerm'      => __( 'Add Selling Plan', 'subscription' ),
-				'editTerm'     => __( 'Edit Selling Plan', 'subscription' ),
+				'addTerm'      => __( 'Add Duration', 'subscription' ),
+				'editTerm'     => __( 'Edit Duration', 'subscription' ),
 			),
 		);
 	}

@@ -263,7 +263,7 @@ class PlanController {
 			return new WP_Error( 'subscrpt_plan_create_failed', __( 'Could not create the plan group.', 'subscription' ), array( 'status' => 500 ) );
 		}
 
-		// Seed a default monthly selling plan (draft) so a new plan opens with a
+		// Seed a default monthly duration (draft) so a new plan opens with a
 		// starting billing term the merchant can edit and publish.
 		$this->create_default_monthly_term( $id, $params['type'] ?? 'recurring' );
 
@@ -271,7 +271,7 @@ class PlanController {
 	}
 
 	/**
-	 * Create a default monthly selling plan, in draft, under a freshly created group.
+	 * Create a default monthly duration, in draft, under a freshly created group.
 	 *
 	 * @param int        $group_id Plan group id.
 	 * @param string|int $type     Group/term type (recurring|subscribe_save|installments, or its int).
@@ -386,7 +386,7 @@ class PlanController {
 			return new WP_Error( 'subscrpt_term_create_failed', __( 'Could not create the plan term.', 'subscription' ), array( 'status' => 500 ) );
 		}
 
-		// Link products already in the group to the new selling plan so it shows
+		// Link products already in the group to the new duration so it shows
 		// on the Products tab for them (inheriting their existing price).
 		PlanRepository::backfill_term_relations( (int) $params['plan_group_id'], $id );
 

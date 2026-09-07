@@ -681,7 +681,7 @@ class Plans {
 		<table class="wpsubs-table">
 			<thead>
 				<tr>
-					<th><?php esc_html_e( 'Selling Plan', 'subscription' ); ?></th>
+					<th><?php esc_html_e( 'Duration', 'subscription' ); ?></th>
 					<th>
 							<?php esc_html_e( 'Regular Price', 'subscription' ); ?>
 							<?php echo wp_kses_post( wpsubs_render_hint( __( 'The recurring price charged each billing cycle.', 'subscription' ) ) ); ?>

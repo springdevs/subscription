@@ -2,7 +2,7 @@
 /**
  * Manage Products modal (Pro). Syncs the plan group's products to the picker:
  * search and multi-select; on save, checked products/variations are attached to
- * every selling plan and any previously-attached one left unchecked is removed.
+ * every duration and any previously-attached one left unchecked is removed.
  *
  * @var array $plan Plan (provides id).
  *

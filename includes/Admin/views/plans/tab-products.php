@@ -44,7 +44,7 @@ $has_terms = ! empty( $plan['terms'] );
 
 		<?php
 		/**
-		 * Render the price table for a set of relation rows (Selling Plan /
+		 * Render the price table for a set of relation rows (Duration /
 		 * Regular / Offer / Status). Each editable cell has a read view + a
 		 * hidden input revealed by the card's Edit/Save buttons (JS).
 		 *
@@ -61,7 +61,7 @@ $has_terms = ! empty( $plan['terms'] );
 			<table class="wpsubs-table">
 				<thead>
 					<tr>
-						<th><?php esc_html_e( 'Selling Plan', 'subscription' ); ?></th>
+						<th><?php esc_html_e( 'Duration', 'subscription' ); ?></th>
 						<th>
 							<?php esc_html_e( 'Regular Price', 'subscription' ); ?>
 							<?php echo wp_kses_post( wpsubs_render_hint( __( 'The recurring price charged each billing cycle.', 'subscription' ) ) ); ?>

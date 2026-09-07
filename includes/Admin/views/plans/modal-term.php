@@ -1,6 +1,6 @@
 <?php
 /**
- * Add / Edit Selling Plan modal.
+ * Add / Edit Duration modal.
  *
  * Common rows: name, billing every, free trial, signup fee (Pro).
  * Recurring Delivery adds: delivery schedule + synchronize toggle (all Pro).
@@ -97,14 +97,14 @@ $adv_lock   = $pro_locked ? 'opacity:0.55;pointer-events:none;' : '';
 	<div class="wpsubs-modal__backdrop" data-wpsubs-modal-close></div>
 	<div class="wpsubs-modal__dialog" style="width:min(460px, calc(100vw - 40px));">
 		<div class="wpsubs-modal__head">
-			<h2 class="wpsubs-modal__title" data-subscrpt-term-title><?php esc_html_e( 'Add Selling Plan', 'subscription' ); ?></h2>
+			<h2 class="wpsubs-modal__title" data-subscrpt-term-title><?php esc_html_e( 'Add Duration', 'subscription' ); ?></h2>
 			<button type="button" class="wpsubs-modal__close" data-wpsubs-modal-close aria-label="<?php esc_attr_e( 'Close', 'subscription' ); ?>">&times;</button>
 		</div>
 		<div class="wpsubs-modal__body" style="overflow:visible;">
 
-			<!-- Plan name -->
+			<!-- Duration name -->
 			<div style="<?php echo esc_attr( $row_style ); ?>">
-				<label style="<?php echo esc_attr( $label_style ); ?>" for="subscrpt-term-name"><?php esc_html_e( 'Plan Name', 'subscription' ); ?><?php echo wp_kses_post( $hint( __( 'Shown to customers when they pick this plan.', 'subscription' ) ) ); ?></label>
+				<label style="<?php echo esc_attr( $label_style ); ?>" for="subscrpt-term-name"><?php esc_html_e( 'Duration Name', 'subscription' ); ?><?php echo wp_kses_post( $hint( __( 'Shown to customers when they pick this plan.', 'subscription' ) ) ); ?></label>
 				<input type="text" id="subscrpt-term-name" class="wpsubs-input" value="" placeholder="<?php esc_attr_e( 'e.g. Monthly', 'subscription' ); ?>" data-subscrpt-field="title" />
 			</div>
 
@@ -283,7 +283,7 @@ $adv_lock   = $pro_locked ? 'opacity:0.55;pointer-events:none;' : '';
 		</div>
 		<div class="wpsubs-modal__footer">
 			<button type="button" class="wpsubs-btn wpsubs-btn--outline" data-wpsubs-modal-close><?php esc_html_e( 'Cancel', 'subscription' ); ?></button>
-			<button type="button" class="wpsubs-btn wpsubs-btn--primary" data-subscrpt-term-submit><?php esc_html_e( 'Save Selling Plan', 'subscription' ); ?></button>
+			<button type="button" class="wpsubs-btn wpsubs-btn--primary" data-subscrpt-term-submit><?php esc_html_e( 'Save Duration', 'subscription' ); ?></button>
 		</div>
 	</div>
 </div>

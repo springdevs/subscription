@@ -1,6 +1,6 @@
 <?php
 /**
- * Plan detail - Selling Plans tab. Each term is its own card: icon + name and
+ * Plan detail - Durations tab. Each term is its own card: icon + name and
  * a muted meta line (breakdown, trial, signup fee, expiry) + toggle, edit and delete actions.
  *
  * @var array $plan Plan (PlanPresenter shape).
@@ -17,10 +17,10 @@ if ( ! defined( 'ABSPATH' ) ) {
 	<?php if ( empty( $plan['terms'] ) ) : ?>
 		<div class="wpsubs-empty">
 			<div class="wpsubs-empty__icon">🗓️</div>
-			<h3 class="wpsubs-empty__title"><?php esc_html_e( 'No selling plans yet', 'subscription' ); ?></h3>
-			<p class="wpsubs-empty__desc"><?php esc_html_e( 'A selling plan sets how often the customer is charged, like every month or every year. Add at least one so this plan group can be sold.', 'subscription' ); ?></p>
+			<h3 class="wpsubs-empty__title"><?php esc_html_e( 'No durations yet', 'subscription' ); ?></h3>
+			<p class="wpsubs-empty__desc"><?php esc_html_e( 'A duration sets how often the customer is charged, like every month or every year. Add at least one so this plan group can be sold.', 'subscription' ); ?></p>
 			<button type="button" class="wpsubs-btn wpsubs-btn--primary" style="margin-top:20px;" data-wpsubs-modal-open="subscrpt-term-modal" data-subscrpt-add-term>
-				<?php esc_html_e( 'Add your first selling plan', 'subscription' ); ?>
+				<?php esc_html_e( 'Add your first duration', 'subscription' ); ?>
 			</button>
 		</div>
 	<?php else : ?>
@@ -29,7 +29,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 				<div class="wpsubs-search">
 					<div class="wpsubs-input-wrap wpsubs-input-wrap--icon-l">
 						<svg class="wpsubs-input-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z"/></svg>
-						<input type="search" class="wpsubs-input" placeholder="<?php esc_attr_e( 'Search selling plans...', 'subscription' ); ?>" data-subscrpt-browse-search />
+						<input type="search" class="wpsubs-input" placeholder="<?php esc_attr_e( 'Search durations...', 'subscription' ); ?>" data-subscrpt-browse-search />
 					</div>
 				</div>
 
@@ -46,7 +46,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 				<button type="button" class="wpsubs-btn wpsubs-btn--primary" data-wpsubs-modal-open="subscrpt-term-modal" data-subscrpt-add-term>
 					<span class="dashicons dashicons-plus-alt2" style="font-size:16px;width:16px;height:16px;line-height:1;"></span>
-					<?php esc_html_e( 'Add Selling Plan', 'subscription' ); ?>
+					<?php esc_html_e( 'Add Duration', 'subscription' ); ?>
 				</button>
 			</div>
 
@@ -99,7 +99,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 			</div>
 
 			<p data-subscrpt-browse-empty style="display:none;padding:20px 4px;color:var(--wpsubs-text-subtle);font-size:13px;text-align:center;">
-				<?php esc_html_e( 'No selling plans match your search.', 'subscription' ); ?>
+				<?php esc_html_e( 'No durations match your search.', 'subscription' ); ?>
 			</p>
 
 			<div data-subscrpt-browse-pager style="margin-top:14px;"></div>

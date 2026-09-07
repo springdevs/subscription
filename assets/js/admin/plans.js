@@ -3,11 +3,11 @@
  *
  * Relies on the shared components in assets/js/admin-components/:
  *   - WPSubsModal     - data-wpsubs-modal-open / -close, fires wpsubs:modal:open.
- *   - WPSubsTabs      - the detail page's Selling Plans / Products tabs.
+ *   - WPSubsTabs      - the detail page's Durations / Products tabs.
  *   - WPSubsAccordion - the term list + term-modal sections.
  *
  * Everything here is the list/detail chrome plus REST CRUD for plan groups and
- * selling plans (terms). All writes go through wpsubscription/v1. The Products
+ * durations (terms). All writes go through wpsubscription/v1. The Products
  * tab is read-only in free, so no product attach/price wiring lives here.
  */
 (function () {
@@ -110,7 +110,7 @@
    * Plan group: create + delete.
    * ------------------------------------------------------------------ */
 
-  // Plan-group create + the Add / Edit Selling Plan modal now live in the shared
+  // Plan-group create + the Add / Edit Duration modal now live in the shared
   // plan-forms.js module (window.WPSubsPlanForms). It dispatches events on
   // success so this page navigates accordingly.
 
@@ -122,7 +122,7 @@
     }
   });
 
-  // A selling plan (term) was created or updated: reload to show it.
+  // A duration (term) was created or updated: reload to show it.
   document.addEventListener("subscrpt:term-saved", function () {
     window.location.reload();
   });
@@ -274,7 +274,7 @@
   bulkSync();
 
   /* ------------------------------------------------------------------ *
-   * Selling plans (terms): create / edit / delete / toggle.
+   * Durations (terms): create / edit / delete / toggle.
    * ------------------------------------------------------------------ */
 
   // Delete a term.
@@ -556,7 +556,7 @@
     }, 300);
   });
 
-  // Attach the checked products to every selling plan in the group.
+  // Attach the checked products to every duration in the group.
   document.addEventListener("click", function (e) {
     var btn = e.target.closest("[data-subscrpt-add-product-submit]");
     if (!btn) {
@@ -643,7 +643,7 @@
   });
 
   // Remove a product from the group: delete every relation for that product
-  // (all selling plans, all variations).
+  // (all durations, all variations).
   document.addEventListener("click", function (e) {
     var btn = e.target.closest("[data-subscrpt-remove-product]");
     if (!btn) {
@@ -683,7 +683,7 @@
   });
 
   // Remove a single variation from the group: delete every relation for that
-  // (product, variation) pair across all selling plans.
+  // (product, variation) pair across all durations.
   document.addEventListener("click", function (e) {
     var btn = e.target.closest("[data-subscrpt-remove-variation]");
     if (!btn) {

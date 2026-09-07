@@ -1,7 +1,7 @@
 <?php
 /**
  * Plan detail view. Uses the shared WPSubsTabs component (client-side tabs -
- * no page reload): Selling Plans | Products (read-only).
+ * no page reload): Durations | Products (read-only).
  *
  * @var array  $plan     Plan (PlanPresenter shape).
  * @var string $list_url Base list URL.
@@ -29,8 +29,8 @@ use SpringDevs\Subscription\Admin\Plans;
 		if ( 'draft' === $plan['status'] ) {
 			$meta[] = '<span class="wpsubs-badge wpsubs-badge--draft">' . esc_html__( 'Draft', 'subscription' ) . '</span>';
 		}
-		/* translators: %d: number of selling plans. */
-		$meta[] = esc_html( sprintf( _n( '%d selling plan', '%d selling plans', $term_count, 'subscription' ), $term_count ) );
+		/* translators: %d: number of durations. */
+		$meta[] = esc_html( sprintf( _n( '%d duration', '%d durations', $term_count, 'subscription' ), $term_count ) );
 		/* translators: %d: number of connected products. */
 		$meta[] = esc_html( sprintf( _n( '%d product', '%d products', $product_count, 'subscription' ), $product_count ) );
 		?>
@@ -47,7 +47,7 @@ use SpringDevs\Subscription\Admin\Plans;
 			<div class="wpsubs-tabs__list" role="tablist" style="align-items:end;border-bottom:none;margin-top:-24px;margin-bottom:8px;">
 				<span aria-hidden="true" style="flex:1 1 auto;border-top:1px dashed #d0d3d7;margin-right:8px;"></span>
 				<button class="wpsubs-tabs__tab" role="tab" id="subscrpt-tab-selling" data-tab-key="plans" aria-controls="subscrpt-panel-selling" aria-selected="true">
-					<?php esc_html_e( 'Plans', 'subscription' ); ?>
+					<?php esc_html_e( 'Durations', 'subscription' ); ?>
 				</button>
 				<button class="wpsubs-tabs__tab" role="tab" id="subscrpt-tab-products" data-tab-key="products" aria-controls="subscrpt-panel-products" aria-selected="false">
 					<?php esc_html_e( 'Products', 'subscription' ); ?>
