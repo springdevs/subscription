@@ -27,6 +27,14 @@
   border-color: var(--wpsubs-border);
 }
 
+/* Brand-tinted tag — deeper than the brand-light card background so it stays
+   visible on both white and selected (peach) cards. */
+.wpsubs-badge--brand {
+  background: #ffe3d6;
+  color: var(--wpsubs-brand-dark);
+  border-color: #ffc4ab;
+}
+
 .wpsubs-badge--active {
   background: #dcfce7;
   color: #15803d;

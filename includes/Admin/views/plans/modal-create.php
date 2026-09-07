@@ -15,18 +15,21 @@ $pro_active = function_exists( 'subscrpt_pro_activated' ) && subscrpt_pro_activa
 $types = array(
 	'recurring'      => array(
 		'label' => __( 'Recurring Payment', 'subscription' ),
+		'badge' => __( 'Digital products', 'subscription' ),
 		'icon'  => 'dashicons-update',
 		'desc'  => __( 'Automatically charge recurring payments (best for virtual & downloadable products).', 'subscription' ),
 		'free'  => true,
 	),
 	'subscribe_save' => array(
 		'label' => __( 'Recurring Delivery', 'subscription' ),
+		'badge' => __( 'Physical products', 'subscription' ),
 		'icon'  => 'dashicons-cart',
 		'desc'  => __( 'Charge and deliver physical products on a schedule.', 'subscription' ),
 		'free'  => false,
 	),
 	'installments'   => array(
 		'label' => __( 'Split Payment', 'subscription' ),
+		'badge' => __( 'Installments', 'subscription' ),
 		'icon'  => 'dashicons-money-alt',
 		'desc'  => __( 'Split a price into a fixed number of payments.', 'subscription' ),
 		'free'  => false,
@@ -72,6 +75,9 @@ $types = array(
 						<span style="flex:1 1 auto;min-width:0;">
 							<span style="display:block;font-weight:600;color:var(--wpsubs-text);">
 								<?php echo esc_html( $type_def['label'] ); ?>
+								<?php if ( ! empty( $type_def['badge'] ) ) : ?>
+									<span class="wpsubs-badge wpsubs-badge--brand" style="margin-left:2px;"><?php echo esc_html( $type_def['badge'] ); ?></span>
+								<?php endif; ?>
 								<?php if ( $locked ) : ?>
 									<span class="wpsubs-badge wpsubs-badge--pro"><?php esc_html_e( 'Pro', 'subscription' ); ?></span>
 								<?php endif; ?>
