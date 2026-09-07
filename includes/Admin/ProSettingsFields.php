@@ -394,6 +394,19 @@ class ProSettingsFields {
 					'checked'     => '1' === get_option( 'wp_subscription_auto_complete_order', '1' ),
 				],
 			],
+			[
+				'type'       => 'toggle',
+				'group'      => 'payment_gateways',
+				'priority'   => 2,
+				'field_data' => [
+					'id'          => 'subscrpt_require_payment_on_trial',
+					'title'       => __( 'Require Payment for Free Trials', 'subscription' ),
+					'label'       => __( 'Collect payment details at checkout for trial subscriptions', 'subscription' ),
+					'description' => __( 'Collect payment details up front on free trials so renewals charge automatically.', 'subscription' ),
+					'value'       => '1',
+					'checked'     => '1' === get_option( 'subscrpt_require_payment_on_trial', '1' ),
+				],
+			],
 		];
 	}
 
