@@ -6,27 +6,38 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 64px 24px;
+  padding: 56px 28px;
   text-align: center;
+  border: 1px dashed var(--wpsubs-border);
+  border-radius: var(--wpsubs-radius);
+  background: var(--wpsubs-surface);
 }
 
 .wpsubs-empty__icon {
-  font-size: 2.5rem;
-  margin-bottom: 14px;
-  opacity: 0.45;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 68px;
+  height: 68px;
+  margin-bottom: 22px;
+  border-radius: 50%;
+  font-size: 1.9rem;
   line-height: 1;
+  background: var(--wpsubs-brand-light);
+  box-shadow: 0 0 0 8px rgba(255, 77, 0, 0.06);
 }
 
 .wpsubs-empty__title {
-  font-size: 15px;
+  font-size: 16px;
   font-weight: 600;
-  color: var(--wpsubs-text);
-  margin: 0 0 6px;
+  color: var(--wpsubs-text-muted);
+  margin: 0 0 10px;
 }
 
 .wpsubs-empty__desc {
   font-size: 13px;
-  color: var(--wpsubs-text-muted);
+  color: var(--wpsubs-text-subtle);
   margin: 0;
-  line-height: 1.6;
+  line-height: 1.75;
+  max-width: 460px;
 }
