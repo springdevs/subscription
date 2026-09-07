@@ -247,7 +247,7 @@ $has_terms = ! empty( $plan['terms'] );
 				<div class="wpsubs-toolbar__spacer"></div>
 
 				<?php if ( $pro_active && $has_terms ) : ?>
-					<button type="button" class="wpsubs-btn wpsubs-btn--outline" data-wpsubs-modal-open="subscrpt-add-product">
+					<button type="button" class="wpsubs-btn wpsubs-btn--primary" data-wpsubs-modal-open="subscrpt-add-product">
 						<span class="dashicons dashicons-edit" style="font-size:16px;width:16px;height:16px;line-height:1;"></span>
 						<?php esc_html_e( 'Manage Products', 'subscription' ); ?>
 					</button>

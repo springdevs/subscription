@@ -21,7 +21,7 @@ use SpringDevs\Subscription\Admin\Plans;
 		<div style="display:flex;align-items:center;gap:10px;margin:0 0 6px;">
 			<h1 style="font-size:1.375rem;font-weight:700;color:var(--wpsubs-text);margin:0;line-height:1.2;"><?php esc_html_e( 'Plans', 'subscription' ); ?></h1>
 			<span class="wpsubs-toolbar__spacer"></span>
-			<button type="button" class="wpsubs-btn wpsubs-btn--outline" data-wpsubs-modal-open="subscrpt-create-plan">
+			<button type="button" class="wpsubs-btn wpsubs-btn--primary" data-wpsubs-modal-open="subscrpt-create-plan">
 				<span class="dashicons dashicons-plus-alt2" style="font-size:14px;width:14px;height:14px;line-height:1;"></span>
 				<?php esc_html_e( 'Create Plan', 'subscription' ); ?>
 			</button>
@@ -114,7 +114,7 @@ use SpringDevs\Subscription\Admin\Plans;
 								$subscrpt_full  = $plan['name'];
 								$subscrpt_short = subscrpt_truncate_text( $subscrpt_full );
 								?>
-								<a href="<?php echo esc_url( $detail_url ); ?>" style="display:inline-flex;align-items:center;gap:8px;font-weight:600;text-decoration:none;color:var(--wpsubs-text);"<?php echo $subscrpt_short !== $subscrpt_full ? ' title="' . esc_attr( $subscrpt_full ) . '"' : ''; ?>>
+								<a href="<?php echo esc_url( $detail_url ); ?>" style="display:inline-flex;align-items:center;vertical-align:middle;gap:8px;font-weight:600;text-decoration:none;color:var(--wpsubs-text);"<?php echo $subscrpt_short !== $subscrpt_full ? ' title="' . esc_attr( $subscrpt_full ) . '"' : ''; ?>>
 									<span class="dashicons <?php echo esc_attr( Plans::type_icon( $plan['type'] ) ); ?>" style="flex:0 0 auto;color:var(--wpsubs-text-subtle);"></span>
 									<?php echo esc_html( $subscrpt_short ); ?>
 								</a>

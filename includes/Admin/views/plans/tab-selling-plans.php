@@ -44,7 +44,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 				<div class="wpsubs-toolbar__spacer"></div>
 
-				<button type="button" class="wpsubs-btn wpsubs-btn--outline" data-wpsubs-modal-open="subscrpt-term-modal" data-subscrpt-add-term>
+				<button type="button" class="wpsubs-btn wpsubs-btn--primary" data-wpsubs-modal-open="subscrpt-term-modal" data-subscrpt-add-term>
 					<span class="dashicons dashicons-plus-alt2" style="font-size:16px;width:16px;height:16px;line-height:1;"></span>
 					<?php esc_html_e( 'Add Selling Plan', 'subscription' ); ?>
 				</button>
