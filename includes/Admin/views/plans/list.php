@@ -19,14 +19,14 @@ use SpringDevs\Subscription\Admin\Plans;
 	<!-- Page header -->
 	<div style="margin-bottom:20px;">
 		<div style="display:flex;align-items:center;gap:10px;margin:0 0 6px;">
-			<h1 style="font-size:1.375rem;font-weight:700;color:var(--wpsubs-text);margin:0;line-height:1.2;"><?php esc_html_e( 'Plan Groups', 'subscription' ); ?></h1>
+			<h1 style="font-size:1.375rem;font-weight:700;color:var(--wpsubs-text);margin:0;line-height:1.2;"><?php esc_html_e( 'Plans', 'subscription' ); ?></h1>
 			<span class="wpsubs-toolbar__spacer"></span>
 			<button type="button" class="wpsubs-btn wpsubs-btn--outline" data-wpsubs-modal-open="subscrpt-create-plan">
 				<span class="dashicons dashicons-plus-alt2" style="font-size:14px;width:14px;height:14px;line-height:1;"></span>
-				<?php esc_html_e( 'Create Plan Group', 'subscription' ); ?>
+				<?php esc_html_e( 'Create Plan', 'subscription' ); ?>
 			</button>
 		</div>
-		<p style="font-size:13px;color:var(--wpsubs-text-muted);margin:0 0 12px;line-height:1.5;"><?php esc_html_e( 'Set up a plan group and connect it to your products. Manage billing from one place.', 'subscription' ); ?></p>
+		<p style="font-size:13px;color:var(--wpsubs-text-muted);margin:0 0 12px;line-height:1.5;"><?php esc_html_e( 'Set up a plan and connect it to your products. Manage billing from one place.', 'subscription' ); ?></p>
 		<div style="border-top:1px dashed #d0d3d7;"></div>
 	</div>
 
@@ -35,7 +35,7 @@ use SpringDevs\Subscription\Admin\Plans;
 		<div class="wpsubs-empty">
 			<div class="wpsubs-empty__icon">🗂️</div>
 			<h3 class="wpsubs-empty__title"><?php esc_html_e( 'No plan groups yet', 'subscription' ); ?></h3>
-			<p class="wpsubs-empty__desc"><?php esc_html_e( 'Set up a plan group and connect it to your products. Manage billing from one place.', 'subscription' ); ?></p>
+			<p class="wpsubs-empty__desc"><?php esc_html_e( 'Set up a plan and connect it to your products. Manage billing from one place.', 'subscription' ); ?></p>
 			<button type="button" class="wpsubs-btn wpsubs-btn--primary" style="margin-top:20px;" data-wpsubs-modal-open="subscrpt-create-plan">
 				<?php esc_html_e( 'Create your first plan group', 'subscription' ); ?>
 			</button>
@@ -84,7 +84,7 @@ use SpringDevs\Subscription\Admin\Plans;
 					<thead>
 						<tr>
 							<th class="wpsubs-col--check"><input type="checkbox" class="wpsubs-checkbox" data-subscrpt-select-all aria-label="<?php esc_attr_e( 'Select all plan groups', 'subscription' ); ?>" /></th>
-							<th><?php esc_html_e( 'Plan Group', 'subscription' ); ?></th>
+							<th><?php esc_html_e( 'Plan', 'subscription' ); ?></th>
 							<th><?php esc_html_e( 'Type', 'subscription' ); ?></th>
 							<th><?php esc_html_e( 'Selling Plans', 'subscription' ); ?></th>
 							<th><?php esc_html_e( 'Products', 'subscription' ); ?></th>

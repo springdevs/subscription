@@ -109,13 +109,13 @@ class Plans {
 				'i18n'     => array(
 					'saved'                  => __( 'Saved.', 'subscription' ),
 					'deleted'                => __( 'Deleted.', 'subscription' ),
-					'confirmPlan'            => __( 'Delete this plan group and all its selling plans? This cannot be undone.', 'subscription' ),
-					/* translators: %d: number of selected plan groups. */
-					'confirmBulkDelete'      => __( 'Delete %d selected plan group(s) and all their selling plans? This cannot be undone.', 'subscription' ),
-					'selectPlans'            => __( 'Please select at least one plan group.', 'subscription' ),
+					'confirmPlan'            => __( 'Delete this plan and all its selling plans? This cannot be undone.', 'subscription' ),
+					/* translators: %d: number of selected plans. */
+					'confirmBulkDelete'      => __( 'Delete %d selected plan(s) and all their selling plans? This cannot be undone.', 'subscription' ),
+					'selectPlans'            => __( 'Please select at least one plan.', 'subscription' ),
 					'confirmTerm'            => __( 'Delete this selling plan?', 'subscription' ),
-					'confirmRemoveProduct'   => __( 'Remove this product from the plan group? It will be detached from every selling plan.', 'subscription' ),
-					'confirmRemoveVariation' => __( 'Remove this variation from the plan group? It will be detached from every selling plan.', 'subscription' ),
+					'confirmRemoveProduct'   => __( 'Remove this product from the plan? It will be detached from every selling plan.', 'subscription' ),
+					'confirmRemoveVariation' => __( 'Remove this variation from the plan? It will be detached from every selling plan.', 'subscription' ),
 					'genericError'           => __( 'Something went wrong. Please try again.', 'subscription' ),
 					'nameRequired'           => __( 'Please enter a name.', 'subscription' ),
 					'addTerm'                => __( 'Add Selling Plan', 'subscription' ),
@@ -167,7 +167,7 @@ class Plans {
 			$this->render_header(
 				array(
 					array(
-						'label' => __( 'Plan Groups', 'subscription' ),
+						'label' => __( 'Plans', 'subscription' ),
 						'url'   => $list_url,
 					),
 					array( 'label' => $plan['name'] ),
@@ -178,7 +178,7 @@ class Plans {
 			return;
 		}
 
-		$this->render_header( array( array( 'label' => __( 'Plan Groups', 'subscription' ) ) ) );
+		$this->render_header( array( array( 'label' => __( 'Plans', 'subscription' ) ) ) );
 		include __DIR__ . '/views/plans/list.php';
 	}
 
@@ -191,7 +191,7 @@ class Plans {
 	private function render_header( $breadcrumbs ) {
 		$menu = new Menu();
 		if ( method_exists( $menu, 'render_admin_header' ) ) {
-			$menu->render_admin_header( __( 'Plan Groups', 'subscription' ), '', $breadcrumbs );
+			$menu->render_admin_header( __( 'Plans', 'subscription' ), '', $breadcrumbs );
 		}
 	}
 

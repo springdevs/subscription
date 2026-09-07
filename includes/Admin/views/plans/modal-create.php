@@ -38,9 +38,9 @@ $types = array(
 	<div class="wpsubs-modal__dialog">
 		<div class="wpsubs-modal__head" style="align-items:flex-start;">
 			<div>
-				<h2 class="wpsubs-modal__title" style="font-size:16px;line-height:1.3;"><?php esc_html_e( 'Create Plan Group', 'subscription' ); ?></h2>
+				<h2 class="wpsubs-modal__title" style="font-size:16px;line-height:1.3;"><?php esc_html_e( 'Create Plan', 'subscription' ); ?></h2>
 				<p style="margin:5px 0 0;color:var(--wpsubs-text-muted);font-size:13px;line-height:1.5;font-weight:400;">
-					<?php esc_html_e( 'A plan group bundles the selling plans (billing terms) you attach to products. Name it, pick a type, then add selling plans.', 'subscription' ); ?>
+					<?php esc_html_e( 'A plan bundles the billing terms you attach to products. Name it, pick a type, then add billing terms.', 'subscription' ); ?>
 				</p>
 			</div>
 			<button type="button" class="wpsubs-modal__close" data-wpsubs-modal-close aria-label="<?php esc_attr_e( 'Close', 'subscription' ); ?>">&times;</button>
@@ -90,7 +90,7 @@ $types = array(
 		</div>
 		<div class="wpsubs-modal__footer">
 			<button type="button" class="wpsubs-btn wpsubs-btn--outline" data-wpsubs-modal-close><?php esc_html_e( 'Cancel', 'subscription' ); ?></button>
-			<button type="button" class="wpsubs-btn wpsubs-btn--primary" data-subscrpt-create-plan><?php esc_html_e( 'Create Plan Group', 'subscription' ); ?></button>
+			<button type="button" class="wpsubs-btn wpsubs-btn--primary" data-subscrpt-create-plan><?php esc_html_e( 'Create Plan', 'subscription' ); ?></button>
 		</div>
 	</div>
 </div>
