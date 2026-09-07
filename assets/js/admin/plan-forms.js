@@ -362,6 +362,7 @@
     if (!list) {
       return;
     }
+    var typeLabels = [];
     list.querySelectorAll(".subscrpt-type-card").forEach(function (c) {
       var on = c === card;
       c.classList.toggle("is-selected", on);
@@ -371,7 +372,24 @@
       if (icon) {
         icon.style.color = on ? "var(--wpsubs-brand)" : "var(--wpsubs-text-subtle)";
       }
+      var lbl = c.getAttribute("data-subscrpt-type-label");
+      if (lbl) {
+        typeLabels.push(lbl);
+      }
     });
+
+    // Auto-fill the name from the selected type — but only while it is empty or
+    // still holds an auto-generated type label, so a name the user typed (or a
+    // restored one) is never overwritten.
+    var modal = card.closest(".wpsubs-modal");
+    var nameInput = modal ? modal.querySelector("#subscrpt-create-name") : null;
+    var selectedLabel = card.getAttribute("data-subscrpt-type-label");
+    if (nameInput && selectedLabel) {
+      var current = nameInput.value.trim();
+      if (current === "" || typeLabels.indexOf(current) !== -1) {
+        nameInput.value = selectedLabel;
+      }
+    }
   });
 
   // Create a plan group. On success, close the modal and let the host decide

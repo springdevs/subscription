@@ -68,6 +68,7 @@ $types = array(
 					<div
 						class="subscrpt-type-card<?php echo $selected ? ' is-selected' : ''; ?>"
 						data-subscrpt-type="<?php echo esc_attr( $key ); ?>"
+						data-subscrpt-type-label="<?php echo esc_attr( $type_def['label'] ); ?>"
 						<?php echo $locked ? 'data-locked="1"' : 'role="button" tabindex="0"'; ?>
 						style="<?php echo esc_attr( $style ); ?>"
 					>
