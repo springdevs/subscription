@@ -67,6 +67,41 @@
   flex-shrink: 0;
 }
 
+/* Subtle, borderless icon action (row/card controls). */
+.wpsubs-icon-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  border: none;
+  border-radius: var(--wpsubs-radius-sm);
+  background: transparent;
+  color: var(--wpsubs-text-subtle);
+  cursor: pointer;
+  transition:
+    background 0.12s,
+    color 0.12s;
+}
+
+.wpsubs-icon-action:hover {
+  background: var(--wpsubs-surface-muted);
+  color: var(--wpsubs-text);
+}
+
+.wpsubs-icon-action--danger:hover {
+  background: #fef2f2;
+  color: #dc2626;
+}
+
+.wpsubs-icon-action .dashicons {
+  font-size: 17px;
+  width: 17px;
+  height: 17px;
+  line-height: 1;
+}
+
 .wpsubs-btn--sm {
   height: 30px;
   padding: 0 10px;
