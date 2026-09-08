@@ -12,11 +12,9 @@ use SpringDevs\Subscription\Illuminate\Stats;
 /**
  * Builds the dashboard payload and renders its container.
  *
- * The screen itself is a small React app (src/dashboard/) built on
- *
- * @wordpress/components. Everything it shows is computed here and handed over
- * as preloaded data — there is no REST round trip, because none of these
- * figures change while the page is open.
+ * The screen is a small React app (src/dashboard/). Everything it shows is
+ * computed here and handed over preloaded — there is no REST round trip,
+ * because none of these figures change while the page is open.
  */
 class Dashboard {
 
@@ -115,13 +113,15 @@ class Dashboard {
 	 */
 	public function get_data(): array {
 		$counts = Stats::get_status_counts();
+		$setup  = $this->get_setup( $counts );
 
 		return array(
-			'pulse'     => $this->get_pulse( $counts ),
-			'attention' => $this->get_attention( $counts ),
-			'links'     => $this->get_links(),
-			'isPro'     => subscrpt_pro_activated(),
-			'proUrl'    => 'https://wpsubscription.co/?utm_source=plugin&utm_medium=admin&utm_campaign=dashboard',
+			'pulse'  => $this->get_pulse( $counts ),
+			'setup'  => $setup,
+			'health' => $this->get_health( $counts, $setup ),
+			'build'  => $this->get_build_cards(),
+			'footer' => $this->get_footer_links(),
+			'isPro'  => subscrpt_pro_activated(),
 		);
 	}
 
@@ -141,12 +141,14 @@ class Dashboard {
 		return array(
 			array(
 				'key'   => 'active',
+				'icon'  => 'people',
 				'label' => __( 'Active subscriptions', 'subscription' ),
-				'value' => $counts['active'] ?? 0,
+				'value' => (int) ( $counts['active'] ?? 0 ),
 				'url'   => add_query_arg( 'post_status', 'active', $list ),
 			),
 			array(
 				'key'   => 'on_hold',
+				'icon'  => 'pause',
 				'label' => __( 'On-hold subscriptions', 'subscription' ),
 				'value' => $on_hold,
 				'url'   => add_query_arg( 'post_status', 'on_hold', $list ),
@@ -154,12 +156,14 @@ class Dashboard {
 			),
 			array(
 				'key'   => 'due',
+				'icon'  => 'money',
 				'label' => __( 'Renewals due (next 7 days)', 'subscription' ),
 				'value' => Stats::count_renewals_due_within( 7 ),
 				'url'   => $list,
 			),
 			array(
 				'key'   => 'failed',
+				'icon'  => 'alert',
 				'label' => __( 'Failed renewals (last 24h)', 'subscription' ),
 				'value' => $failed,
 				'url'   => admin_url( 'edit.php?post_type=shop_order&post_status=wc-failed' ),
@@ -167,6 +171,7 @@ class Dashboard {
 			),
 			array(
 				'key'   => 'new',
+				'icon'  => 'trend',
 				'label' => __( 'New subscriptions (this week)', 'subscription' ),
 				'value' => Stats::count_new_since( 7 ),
 				'url'   => $list,
@@ -175,86 +180,188 @@ class Dashboard {
 	}
 
 	/**
-	 * Things the store owner should do something about.
+	 * The setup checklist.
 	 *
-	 * Setup gaps come first: they are the reasons the plugin silently does
-	 * nothing on a fresh install, and no amount of subscription data matters
-	 * until they are cleared.
+	 * Always the same three items, each carrying whether it is done — a
+	 * checklist that hides what you have finished gives no sense of progress,
+	 * and the whole block is dropped once everything is ticked.
 	 *
 	 * @param array<string,int> $counts Status counts.
-	 * @return array<int,array<string,string>>
+	 * @return array<string,mixed>
 	 */
-	private function get_attention( array $counts ): array {
-		$items = array();
+	private function get_setup( array $counts ): array {
+		unset( $counts );
 
-		if ( ! $this->has_enabled_gateway() ) {
-			$items[] = array(
+		$items = array(
+			array(
 				'id'     => 'gateway',
-				'status' => 'error',
-				'text'   => __( 'No payment gateway is enabled, so no subscription can be paid for.', 'subscription' ),
-				'label'  => __( 'Set up a gateway', 'subscription' ),
-				'url'    => admin_url( 'admin.php?page=wp-subscription-integrations' ),
-			);
-		}
-
-		if ( ! $this->has_subscription_product() ) {
-			$items[] = array(
+				'label'  => __( 'Enable a payment gateway', 'subscription' ),
+				'done'   => $this->has_enabled_gateway(),
+				'action' => array(
+					'label' => __( 'Set up', 'subscription' ),
+					'url'   => admin_url( 'admin.php?page=wp-subscription-integrations' ),
+				),
+			),
+			array(
 				'id'     => 'product',
-				'status' => 'warning',
-				'text'   => __( 'No product has subscriptions enabled yet.', 'subscription' ),
-				'label'  => __( 'Add a product', 'subscription' ),
-				'url'    => admin_url( 'post-new.php?post_type=product' ),
-			);
-		}
-
-		if ( ! get_option( 'permalink_structure' ) ) {
-			$items[] = array(
+				'label'  => __( 'Add a subscription product', 'subscription' ),
+				'done'   => $this->has_subscription_product(),
+				'action' => array(
+					'label' => __( 'Add', 'subscription' ),
+					'url'   => admin_url( 'post-new.php?post_type=product' ),
+				),
+			),
+			array(
 				'id'     => 'permalinks',
-				'status' => 'warning',
-				'text'   => __( 'Plain permalinks are on. My Account subscription pages need pretty permalinks.', 'subscription' ),
-				'label'  => __( 'Change permalinks', 'subscription' ),
-				'url'    => admin_url( 'options-permalink.php' ),
+				'label'  => __( 'Turn on pretty permalinks', 'subscription' ),
+				'done'   => (bool) get_option( 'permalink_structure' ),
+				'action' => array(
+					'label' => __( 'Change', 'subscription' ),
+					'url'   => admin_url( 'options-permalink.php' ),
+				),
+			),
+		);
+
+		$done = count(
+			array_filter(
+				$items,
+				static function ( $item ) {
+					return ! empty( $item['done'] );
+				}
+			)
+		);
+
+		return array(
+			'items'    => $items,
+			'done'     => $done,
+			'total'    => count( $items ),
+			'complete' => $done === count( $items ),
+		);
+	}
+
+	/**
+	 * The banner across the top of the page.
+	 *
+	 * One sentence answering "is anything wrong". Setup gaps outrank
+	 * subscription states: an unpaid-for store has nothing to be healthy about.
+	 *
+	 * @param array<string,int>   $counts Status counts.
+	 * @param array<string,mixed> $setup  Setup checklist.
+	 * @return array<string,mixed>
+	 */
+	private function get_health( array $counts, array $setup ): array {
+		if ( empty( $setup['complete'] ) ) {
+			$remaining = (int) $setup['total'] - (int) $setup['done'];
+
+			return array(
+				'state' => 'attention',
+				'title' => __( 'Finish setting up', 'subscription' ),
+				/* translators: %d: number of remaining setup steps. */
+				'text'  => sprintf( _n( '%d step left before your store can sell subscriptions.', '%d steps left before your store can sell subscriptions.', $remaining, 'subscription' ), $remaining ),
 			);
 		}
 
 		$on_hold = (int) ( $counts['on_hold'] ?? 0 );
+
 		if ( $on_hold > 0 ) {
-			$items[] = array(
-				'id'     => 'on_hold',
-				'status' => 'warning',
+			return array(
+				'state'  => 'attention',
+				'title'  => __( 'Some subscriptions need a look', 'subscription' ),
 				/* translators: %d: number of on-hold subscriptions. */
 				'text'   => sprintf( _n( '%d subscription is on hold.', '%d subscriptions are on hold.', $on_hold, 'subscription' ), $on_hold ),
-				'label'  => __( 'Review them', 'subscription' ),
-				'url'    => add_query_arg( 'post_status', 'on_hold', admin_url( 'admin.php?page=wp-subscription-list' ) ),
+				'action' => array(
+					'label' => __( 'Review them', 'subscription' ),
+					'url'   => add_query_arg( 'post_status', 'on_hold', admin_url( 'admin.php?page=wp-subscription-list' ) ),
+				),
 			);
 		}
 
-		return $items;
+		$active = (int) ( $counts['active'] ?? 0 );
+
+		return array(
+			'state' => 'clear',
+			'title' => __( 'All subscriptions look healthy', 'subscription' ),
+			/* translators: %d: number of active subscriptions. */
+			'text'  => sprintf( _n( '%d active subscription, nothing needs attention.', '%d active subscriptions, nothing needs attention.', $active, 'subscription' ), $active ),
+		);
 	}
 
 	/**
-	 * Quick links out of the dashboard.
+	 * The three cards along the bottom.
 	 *
 	 * @return array<int,array<string,mixed>>
 	 */
-	private function get_links(): array {
+	private function get_build_cards(): array {
+		$is_pro = subscrpt_pro_activated();
+
 		return array(
 			array(
-				'label' => __( 'Subscriptions', 'subscription' ),
-				'url'   => admin_url( 'admin.php?page=wp-subscription-list' ),
+				'tone'    => 'insight',
+				'icon'    => 'chart',
+				'eyebrow' => __( 'Insight', 'subscription' ),
+				'title'   => __( 'Open reports', 'subscription' ),
+				'text'    => __( 'Revenue, active subscriptions and growth over time.', 'subscription' ),
+				'link'    => array(
+					'label' => __( 'View reports', 'subscription' ),
+					'url'   => admin_url( 'admin.php?page=wp-subscription-stats' ),
+				),
 			),
 			array(
-				'label' => __( 'Reports', 'subscription' ),
-				'url'   => admin_url( 'admin.php?page=wp-subscription-stats' ),
+				'tone'    => 'setup',
+				'icon'    => 'card',
+				'eyebrow' => __( 'Setup', 'subscription' ),
+				'title'   => __( 'Configure payments', 'subscription' ),
+				'text'    => __( 'Connect PayPal, Stripe, Paddle and more from one screen.', 'subscription' ),
+				'link'    => array(
+					'label' => __( 'Open integrations', 'subscription' ),
+					'url'   => admin_url( 'admin.php?page=wp-subscription-integrations' ),
+				),
+			),
+			$is_pro
+				? array(
+					'tone'    => 'extend',
+					'icon'    => 'shield',
+					'eyebrow' => __( 'Extend', 'subscription' ),
+					'title'   => __( 'Subscription health', 'subscription' ),
+					'text'    => __( 'Find and recover subscriptions that need rescuing.', 'subscription' ),
+					'link'    => array(
+						'label' => __( 'Open health', 'subscription' ),
+						'url'   => admin_url( 'admin.php?page=wp-subscription-health' ),
+					),
+				)
+				: array(
+					'tone'    => 'extend',
+					'icon'    => 'shield',
+					'eyebrow' => __( 'Extend', 'subscription' ),
+					'title'   => __( 'WPSubscription Pro', 'subscription' ),
+					'text'    => __( 'Payment retries, a health queue and revenue reporting.', 'subscription' ),
+					'link'    => array(
+						'label'    => __( 'See what Pro adds', 'subscription' ),
+						'url'      => 'https://wpsubscription.co/?utm_source=plugin&utm_medium=admin&utm_campaign=dashboard',
+						'external' => true,
+					),
+				),
+		);
+	}
+
+	/**
+	 * The centred link row at the very bottom.
+	 *
+	 * @return array<int,array<string,mixed>>
+	 */
+	private function get_footer_links(): array {
+		return array(
+			array(
+				'label' => __( 'Documentation', 'subscription' ),
+				'url'   => 'https://docs.wpsubscription.co/en?utm_source=plugin&utm_medium=admin&utm_campaign=dashboard',
 			),
 			array(
-				'label' => __( 'Settings', 'subscription' ),
-				'url'   => admin_url( 'admin.php?page=wp-subscription-settings' ),
+				'label' => __( 'Get support', 'subscription' ),
+				'url'   => 'https://wpsubscription.co/contact?utm_source=plugin&utm_medium=admin&utm_campaign=dashboard',
 			),
 			array(
-				'label'    => __( 'Documentation', 'subscription' ),
-				'url'      => 'https://docs.wpsubscription.co/en?utm_source=plugin&utm_medium=admin&utm_campaign=dashboard',
-				'external' => true,
+				'label' => __( 'My account', 'subscription' ),
+				'url'   => 'https://my.wpsubscription.co/?utm_source=plugin&utm_medium=admin&utm_campaign=dashboard',
 			),
 		);
 	}

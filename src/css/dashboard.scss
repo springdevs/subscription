@@ -1,139 +1,403 @@
 /**
  * Dashboard styles.
  *
- * Deliberately thin. @wordpress/components carries the card, button and notice
- * chrome; this only lays them out and styles the figures, which core has no
- * component for. Anything that starts restyling a component belongs upstream in
- * the component, not here.
+ * @wordpress/components carries the card, button and header chrome. What is
+ * written here is what core has no component for — stat tiles, a status
+ * banner, a progress checklist and the bottom card row — kept in WordPress's
+ * own type scale and greys so they sit beside the components rather than
+ * competing with them.
  */
+
+$border: #e0e0e0;
+$muted: #757575;
+$ink: #1e1e1e;
 
 .subscrpt-dash {
   max-width: 1240px;
   margin: 0 auto;
-  padding-bottom: 24px;
+  padding-bottom: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
 
-  &__grid {
-    align-items: stretch;
+.subscrpt-heading {
+  font-size: 14px;
+  font-weight: 600;
+  color: $ink;
+  margin: 0;
+  padding: 0;
+  line-height: 1.4;
+}
+
+.subscrpt-sub {
+  font-size: 13px;
+  color: $muted;
+  margin: 4px 0 0;
+  line-height: 1.5;
+}
+
+/* --------------------------------------------------------------------------
+   Stat tiles
+   -------------------------------------------------------------------------- */
+
+.subscrpt-tiles {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 12px;
+}
+
+.subscrpt-tile {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 16px;
+  border: 1px solid $border;
+  border-radius: 8px;
+  background: #f6f7f7;
+  text-decoration: none;
+  color: inherit;
+  transition:
+    background 0.12s,
+    border-color 0.12s;
+
+  &:hover {
+    background: #fff;
+    border-color: #c3c4c7;
+    color: inherit;
   }
 
-  &__col {
-    min-width: 0;
-
-    &--main {
-      flex: 1 1 520px;
-    }
-
-    &--side {
-      flex: 0 1 320px;
-      display: flex;
-      flex-direction: column;
-      gap: 16px;
-    }
+  &:focus {
+    box-shadow: 0 0 0 2px var(--wp-admin-theme-color, #3858e9);
+    outline: 2px solid transparent;
+    color: inherit;
   }
 
-  &__title {
-    font-size: 14px;
-    font-weight: 600;
-    margin: 0;
-    padding: 0;
+  &__icon {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    color: #a7aaad;
+    line-height: 0;
+  }
+
+  &__value {
+    font-size: 30px;
+    font-weight: 400;
+    line-height: 1.15;
+    font-variant-numeric: tabular-nums;
+    color: var(--wp-admin-theme-color, #3858e9);
+  }
+
+  &__label {
+    font-size: 12px;
+    color: $muted;
     line-height: 1.4;
+    padding-right: 20px;
   }
 
-  &__subtitle {
-    font-size: 13px;
-    color: #757575;
-    margin: 4px 0 0;
-    line-height: 1.5;
+  /* Tone only ever marks a figure that is not zero, so a quiet store stays
+     quiet instead of glowing amber at nothing. */
+  &.is-warning .subscrpt-tile__value {
+    color: #bd8600;
   }
 
-  &__muted {
-    font-size: 13px;
-    color: #757575;
-    margin: 0;
-    line-height: 1.6;
-  }
-
-  &__notice {
-    margin: 0 0 8px;
-
-    &:last-child {
-      margin-bottom: 0;
-    }
-  }
-
-  &__notice-text {
-    margin-right: 6px;
-  }
-
-  &__links {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 4px;
+  &.is-error .subscrpt-tile__value {
+    color: #cc1818;
   }
 }
 
-/*
- * The figures. A responsive grid rather than fixed columns, so five items wrap
- * sensibly instead of squeezing to unreadable widths on a narrow screen.
- */
-.subscrpt-pulse {
-  /*
-   * 120px keeps all five figures on one row at the card's usual width while
-   * still wrapping cleanly on a narrow screen. At 150px the fifth wrapped
-   * alone, which read as a sixth section rather than part of the set.
-   */
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-  gap: 4px;
+/* --------------------------------------------------------------------------
+   Health banner
+   -------------------------------------------------------------------------- */
+
+.subscrpt-banner {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px 20px;
+  border: 1px solid $border;
+  border-radius: 8px;
+  background: #fff;
+
+  &.is-clear {
+    border-color: #b8e6c1;
+    background: linear-gradient(90deg, #f2fcf5 0%, #fbfefc 60%);
+  }
+
+  &.is-attention {
+    border-color: #f3d799;
+    background: linear-gradient(90deg, #fffaf0 0%, #fffdf8 60%);
+  }
+
+  &__badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    flex-shrink: 0;
+    border-radius: 50%;
+    background: #fff;
+    border: 1px solid $border;
+  }
+
+  &.is-clear &__badge {
+    color: #007017;
+    border-color: #b8e6c1;
+  }
+
+  &.is-attention &__badge {
+    color: #bd8600;
+    border-color: #f3d799;
+  }
+
+  &__body {
+    flex: 1;
+    min-width: 0;
+  }
+
+  &__title {
+    font-size: 15px;
+    font-weight: 600;
+    margin: 0;
+    line-height: 1.4;
+  }
+
+  &.is-clear &__title {
+    color: #007017;
+  }
+
+  &.is-attention &__title {
+    color: #8a6116;
+  }
+
+  &__text {
+    font-size: 13px;
+    color: $muted;
+    margin: 2px 0 0;
+    line-height: 1.5;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   Setup checklist
+   -------------------------------------------------------------------------- */
+
+.subscrpt-setup {
+  &__count {
+    font-size: 12px;
+    color: $muted;
+    white-space: nowrap;
+  }
+}
+
+.subscrpt-progress {
+  height: 4px;
+  border-radius: 2px;
+  background: #f0f0f1;
+  overflow: hidden;
+  margin-bottom: 4px;
+
+  &__bar {
+    display: block;
+    height: 100%;
+    border-radius: 2px;
+    background: var(--wp-admin-theme-color, #3858e9);
+    transition: width 0.2s;
+  }
+}
+
+.subscrpt-steps {
   margin: 0;
   padding: 0;
   list-style: none;
+}
 
-  &__item {
-    margin: 0;
+.subscrpt-step {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 0;
+  margin: 0;
+  border-bottom: 1px solid #f0f0f1;
+
+  &:last-child {
+    border-bottom: 0;
+    padding-bottom: 0;
   }
 
-  &__link {
+  &__mark {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0;
+    border-radius: 50%;
+    border: 1px solid #c3c4c7;
+    color: transparent;
+  }
+
+  &__label {
+    flex: 1;
+    font-size: 13px;
+    color: $ink;
+    line-height: 1.4;
+  }
+
+  &__state {
+    font-size: 12px;
+    color: $muted;
+  }
+
+  &.is-done &__mark {
+    background: #007017;
+    border-color: #007017;
+    color: #fff;
+  }
+
+  &.is-done &__label {
+    color: $muted;
+    text-decoration: line-through;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   Build cards
+   -------------------------------------------------------------------------- */
+
+.subscrpt-build {
+  padding: 20px;
+  border: 1px solid $border;
+  border-radius: 8px;
+  background: #fff;
+
+  &__grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 12px;
+    margin-top: 16px;
+  }
+
+  &__card {
     display: flex;
     flex-direction: column;
-    gap: 2px;
-    padding: 12px;
-    border-radius: 4px;
+    padding: 18px;
+    border: 1px solid $border;
+    border-radius: 8px;
     text-decoration: none;
     color: inherit;
-    transition: background 0.12s;
+    background: #fff;
+    transition:
+      border-color 0.12s,
+      box-shadow 0.12s;
 
-    &:hover,
-    &:focus {
-      background: #f0f0f1;
+    &:hover {
+      border-color: #c3c4c7;
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
       color: inherit;
     }
 
     &:focus {
       box-shadow: 0 0 0 2px var(--wp-admin-theme-color, #3858e9);
       outline: 2px solid transparent;
+      color: inherit;
     }
   }
 
-  &__value {
-    font-size: 28px;
-    font-weight: 500;
-    line-height: 1.1;
-    font-variant-numeric: tabular-nums;
-    color: #1e1e1e;
-
-    &.is-warning {
-      color: #bd8600;
-    }
-
-    &.is-error {
-      color: #cc1818;
-    }
+  &__icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    margin-bottom: 14px;
+    background: #f0f0f1;
+    color: #50575e;
   }
 
-  &__label {
-    font-size: 12px;
-    color: #757575;
+  &__eyebrow {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: $muted;
+  }
+
+  &__title {
+    font-size: 15px;
+    font-weight: 600;
+    color: $ink;
+    margin-top: 2px;
     line-height: 1.4;
+  }
+
+  &__text {
+    font-size: 13px;
+    color: $muted;
+    line-height: 1.5;
+    margin-top: 6px;
+  }
+
+  &__link {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 13px;
+    font-weight: 500;
+    margin-top: 14px;
+    color: var(--wp-admin-theme-color, #3858e9);
+  }
+
+  /* One accent per card, so the three read as different doors rather than
+     three copies of the same one. */
+  &__card.is-setup &__icon {
+    background: #edfaef;
+    color: #007017;
+  }
+
+  &__card.is-setup &__link {
+    color: #007017;
+  }
+
+  &__card.is-extend &__icon {
+    background: #f3eefc;
+    color: #6c2eb9;
+  }
+
+  &__card.is-extend &__link {
+    color: #6c2eb9;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   Footer links
+   -------------------------------------------------------------------------- */
+
+.subscrpt-footer {
+  text-align: center;
+  font-size: 13px;
+  margin: 4px 0 0;
+  color: $muted;
+
+  a {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    text-decoration: none;
+  }
+
+  &__sep {
+    margin: 0 10px;
+    color: #c3c4c7;
+  }
+}
+
+@media screen and (max-width: 782px) {
+  .subscrpt-banner {
+    flex-wrap: wrap;
   }
 }
