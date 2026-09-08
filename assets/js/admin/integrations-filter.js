@@ -1,11 +1,11 @@
 /**
- * Live filtering and sorting for the Integrations page.
+ * Live filtering for the Integrations page.
  *
  * Every card is already in the DOM — there are around fifteen — so filtering
- * happens here rather than as a round trip per keystroke, which would be slower
- * and would throw away the scroll position for nothing.
+ * happens here rather than as a round trip per click, which would be slower and
+ * would throw away the scroll position for nothing.
  *
- * The filter bar ships with a `hidden` attribute and is revealed here, so a
+ * The filter rail ships with a `hidden` attribute and is revealed here, so a
  * browser with no JavaScript shows the full, unfiltered list rather than
  * controls that do nothing.
  */
@@ -25,8 +25,6 @@
   }
 
   var sections = Array.prototype.slice.call(document.querySelectorAll("[data-subscrpt-int-section]"));
-  var search = root.querySelector("[data-subscrpt-int-search]");
-  var sort = root.querySelector("[data-subscrpt-int-sort]");
   var summary = root.querySelector("[data-subscrpt-int-summary]");
   var reset = root.querySelector("[data-subscrpt-int-reset]");
   var empty = document.querySelector("[data-subscrpt-int-empty]");
@@ -36,12 +34,7 @@
 
   // Category is single-select (a card has exactly one). Status and tags are
   // multi-select, because "show me Pro and Beta" is a reasonable thing to ask.
-  var state = { category: "", status: [], tag: [], query: "" };
-
-  // Remember each card's original position so "Grouped" can restore it.
-  cards.forEach(function (card, index) {
-    card.dataset.subscrptOrder = String(index);
-  });
+  var state = { category: "", status: [], tag: [] };
 
   function matches(card) {
     if (state.category && card.dataset.category !== state.category) {
@@ -62,51 +55,7 @@
       }
     }
 
-    if (state.query && (card.dataset.search || "").indexOf(state.query) === -1) {
-      return false;
-    }
-
     return true;
-  }
-
-  function applySort() {
-    var mode = sort ? sort.value : "default";
-
-    // Sorting reorders within each grid; "Grouped" puts everything back in
-    // the order PHP rendered it, which is the categorised layout.
-    var byGrid = {};
-    cards.forEach(function (card) {
-      var grid = card.parentNode;
-      var key = sections.indexOf(grid.closest("[data-subscrpt-int-section]")) + ":" + grid.className;
-      byGrid[key] = byGrid[key] || { grid: grid, items: [] };
-      byGrid[key].items.push(card);
-    });
-
-    var rank = { active: 0, inactive: 1, "not-installed": 2 };
-
-    Object.keys(byGrid).forEach(function (key) {
-      var entry = byGrid[key];
-      var sorted = entry.items.slice();
-
-      if (mode === "name") {
-        sorted.sort(function (a, b) {
-          return (a.dataset.name || "").localeCompare(b.dataset.name || "");
-        });
-      } else if (mode === "status") {
-        sorted.sort(function (a, b) {
-          var diff = (rank[a.dataset.status] ?? 9) - (rank[b.dataset.status] ?? 9);
-          return diff !== 0 ? diff : (a.dataset.name || "").localeCompare(b.dataset.name || "");
-        });
-      } else {
-        sorted.sort(function (a, b) {
-          return Number(a.dataset.subscrptOrder) - Number(b.dataset.subscrptOrder);
-        });
-      }
-
-      sorted.forEach(function (card) {
-        entry.grid.appendChild(card);
-      });
-    });
   }
 
   function apply() {
@@ -120,16 +69,13 @@
       }
     });
 
-    // A heading over nothing reads as a bug, so hide a section whose cards
-    // have all been filtered away.
+    // A heading over nothing reads as a bug, so hide a section whose cards have
+    // all been filtered away.
     sections.forEach(function (section) {
-      var any = section.querySelector("[data-subscrpt-int-card]:not([hidden])");
-      section.hidden = !any;
+      section.hidden = !section.querySelector("[data-subscrpt-int-card]:not([hidden])");
     });
 
-    applySort();
-
-    var filtering = !!state.category || !!state.status.length || !!state.tag.length || !!state.query;
+    var filtering = !!state.category || !!state.status.length || !!state.tag.length;
 
     if (summary) {
       summary.textContent = filtering
@@ -181,26 +127,9 @@
     });
   });
 
-  if (search) {
-    search.addEventListener("input", function () {
-      state.query = search.value.trim().toLowerCase();
-      apply();
-    });
-  }
-
-  if (sort) {
-    sort.addEventListener("change", apply);
-  }
-
   if (reset) {
     reset.addEventListener("click", function () {
-      state = { category: "", status: [], tag: [], query: "" };
-      if (search) {
-        search.value = "";
-      }
-      if (sort) {
-        sort.value = "default";
-      }
+      state = { category: "", status: [], tag: [] };
       chips.forEach(function (c) {
         var isAll = c.dataset.facet === "category" && c.dataset.value === "";
         c.classList.toggle("is-active", isAll);
@@ -209,9 +138,6 @@
         }
       });
       apply();
-      if (search) {
-        search.focus();
-      }
     });
   }
 
