@@ -72,6 +72,76 @@ foreach ( $third_party as $integration ) {
 	$third_party_grouped[ $cat_key ][] = $integration;
 }
 $third_party_grouped = array_filter( $third_party_grouped );
+
+/**
+ * Facet counts for the filter bar.
+ *
+ * Derived from the same array the cards render from, so a count can never
+ * disagree with what is on screen — including when filter_integration_actions()
+ * has removed something, or when a future integration is added and nobody
+ * remembers to update a hardcoded number.
+ */
+$subscrpt_status_of = static function ( array $integration ): string {
+	if ( ! empty( $integration['is_active'] ) ) {
+		return 'active';
+	}
+	return ! empty( $integration['is_installed'] ) ? 'inactive' : 'not-installed';
+};
+
+$subscrpt_facets = [
+	'category' => [],
+	'status'   => [
+		'active'        => 0,
+		'inactive'      => 0,
+		'not-installed' => 0,
+	],
+	'tag'      => [
+		'pro'       => 0,
+		'beta'      => 0,
+		'recurring' => 0,
+	],
+];
+
+foreach ( $integrations as $integration ) {
+	$cat_key = ( ( $integration['type'] ?? '' ) === 'payment_gateway' )
+		? 'payment_gateway'
+		: ( isset( $category_config[ $integration['category'] ?? '' ] ) ? $integration['category'] : 'other' );
+
+	$subscrpt_facets['category'][ $cat_key ] = ( $subscrpt_facets['category'][ $cat_key ] ?? 0 ) + 1;
+	++$subscrpt_facets['status'][ $subscrpt_status_of( $integration ) ];
+
+	if ( ! empty( $integration['is_pro'] ) ) {
+		++$subscrpt_facets['tag']['pro'];
+	}
+	if ( ! empty( $integration['is_beta'] ) ) {
+		++$subscrpt_facets['tag']['beta'];
+	}
+	if ( ! empty( $integration['supports_recurring'] ) ) {
+		++$subscrpt_facets['tag']['recurring'];
+	}
+}
+
+$subscrpt_total = count( $integrations );
+
+// Labels for the category chips. Payment gateways are a `type`, not a
+// `category`, but on this page they read as one more group.
+$subscrpt_category_labels = [ 'payment_gateway' => __( 'Payment Gateways', 'subscription' ) ];
+foreach ( $category_config as $key => $cfg ) {
+	$subscrpt_category_labels[ $key ] = $cfg['section'];
+}
+$subscrpt_category_labels['other'] = __( 'Other', 'subscription' );
+
+$subscrpt_status_labels = [
+	'active'        => __( 'Active', 'subscription' ),
+	'inactive'      => __( 'Inactive', 'subscription' ),
+	'not-installed' => __( 'Not installed', 'subscription' ),
+];
+
+$subscrpt_tag_labels = [
+	'pro'       => __( 'Pro', 'subscription' ),
+	'beta'      => __( 'Beta', 'subscription' ),
+	'recurring' => __( 'Automatic recurring', 'subscription' ),
+];
 ?>
 
 <div class="wp-subscription-admin-content list-page">
@@ -83,12 +153,131 @@ $third_party_grouped = array_filter( $third_party_grouped );
 		<div style="border-top:1px dashed #d0d3d7;"></div>
 	</div>
 
+	<?php
+	/**
+	 * Filter bar.
+	 *
+	 * Filtering is done in the browser against cards that are all already in the
+	 * DOM — there are fifteen of them, so a round trip per keystroke would be
+	 * slower and would lose the page's scroll position for nothing.
+	 *
+	 * Every control degrades to "everything visible" without JavaScript, which
+	 * is the state the page is in today.
+	 */
+	?>
+	<div class="subscrpt-int-filters" data-subscrpt-integration-filters hidden>
+
+		<div class="subscrpt-int-filters__top">
+			<div class="wpsubs-input-wrap wpsubs-input-wrap--icon-l subscrpt-int-filters__search">
+				<svg class="wpsubs-input-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35M17 11A6 6 0 105 11a6 6 0 0012 0z"/></svg>
+				<input
+					type="search"
+					class="wpsubs-input"
+					data-subscrpt-int-search
+					placeholder="<?php esc_attr_e( 'Search integrations…', 'subscription' ); ?>"
+					aria-label="<?php esc_attr_e( 'Search integrations', 'subscription' ); ?>"
+				/>
+			</div>
+
+			<label class="subscrpt-int-filters__sort">
+				<span><?php esc_html_e( 'Sort', 'subscription' ); ?></span>
+				<select class="wpsubs-select" data-subscrpt-int-sort>
+					<option value="default"><?php esc_html_e( 'Grouped', 'subscription' ); ?></option>
+					<option value="name"><?php esc_html_e( 'Name A–Z', 'subscription' ); ?></option>
+					<option value="status"><?php esc_html_e( 'Status', 'subscription' ); ?></option>
+				</select>
+			</label>
+
+			<div class="subscrpt-int-filters__spacer"></div>
+
+			<?php
+			/*
+			 * The two summary strings live on the element rather than in the
+			 * script so they stay translatable — a .pot file cannot reach a
+			 * literal inside a .js asset.
+			 */
+			?>
+			<p
+				class="subscrpt-int-filters__summary"
+				data-subscrpt-int-summary
+				aria-live="polite"
+				data-all="<?php /* translators: %s: total number of integrations. */ echo esc_attr__( '%s integrations', 'subscription' ); ?>"
+				data-filtered="<?php /* translators: 1: number shown, 2: total number. */ echo esc_attr__( 'Showing %1$s of %2$s', 'subscription' ); ?>"
+			></p>
+
+			<button type="button" class="wpsubs-btn wpsubs-btn--outline wpsubs-btn--sm" data-subscrpt-int-reset hidden>
+				<?php esc_html_e( 'Reset', 'subscription' ); ?>
+			</button>
+		</div>
+
+		<?php
+		$subscrpt_chip_groups = [
+			[
+				'facet'  => 'category',
+				'legend' => __( 'Category', 'subscription' ),
+				'counts' => $subscrpt_facets['category'],
+				'labels' => $subscrpt_category_labels,
+			],
+			[
+				'facet'  => 'status',
+				'legend' => __( 'Status', 'subscription' ),
+				'counts' => $subscrpt_facets['status'],
+				'labels' => $subscrpt_status_labels,
+			],
+			[
+				'facet'  => 'tag',
+				'legend' => __( 'Tags', 'subscription' ),
+				'counts' => $subscrpt_facets['tag'],
+				'labels' => $subscrpt_tag_labels,
+			],
+		];
+
+		foreach ( $subscrpt_chip_groups as $subscrpt_group ) :
+			// A facet nothing has is noise, not information.
+			$subscrpt_shown = array_filter( $subscrpt_group['counts'] );
+			if ( empty( $subscrpt_shown ) ) {
+				continue;
+			}
+			?>
+			<div class="subscrpt-int-filters__row">
+				<span class="subscrpt-int-filters__legend"><?php echo esc_html( $subscrpt_group['legend'] ); ?></span>
+				<div class="subscrpt-int-chips" role="group" aria-label="<?php echo esc_attr( $subscrpt_group['legend'] ); ?>">
+					<?php if ( 'category' === $subscrpt_group['facet'] ) : ?>
+						<button type="button" class="subscrpt-int-chip is-active" data-subscrpt-int-chip data-facet="category" data-value="">
+							<?php esc_html_e( 'All', 'subscription' ); ?>
+							<span class="subscrpt-int-chip__count"><?php echo esc_html( number_format_i18n( $subscrpt_total ) ); ?></span>
+						</button>
+					<?php endif; ?>
+					<?php foreach ( $subscrpt_shown as $subscrpt_key => $subscrpt_count ) : ?>
+						<button
+							type="button"
+							class="subscrpt-int-chip"
+							data-subscrpt-int-chip
+							data-facet="<?php echo esc_attr( $subscrpt_group['facet'] ); ?>"
+							data-value="<?php echo esc_attr( $subscrpt_key ); ?>"
+							aria-pressed="false"
+						>
+							<?php echo esc_html( $subscrpt_group['labels'][ $subscrpt_key ] ?? $subscrpt_key ); ?>
+							<span class="subscrpt-int-chip__count"><?php echo esc_html( number_format_i18n( $subscrpt_count ) ); ?></span>
+						</button>
+					<?php endforeach; ?>
+				</div>
+			</div>
+			<?php
+		endforeach;
+		?>
+	</div>
+
+	<p class="subscrpt-int-empty" data-subscrpt-int-empty hidden>
+		<?php esc_html_e( 'No integrations match these filters.', 'subscription' ); ?>
+	</p>
+
 	<?php if ( ! empty( $_GET['subscrpt_installed'] ) ) : // phpcs:ignore WordPress.Security.NonceVerification.Recommended ?>
 		<div class="notice notice-success is-dismissible" style="margin:0 0 16px;"><p><?php esc_html_e( 'Plugin installed and activated successfully.', 'subscription' ); ?></p></div>
 	<?php endif; ?>
 
 	<!-- Payment Gateways -->
-	<div style="margin-bottom:32px;">
+	<div style="margin-bottom:32px;" data-subscrpt-int-section>
 		<div style="margin-bottom:12px;">
 			<h2 style="font-size:12px;font-weight:600;color:var(--wpsubs-text-muted);text-transform:uppercase;letter-spacing:0.06em;margin:0;line-height:1.4;margin-left:1px;"><?php esc_html_e( 'Payment Gateways', 'subscription' ); ?></h2>
 		</div>
@@ -113,8 +302,30 @@ $third_party_grouped = array_filter( $third_party_grouped );
 					$status_dot  = '#9ca3af';
 					$status_text = __( 'Not Installed', 'subscription' );
 				}
+
+				// Filtering reads these rather than scraping the rendered markup,
+				// which would break the moment a label is translated.
+				$subscrpt_card_status = $subscrpt_status_of( $integration );
+				$subscrpt_card_tags   = array_keys(
+					array_filter(
+						[
+							'pro'       => $is_pro,
+							'beta'      => $is_beta,
+							'recurring' => ! empty( $integration['supports_recurring'] ),
+						]
+					)
+				);
 				?>
-				<div class="wpsubs-table-card" style="padding:16px;display:flex;flex-direction:column;gap:12px;">
+				<div
+					class="wpsubs-table-card subscrpt-int-card"
+					style="padding:16px;display:flex;flex-direction:column;gap:12px;"
+					data-subscrpt-int-card
+					data-name="<?php echo esc_attr( $integration['title'] ); ?>"
+					data-search="<?php echo esc_attr( strtolower( $integration['title'] . ' ' . ( $integration['description'] ?? '' ) ) ); ?>"
+					data-category="payment_gateway"
+					data-status="<?php echo esc_attr( $subscrpt_card_status ); ?>"
+					data-tags="<?php echo esc_attr( implode( ' ', $subscrpt_card_tags ) ); ?>"
+				>
 
 					<!-- Header: icon + name + status -->
 					<div style="display:flex;gap:10px;align-items:flex-start;">
@@ -192,7 +403,7 @@ $third_party_grouped = array_filter( $third_party_grouped );
 
 	<!-- 3rd Party Integrations -->
 	<?php foreach ( $third_party_grouped as $cat_key => $cat_integrations ) : ?>
-	<div style="margin-bottom:32px;">
+	<div style="margin-bottom:32px;" data-subscrpt-int-section>
 		<div style="margin-bottom:12px;">
 			<h2 style="font-size:12px;font-weight:600;color:var(--wpsubs-text-muted);text-transform:uppercase;letter-spacing:0.06em;margin:0;line-height:1.4;margin-left:1px;"><?php echo esc_html( $category_config[ $cat_key ]['section'] ?? __( 'Other', 'subscription' ) ); ?></h2>
 		</div>
@@ -213,8 +424,28 @@ $third_party_grouped = array_filter( $third_party_grouped );
 
 				$status_dot  = $is_active ? '#16a34a' : '#9ca3af';
 				$status_text = $is_active ? __( 'Active', 'subscription' ) : __( 'Not Installed', 'subscription' );
+
+				$subscrpt_card_status = $subscrpt_status_of( $integration );
+				$subscrpt_card_tags   = array_keys(
+					array_filter(
+						[
+							'pro'       => $is_pro,
+							'beta'      => ! empty( $integration['is_beta'] ),
+							'recurring' => ! empty( $integration['supports_recurring'] ),
+						]
+					)
+				);
 				?>
-				<div class="wpsubs-table-card" style="padding:16px;display:flex;flex-direction:column;gap:12px;">
+				<div
+					class="wpsubs-table-card subscrpt-int-card"
+					style="padding:16px;display:flex;flex-direction:column;gap:12px;"
+					data-subscrpt-int-card
+					data-name="<?php echo esc_attr( $integration['title'] ); ?>"
+					data-search="<?php echo esc_attr( strtolower( $integration['title'] . ' ' . ( $integration['description'] ?? '' ) ) ); ?>"
+					data-category="<?php echo esc_attr( isset( $category_config[ $category ] ) ? $category : 'other' ); ?>"
+					data-status="<?php echo esc_attr( $subscrpt_card_status ); ?>"
+					data-tags="<?php echo esc_attr( implode( ' ', $subscrpt_card_tags ) ); ?>"
+				>
 
 					<!-- Header: icon + name + status -->
 					<div style="display:flex;gap:10px;align-items:flex-start;">
