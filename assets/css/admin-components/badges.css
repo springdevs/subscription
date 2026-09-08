@@ -62,6 +62,16 @@
   background: #ca8a04;
 }
 
+/* Attention, not failure: something needs doing but nothing is broken. */
+.wpsubs-badge--warning {
+  background: #fefce8;
+  color: #854d0e;
+  border-color: #fde68a;
+}
+.wpsubs-badge--warning .wpsubs-badge__dot {
+  background: #ca8a04;
+}
+
 .wpsubs-badge--cancelled {
   background: #f3f4f6;
   color: #4b5563;
