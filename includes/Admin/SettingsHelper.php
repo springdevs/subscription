@@ -110,6 +110,54 @@ class SettingsHelper {
 	}
 
 	/**
+	 * Label a settings group for its tab.
+	 *
+	 * The label is the group's `heading` field, which is also what the panel
+	 * shows, so a tab and its panel can never disagree. An add-on that adds a
+	 * group without a heading still gets a usable tab rather than a blank one:
+	 * `live_qr_settings` reads as "Live Qr Settings", which is wrong-ish but
+	 * findable, and the fix is for that add-on to add a heading.
+	 *
+	 * @param string $group_id Group key.
+	 * @param array  $group    Group data: `fields`, `priority`.
+	 * @return string Unescaped label.
+	 */
+	public static function group_label( $group_id, array $group ) {
+		foreach ( $group['fields'] ?? array() as $field ) {
+			if ( 'heading' === ( $field['type'] ?? '' ) && ! empty( $field['field_data']['title'] ) ) {
+				return $field['field_data']['title'];
+			}
+		}
+
+		return ucwords( str_replace( array( '_', '-' ), ' ', (string) $group_id ) );
+	}
+
+	/**
+	 * Whether every field in a group is locked behind Pro.
+	 *
+	 * Drives the "Pro" marker on the tab, so the whole panel does not have to be
+	 * opened to find out that none of it can be changed yet.
+	 *
+	 * @param array $group Group data.
+	 * @return bool
+	 */
+	public static function group_is_pro_locked( array $group ) {
+		$has_field = false;
+
+		foreach ( $group['fields'] ?? array() as $field ) {
+			if ( 'heading' === ( $field['type'] ?? '' ) ) {
+				continue;
+			}
+			$has_field = true;
+			if ( empty( $field['field_data']['pro_locked'] ) ) {
+				return false;
+			}
+		}
+
+		return $has_field;
+	}
+
+	/**
 	 * Render specified settings field.
 	 *
 	 * @param string $field Field type.

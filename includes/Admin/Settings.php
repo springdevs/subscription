@@ -127,8 +127,8 @@ class Settings {
 			],
 			[
 				'type'       => 'select',
-				'group'      => 'main',
-				'priority'   => 5,
+				'group'      => 'role_based_settings',
+				'priority'   => 2,
 				'field_data' => [
 					'id'          => 'wp_subscription_active_role',
 					'title'       => __( 'Subscriber Default Role', 'subscription' ),
@@ -139,8 +139,8 @@ class Settings {
 			],
 			[
 				'type'       => 'select',
-				'group'      => 'main',
-				'priority'   => 6,
+				'group'      => 'role_based_settings',
+				'priority'   => 3,
 				'field_data' => [
 					'id'          => 'wp_subscription_unactive_role',
 					'title'       => __( 'Subscriber Inactive Role', 'subscription' ),
@@ -150,9 +150,17 @@ class Settings {
 				],
 			],
 			[
+				'type'       => 'heading',
+				'group'      => 'cancellation',
+				'priority'   => 4,
+				'field_data' => [
+					'title' => __( 'Cancellation', 'subscription' ),
+				],
+			],
+			[
 				'type'       => 'toggle',
-				'group'      => 'main',
-				'priority'   => 9.5,
+				'group'      => 'cancellation',
+				'priority'   => 2,
 				'field_data' => [
 					'id'          => 'subscrpt_cancellation_feedback_enabled',
 					'title'       => __( 'Cancellation Survey', 'subscription' ),
@@ -164,8 +172,8 @@ class Settings {
 			],
 			[
 				'type'       => 'toggle',
-				'group'      => 'main',
-				'priority'   => 9.6,
+				'group'      => 'cancellation',
+				'priority'   => 3,
 				'field_data' => [
 					'id'          => 'subscrpt_cancellation_feedback_comment',
 					'title'       => __( 'Survey Comment Box', 'subscription' ),
@@ -264,6 +272,7 @@ class Settings {
 	 */
 	public function settings_content() {
 		$settings_fields = $this->settings_fields;
+		$active_tab      = $this->get_active_tab( $settings_fields );
 
 		// Header.
 		$menu = new Menu();
@@ -273,6 +282,33 @@ class Settings {
 
 		// Footer.
 		$menu->render_admin_footer();
+	}
+
+	/**
+	 * Which settings group the page opens on.
+	 *
+	 * Read from `?tab=`, and it has to be a query argument rather than a
+	 * fragment: the form posts to `options.php`, which redirects back to
+	 * `_wp_http_referer`, and a fragment never reaches the server. Keeping the
+	 * tab in the query string is what returns you to the panel you saved from.
+	 *
+	 * The value is only ever used to pick one of the groups already built above,
+	 * so an unknown or hostile one falls back to the first tab.
+	 *
+	 * @param array $settings_fields Grouped settings fields.
+	 * @return string Group key, or an empty string when there are no groups.
+	 */
+	private function get_active_tab( array $settings_fields ) {
+		$groups = array_keys( $settings_fields );
+
+		if ( empty( $groups ) ) {
+			return '';
+		}
+
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- read-only tab selection, validated against the groups built above.
+		$requested = isset( $_GET['tab'] ) ? sanitize_key( wp_unslash( $_GET['tab'] ) ) : '';
+
+		return in_array( $requested, $groups, true ) ? $requested : $groups[0];
 	}
 
 	/**

@@ -151,3 +151,128 @@
   width: max-content;
   min-width: unset;
 }
+
+/* ──────────────────────────────────────────────────────────────────────────
+   Sidebar tabs
+   Every panel is in the DOM on every request, because the form posts to
+   options.php and an unrendered field is a field that saves nothing.
+   ────────────────────────────────────────────────────────────────────────── */
+
+.subscrpt-settings__layout {
+  display: grid;
+  grid-template-columns: 216px minmax(0, 1fr);
+  gap: 20px;
+  align-items: start;
+}
+
+.subscrpt-settings__sidebar {
+  position: sticky;
+  top: 104px;
+  max-height: calc(100vh - 140px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.subscrpt-settings__nav {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 8px;
+  background: var(--wpsubs-surface, #fff);
+  border: 1px solid var(--wpsubs-border, #e5e7eb);
+  border-radius: var(--wpsubs-radius, 8px);
+}
+
+.subscrpt-settings__tab {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 8px 10px;
+  border-radius: var(--wpsubs-radius-sm, 6px);
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.4;
+  color: var(--wpsubs-text, #1e293b);
+  text-decoration: none;
+  transition:
+    background-color 0.12s ease,
+    color 0.12s ease;
+}
+
+.subscrpt-settings__tab:hover,
+.subscrpt-settings__tab:focus {
+  background: var(--wpsubs-surface-muted, #f8fafc);
+  color: var(--wpsubs-text, #1e293b);
+}
+
+.subscrpt-settings__tab:focus-visible {
+  outline: 2px solid var(--wpsubs-brand, #2271b1);
+  outline-offset: -2px;
+}
+
+/* Clicking a tab focuses it, so without this the focus ring is the only thing
+   you see on the tab you just chose and the active tint reads as missing. */
+.subscrpt-settings__tab.is-active:focus-visible {
+  outline-color: var(--wpsubs-brand-dark, #1d4ed8);
+}
+
+.subscrpt-settings__tab.is-active {
+  background: var(--wpsubs-brand-light, #eff6ff);
+  color: var(--wpsubs-brand-dark, #1d4ed8);
+  font-weight: 600;
+}
+
+.subscrpt-settings__tab-label {
+  min-width: 0;
+}
+
+.subscrpt-settings__panel {
+  padding: 20px 24px;
+}
+
+/* The `hidden` attribute is only a user-agent `display: none`, so any class
+   that sets `display` beats it. Panels carry `wpsubs-table-card`, so say it
+   again with the weight the attribute cannot bring on its own. */
+.subscrpt-settings__panel[hidden] {
+  display: none !important;
+}
+
+.subscrpt-settings__rule {
+  border-top: 1px solid var(--wpsubs-border, #f1f5f9);
+  margin: 16px 0;
+}
+
+.subscrpt-settings__actions {
+  position: sticky;
+  bottom: 0;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 16px;
+  padding: 12px 0;
+  background: linear-gradient(to top, var(--wpsubs-surface-muted, #f6f7f7) 70%, rgba(246, 247, 247, 0));
+}
+
+.subscrpt-settings__actions-hint {
+  font-size: 12px;
+  color: var(--wpsubs-text-subtle, #94a3b8);
+}
+
+@media screen and (max-width: 960px) {
+  .subscrpt-settings__layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .subscrpt-settings__sidebar {
+    position: static;
+    max-height: none;
+    overflow: visible;
+  }
+
+  .subscrpt-settings__nav {
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+}

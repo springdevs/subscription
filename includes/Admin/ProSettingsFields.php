@@ -107,8 +107,8 @@ class ProSettingsFields {
 			],
 			[
 				'type'       => 'select',
-				'group'      => 'main',
-				'priority'   => 9,
+				'group'      => 'cancellation',
+				'priority'   => 1,
 				'field_data' => [
 					'id'          => 'subscrpt_cancellation_delay',
 					'title'       => __( 'Cancellation Timing', 'subscription' ),
@@ -123,8 +123,8 @@ class ProSettingsFields {
 			],
 			[
 				'type'       => 'editlist',
-				'group'      => 'main',
-				'priority'   => 9.6,
+				'group'      => 'cancellation',
+				'priority'   => 4,
 				'field_data' => [
 					'id'              => 'subscrpt_cancellation_reasons',
 					'title'           => __( 'Cancellation Reasons', 'subscription' ),
@@ -151,7 +151,7 @@ class ProSettingsFields {
 			[
 				'type'       => 'heading',
 				'group'      => 'grace_period',
-				'priority'   => 3,
+				'priority'   => 5,
 				'field_data' => [
 					'title' => __( 'Grace Period Settings', 'subscription' ),
 				],
@@ -214,7 +214,7 @@ class ProSettingsFields {
 			[
 				'type'       => 'heading',
 				'group'      => 'payment_failure',
-				'priority'   => 4,
+				'priority'   => 6,
 				'field_data' => [
 					'title' => __( 'Payment Failure Handling', 'subscription' ),
 				],
@@ -350,7 +350,7 @@ class ProSettingsFields {
 			[
 				'type'       => 'heading',
 				'group'      => 'health_queue',
-				'priority'   => 8,
+				'priority'   => 9,
 				'field_data' => [
 					'title' => __( 'Subscription Health', 'subscription' ),
 				],
@@ -418,8 +418,16 @@ class ProSettingsFields {
 	private function switch_fields() {
 		return [
 			[
+				'type'       => 'heading',
+				'group'      => 'switching',
+				'priority'   => 3,
+				'field_data' => [
+					'title' => __( 'Switching & Upgrades', 'subscription' ),
+				],
+			],
+			[
 				'type'       => 'toggle',
-				'group'      => 'general',
+				'group'      => 'switching',
 				'priority'   => 9,
 				'field_data' => [
 					'id'          => 'subscrpt_switch_enabled',
@@ -432,7 +440,7 @@ class ProSettingsFields {
 			],
 			[
 				'type'       => 'toggle',
-				'group'      => 'general',
+				'group'      => 'switching',
 				'priority'   => 10,
 				'field_data' => [
 					'id'          => 'subscrpt_downgrade_allowed',
@@ -445,7 +453,7 @@ class ProSettingsFields {
 			],
 			[
 				'type'       => 'join',
-				'group'      => 'general',
+				'group'      => 'switching',
 				'priority'   => 11,
 				'field_data' => [
 					'title'       => __( 'Switch Fee', 'subscription' ),
@@ -485,7 +493,7 @@ class ProSettingsFields {
 			],
 			[
 				'type'       => 'select',
-				'group'      => 'general',
+				'group'      => 'switching',
 				'priority'   => 12,
 				'field_data' => [
 					'id'          => 'subscrpt_switch_fee_apply_to',
@@ -512,7 +520,7 @@ class ProSettingsFields {
 			[
 				'type'       => 'heading',
 				'group'      => 'role_based_settings',
-				'priority'   => 6,
+				'priority'   => 7,
 				'field_data' => [
 					'title' => __( 'Role-Based Settings', 'subscription' ),
 				],
@@ -542,7 +550,7 @@ class ProSettingsFields {
 			[
 				'type'       => 'heading',
 				'group'      => 'live_qr_settings',
-				'priority'   => 5,
+				'priority'   => 8,
 				'field_data' => [
 					'title' => __( 'Quick Details QR Settings', 'subscription' ),
 				],
@@ -615,7 +623,7 @@ class ProSettingsFields {
 			[
 				'type'       => 'heading',
 				'group'      => 'payment_gateways',
-				'priority'   => 0.1,
+				'priority'   => 1,
 				'field_data' => [
 					'title' => __( 'Payment Gateway Settings', 'subscription' ),
 				],
