@@ -398,7 +398,7 @@ class Plans {
 		$subscrpt_has_plans = $product && ! empty( PlanRepository::get_product_connections( $product->get_id() ) );
 		?>
 		<div data-subscrpt-plan-toolbar style="display:flex;align-items:center;gap:12px;margin:0 0 14px;flex-wrap:wrap;">
-			<strong style="margin-left:10px;font-size:13px;color:var(--wpsubs-text);"><?php esc_html_e( 'Subscription', 'subscription' ); ?></strong>
+			<strong style="margin-left:10px;font-size:13px;color:var(--wpsubs-text);"><?php esc_html_e( 'WPSubscription', 'subscription' ); ?></strong>
 			<?php // Variable products enable per variation (toggle lives on each variation card); simple products enable at the product level here. ?>
 			<?php if ( ! ( $product && $product->is_type( 'variable' ) ) ) : ?>
 				<label class="wpsubs-settings-toggle-label" style="display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--wpsubs-text-muted);" title="<?php esc_attr_e( 'Sell this product as a subscription', 'subscription' ); ?>">

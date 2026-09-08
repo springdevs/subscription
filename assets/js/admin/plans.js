@@ -825,15 +825,17 @@
     });
 
     // One-time purchase row (product-specific native price) shares this Save.
+    // Only persisted when its controls are rendered (Pro): the one-time price
+    // stays restricted, so leave it untouched when those inputs are absent.
     var otRow = card.querySelector("[data-subscrpt-onetime-row]");
     var pid = card.getAttribute("data-product-id");
-    if (otRow && pid) {
+    var enable = otRow ? otRow.querySelector("[data-subscrpt-onetime-enable]") : null;
+    if (otRow && pid && enable) {
       var vid = card.getAttribute("data-variation-id");
-      var enable = otRow.querySelector("[data-subscrpt-onetime-enable]");
       var otPrice = otRow.querySelector('[data-ot-field="price"]');
       var otOffer = otRow.querySelector('[data-ot-field="offer"]');
       var otVals = {
-        enabled: enable ? enable.checked : false,
+        enabled: enable.checked,
         price: otPrice ? otPrice.value : "",
         offer: otOffer ? otOffer.value : "",
       };

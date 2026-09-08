@@ -75,15 +75,11 @@ $has_terms = ! empty( $plan['terms'] );
 							<td><?php echo esc_html( $row['term'] ); ?></td>
 							<td>
 								<span class="subscrpt-pe-view"><?php echo esc_html( $row['regular'] ); ?></span>
-								<?php if ( $pro_active ) : ?>
-									<input type="number" min="0" step="0.01" class="wpsubs-input subscrpt-pe-edit" data-field="regular_price" value="<?php echo esc_attr( $row['regular_raw'] ); ?>" placeholder="0.00" style="display:none;max-width:110px;" />
-								<?php endif; ?>
+								<input type="number" min="0" step="0.01" class="wpsubs-input subscrpt-pe-edit" data-field="regular_price" value="<?php echo esc_attr( $row['regular_raw'] ); ?>" placeholder="0.00" style="display:none;max-width:110px;" />
 							</td>
 							<td>
 								<span class="subscrpt-pe-view"><?php echo ! empty( $row['has_offer'] ) ? esc_html( $row['offer'] ) : '<span style="color:var(--wpsubs-text-subtle);">&mdash;</span>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Static dash markup / escaped price. ?></span>
-								<?php if ( $pro_active ) : ?>
-									<input type="number" min="0" step="0.01" class="wpsubs-input subscrpt-pe-edit" data-field="sale_price" value="<?php echo esc_attr( $row['offer_raw'] ); ?>" placeholder="0.00" style="display:none;max-width:110px;" />
-								<?php endif; ?>
+								<input type="number" min="0" step="0.01" class="wpsubs-input subscrpt-pe-edit" data-field="sale_price" value="<?php echo esc_attr( $row['offer_raw'] ); ?>" placeholder="0.00" style="display:none;max-width:110px;" />
 							</td>
 							<td>
 								<span class="subscrpt-pe-view">
@@ -93,12 +89,10 @@ $has_terms = ! empty( $plan['terms'] );
 										<span class="wpsubs-badge wpsubs-badge--active"><?php esc_html_e( 'Enabled', 'subscription' ); ?></span>
 									<?php endif; ?>
 								</span>
-								<?php if ( $pro_active ) : ?>
-									<label class="wpsubs-settings-toggle-label subscrpt-pe-edit" style="display:none;align-items:center;" title="<?php esc_attr_e( 'Enable this plan for the product', 'subscription' ); ?>">
-										<input type="checkbox" class="wpsubs-toggle" data-field="enabled" <?php checked( empty( $row['exclude'] ) ); ?> />
-										<span class="wpsubs-toggle-ui" aria-hidden="true"></span>
-									</label>
-								<?php endif; ?>
+								<label class="wpsubs-settings-toggle-label subscrpt-pe-edit" style="display:none;align-items:center;" title="<?php esc_attr_e( 'Enable this plan for the product', 'subscription' ); ?>">
+									<input type="checkbox" class="wpsubs-toggle" data-field="enabled" <?php checked( empty( $row['exclude'] ) ); ?> />
+									<span class="wpsubs-toggle-ui" aria-hidden="true"></span>
+								</label>
 							</td>
 						</tr>
 					<?php endforeach; ?>
@@ -157,13 +151,10 @@ $has_terms = ! empty( $plan['terms'] );
 		};
 
 		/**
-		 * Render the price-card header controls (Pro only): Edit / Cancel / Save.
+		 * Render the price-card header controls: Edit / Cancel / Save.
 		 * JS toggles the card into edit mode and saves the plan prices via REST.
 		 */
-		$subscrpt_price_actions = function () use ( $pro_active ) {
-			if ( ! $pro_active ) {
-				return;
-			}
+		$subscrpt_price_actions = function () {
 			?>
 			<button type="button" class="wpsubs-btn wpsubs-btn--outline wpsubs-btn--sm" data-subscrpt-edit-prices>
 				<span class="dashicons dashicons-edit" style="font-size:15px;width:15px;height:15px;line-height:1;"></span>
@@ -325,13 +316,11 @@ $has_terms = ! empty( $plan['terms'] );
 							</div>
 						<?php else : ?>
 							<div data-subscrpt-price-card data-product-id="<?php echo esc_attr( $product['id'] ); ?>" style="border:1px solid var(--wpsubs-border,#e5e7eb);border-radius:8px;background:var(--wpsubs-surface,#fff);">
-								<?php if ( $pro_active ) : ?>
-									<div style="display:flex;align-items:center;gap:8px;padding:11px 14px;border-bottom:1px solid var(--wpsubs-border,#e5e7eb);">
-										<strong style="font-size:13px;color:var(--wpsubs-text);"><?php esc_html_e( 'Pricing', 'subscription' ); ?></strong>
-										<span class="wpsubs-toolbar__spacer"></span>
-										<?php $subscrpt_price_actions(); ?>
-									</div>
-								<?php endif; ?>
+								<div style="display:flex;align-items:center;gap:8px;padding:11px 14px;border-bottom:1px solid var(--wpsubs-border,#e5e7eb);">
+									<strong style="font-size:13px;color:var(--wpsubs-text);"><?php esc_html_e( 'Pricing', 'subscription' ); ?></strong>
+									<span class="wpsubs-toolbar__spacer"></span>
+									<?php $subscrpt_price_actions(); ?>
+								</div>
 								<?php $subscrpt_render_rows( $product['rows'] ); ?>
 							</div>
 							<?php $subscrpt_render_onetime( $product ); ?>
