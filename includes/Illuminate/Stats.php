@@ -116,7 +116,7 @@ class Stats {
 	 */
 	public static function get_status_counts() {
 		$counts   = wp_count_posts( 'subscrpt_order' );
-		$statuses = array( 'active', 'pending', 'on_hold', 'cancelled', 'expired', 'pe_cancelled' );
+		$statuses = array( 'active', 'pending', 'on_hold', 'cancelled', 'expired', 'completed', 'pe_cancelled' );
 		$out      = array();
 
 		foreach ( $statuses as $status ) {
@@ -124,6 +124,114 @@ class Stats {
 		}
 
 		return $out;
+	}
+
+	/**
+	 * Count active subscriptions whose next payment falls inside a window.
+	 *
+	 * `_subscrpt_next_date` holds a Unix timestamp, so this compares against
+	 * one rather than parsing a date string.
+	 *
+	 * @param int $days Number of days ahead to look.
+	 * @return int
+	 */
+	public static function count_renewals_due_within( int $days = 7 ): int {
+		global $wpdb;
+
+		$now   = time();
+		$until = $now + ( max( 1, $days ) * DAY_IN_SECONDS );
+
+		return (int) $wpdb->get_var(
+			$wpdb->prepare(
+				"SELECT COUNT(1)
+				 FROM {$wpdb->postmeta} m
+				 INNER JOIN {$wpdb->posts} p ON p.ID = m.post_id
+				 WHERE m.meta_key = '_subscrpt_next_date'
+				   AND p.post_type = 'subscrpt_order'
+				   AND p.post_status = 'active'
+				   AND CAST( m.meta_value AS UNSIGNED ) BETWEEN %d AND %d",
+				$now,
+				$until
+			)
+		);
+	}
+
+	/**
+	 * Count renewal orders that failed recently.
+	 *
+	 * Renewal orders are identified from the subscription relation table rather
+	 * than from order meta, then looked up through `wc_get_orders()` — reading
+	 * the posts table directly would return nothing on a store using HPOS.
+	 *
+	 * @param int $hours How far back to look.
+	 * @return int
+	 */
+	public static function count_failed_renewals_since( int $hours = 24 ): int {
+		global $wpdb;
+
+		if ( ! function_exists( 'wc_get_orders' ) ) {
+			return 0;
+		}
+
+		$since = time() - ( max( 1, $hours ) * HOUR_IN_SECONDS );
+
+		/*
+		 * Ask WooCommerce first, not the relation table.
+		 *
+		 * The relation table holds every renewal order ever created, so starting
+		 * there means pulling an unbounded id list out of a store's whole
+		 * history and handing it to wc_get_orders(). Starting from the orders
+		 * side bounds the set by the time window before anything else runs —
+		 * usually a handful of rows — and only those ids reach the second query.
+		 *
+		 * wc_get_orders() rather than SQL against posts, because a store on HPOS
+		 * keeps orders in their own tables and a posts query returns nothing.
+		 */
+		$failed = wc_get_orders(
+			array(
+				'status'        => array( 'failed' ),
+				'date_modified' => '>' . $since,
+				'limit'         => -1,
+				'return'        => 'ids',
+			)
+		);
+
+		$failed = array_filter( array_map( 'intval', (array) $failed ) );
+
+		if ( empty( $failed ) ) {
+			return 0;
+		}
+
+		$table        = $wpdb->prefix . 'subscrpt_order_relation';
+		$placeholders = implode( ',', array_fill( 0, count( $failed ), '%d' ) );
+
+		// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- table name from the prefix; ids are placeheld below.
+		$sql = "SELECT COUNT( DISTINCT order_id ) FROM {$table} WHERE type = 'renew' AND order_id IN ( {$placeholders} )";
+
+		// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- prepared immediately above.
+		return (int) $wpdb->get_var( $wpdb->prepare( $sql, $failed ) );
+	}
+
+	/**
+	 * Count subscriptions created within the last N days.
+	 *
+	 * @param int $days Number of days back to look.
+	 * @return int
+	 */
+	public static function count_new_since( int $days = 7 ): int {
+		global $wpdb;
+
+		$since = gmdate( 'Y-m-d H:i:s', time() - ( max( 1, $days ) * DAY_IN_SECONDS ) );
+
+		return (int) $wpdb->get_var(
+			$wpdb->prepare(
+				"SELECT COUNT(1) FROM {$wpdb->posts}
+				 WHERE post_type = 'subscrpt_order'
+				   AND post_status NOT IN ( 'trash', 'auto-draft' )
+				   AND post_date_gmt >= %s",
+				$since
+			)
+		);
 	}
 
 	/**
