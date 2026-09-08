@@ -32,16 +32,19 @@
 
   var total = cards.length;
 
-  // Category is single-select (a card has exactly one). Status and tags are
-  // multi-select, because "show me Pro and Beta" is a reasonable thing to ask.
-  var state = { category: "", status: [], tag: [] };
+  // Category and status are single-select: a card has exactly one of each, so
+  // picking two could only ever return nothing. Tags stay multi-select, because
+  // "show me Pro and Beta" is a reasonable thing to ask.
+  var SINGLE = ["category", "status"];
+
+  var state = { category: "", status: "", tag: [] };
 
   function matches(card) {
     if (state.category && card.dataset.category !== state.category) {
       return false;
     }
 
-    if (state.status.length && state.status.indexOf(card.dataset.status) === -1) {
+    if (state.status && card.dataset.status !== state.status) {
       return false;
     }
 
@@ -97,14 +100,16 @@
       var facet = chip.dataset.facet;
       var value = chip.dataset.value;
 
-      if (facet === "category") {
-        state.category = state.category === value ? "" : value;
+      if (SINGLE.indexOf(facet) !== -1) {
+        // Selecting one clears the other in the same group, and clicking the
+        // selected one again returns the group to "All".
+        state[facet] = state[facet] === value ? "" : value;
         chips
           .filter(function (c) {
-            return c.dataset.facet === "category";
+            return c.dataset.facet === facet;
           })
           .forEach(function (c) {
-            var on = c.dataset.value === state.category;
+            var on = c.dataset.value === state[facet];
             c.classList.toggle("is-active", on);
             if (c.hasAttribute("aria-pressed")) {
               c.setAttribute("aria-pressed", on ? "true" : "false");
@@ -129,9 +134,9 @@
 
   if (reset) {
     reset.addEventListener("click", function () {
-      state = { category: "", status: [], tag: [] };
+      state = { category: "", status: "", tag: [] };
       chips.forEach(function (c) {
-        var isAll = c.dataset.facet === "category" && c.dataset.value === "";
+        var isAll = SINGLE.indexOf(c.dataset.facet) !== -1 && c.dataset.value === "";
         c.classList.toggle("is-active", isAll);
         if (c.hasAttribute("aria-pressed")) {
           c.setAttribute("aria-pressed", "false");

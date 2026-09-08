@@ -95,10 +95,13 @@ $subscrpt_facets = [
 		'inactive'      => 0,
 		'not-installed' => 0,
 	],
+	// No `recurring` facet: every integration that supports automatic
+	// recurring is a payment gateway, so the chip selected exactly the same
+	// six cards as the Payment Gateways category. The card badge still shows
+	// it, where it says something about that one integration.
 	'tag'      => [
-		'pro'       => 0,
-		'beta'      => 0,
-		'recurring' => 0,
+		'pro'  => 0,
+		'beta' => 0,
 	],
 ];
 
@@ -115,9 +118,6 @@ foreach ( $integrations as $integration ) {
 	}
 	if ( ! empty( $integration['is_beta'] ) ) {
 		++$subscrpt_facets['tag']['beta'];
-	}
-	if ( ! empty( $integration['supports_recurring'] ) ) {
-		++$subscrpt_facets['tag']['recurring'];
 	}
 }
 
@@ -143,9 +143,8 @@ $subscrpt_status_labels = [
 ];
 
 $subscrpt_tag_labels = [
-	'pro'       => __( 'Pro', 'subscription' ),
-	'beta'      => __( 'Beta', 'subscription' ),
-	'recurring' => __( 'Automatic recurring', 'subscription' ),
+	'pro'  => __( 'Pro', 'subscription' ),
+	'beta' => __( 'Beta', 'subscription' ),
 ];
 ?>
 
@@ -237,12 +236,22 @@ $subscrpt_tag_labels = [
 				<div class="subscrpt-int-filters__row">
 					<span class="subscrpt-int-filters__legend"><?php echo esc_html( $subscrpt_group['legend'] ); ?></span>
 					<div class="subscrpt-int-chips" role="group" aria-label="<?php echo esc_attr( $subscrpt_group['legend'] ); ?>">
-						<?php if ( 'category' === $subscrpt_group['facet'] ) : ?>
-							<button type="button" class="subscrpt-int-chip is-active" data-subscrpt-int-chip data-facet="category" data-value="">
+						<?php
+						/*
+						 * Category and status are single-select — a card has
+						 * exactly one of each, so picking two could only ever
+						 * return nothing. Both therefore need an explicit "All"
+						 * to come back to.
+						 */
+						if ( in_array( $subscrpt_group['facet'], array( 'category', 'status' ), true ) ) :
+							?>
+							<button type="button" class="subscrpt-int-chip is-active" data-subscrpt-int-chip data-facet="<?php echo esc_attr( $subscrpt_group['facet'] ); ?>" data-value="">
 								<?php esc_html_e( 'All', 'subscription' ); ?>
 								<span class="subscrpt-int-chip__count"><?php echo esc_html( number_format_i18n( $subscrpt_total ) ); ?></span>
 							</button>
-						<?php endif; ?>
+							<?php
+						endif;
+						?>
 						<?php foreach ( $subscrpt_shown as $subscrpt_key => $subscrpt_count ) : ?>
 							<button
 								type="button"
