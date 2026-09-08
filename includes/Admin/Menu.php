@@ -354,6 +354,47 @@ class Menu {
 				</nav>
 			</div>
 			<div class="wp-subscription-admin-header-right">
+				<?php
+				/**
+				 * Filters the pro licence state shown in the admin header.
+				 *
+				 * This plugin cannot ask the pro plugin directly — it runs alone
+				 * on nearly every install, so naming a symbol pro declares would
+				 * fatal there. Pro answers this filter when it is present; when
+				 * it is not, the value stays null and no badge is rendered.
+				 *
+				 * @since 1.11.3
+				 *
+				 * @param array|null $license {
+				 *     Licence state, or null when pro is not installed.
+				 *
+				 *     @type bool   $active Whether the licence is valid.
+				 *     @type string $url    Admin URL of the licence page.
+				 * }
+				 */
+				$license = apply_filters( 'subscrpt_admin_header_license', null );
+
+				if ( is_array( $license ) && isset( $license['active'] ) ) :
+					$license_url = isset( $license['url'] ) ? (string) $license['url'] : '';
+
+					if ( $license['active'] ) :
+						?>
+						<span class="wpsubs-badge wpsubs-badge--active wp-subscription-license-badge">
+							<span class="wpsubs-badge__dot"></span>
+							<?php esc_html_e( 'License active', 'subscription' ); ?>
+						</span>
+						<?php
+					else :
+						?>
+						<a href="<?php echo esc_url( $license_url ); ?>" class="wpsubs-badge wpsubs-badge--warning wp-subscription-license-badge">
+							<span class="wpsubs-badge__dot"></span>
+							<?php esc_html_e( 'Activate license', 'subscription' ); ?>
+						</a>
+						<?php
+					endif;
+				endif;
+				?>
+
 				<?php if ( ! class_exists( 'Sdevs_Wc_Subscription_Pro' ) ) : ?>
 					<a target="_blank" href="https://wpsubscription.co/?utm_source=plugin&utm_medium=admin&utm_campaign=upgrade_pro" class="wpsubs-btn wpsubs-btn--primary wpsubs-btn--sm" rel="noreferrer noopener">
 						<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" style="flex-shrink:0;"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M19 19h-14c-.5 0 -.9 -.3 -1 -.8l-2 -10c0 -.4 .1 -.8 .5 -1.1c.4 -.2 .8 -.2 1.1 0l4.1 3.3l3.4 -5.1c.4 -.6 1.3 -.6 1.7 0l3.4 5.1l4.1 -3.3c.3 -.3 .8 -.3 1.1 0c.4 .2 .5 .6 .5 1.1l-2 10c0 .5 -.5 .8 -1 .8z"/></svg>

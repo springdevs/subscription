@@ -134,9 +134,28 @@
 }
 
 .wp-subscription-logo {
-  height: 30px;
+  /* Deliberately small. It is a persistent header mark, not the page's
+     subject — the breadcrumb on the left is what identifies the screen. */
+  height: 22px;
   width: auto;
   display: block;
+}
+
+/* The licence badge sits before the logo and must not pick up the underline
+   that admin anchors get, since the inactive state is a link. */
+.wp-subscription-license-badge,
+.wp-subscription-license-badge:hover,
+.wp-subscription-license-badge:focus {
+  text-decoration: none;
+}
+
+a.wp-subscription-license-badge:hover {
+  filter: brightness(0.97);
+}
+
+a.wp-subscription-license-badge:focus {
+  box-shadow: 0 0 0 3px var(--wpsubs-brand-ring, rgba(255, 77, 0, 0.2));
+  outline: none;
 }
 
 .wp-subscription-admin-header-right {
@@ -317,7 +336,7 @@
     gap: 8px;
   }
   .wp-subscription-logo {
-    height: 24px;
+    height: 18px;
   }
 }
 
