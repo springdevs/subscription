@@ -694,3 +694,201 @@ body[class*="wpsubscription_page_wp-subscription"] #wpcontent {
   color: #fff !important;
   text-decoration: none;
 }
+
+/* --------------------------------------------------------------------------
+   Integrations: sticky filter rail + results
+
+   Three facet groups and a dozen chips do not fit across the top without
+   pushing the first card off the fold, and a bar up there scrolls away exactly
+   when a long list needs narrowing. They live in a column instead, which stays
+   in reach while the results scroll.
+   -------------------------------------------------------------------------- */
+
+/*
+ * The `hidden` attribute is only `display: none` in the UA stylesheet, so any
+ * class that sets `display` outranks it. `.wpsubs-btn` is `inline-flex`, which
+ * meant the Reset button stayed on screen with `hidden` set — visible, and
+ * still clickable. Anything toggled by the filter script needs this.
+ */
+.subscrpt-int-filters [hidden],
+.subscrpt-int-card[hidden],
+[data-subscrpt-int-section][hidden],
+[data-subscrpt-int-empty][hidden],
+[data-subscrpt-integration-filters][hidden] {
+  display: none !important;
+}
+
+.subscrpt-int-layout {
+  display: grid;
+  grid-template-columns: 232px minmax(0, 1fr);
+  gap: 24px;
+  align-items: start;
+}
+
+.subscrpt-int-results {
+  min-width: 0;
+}
+
+/* The rail sticks below the page header, which is itself sticky at 32px. */
+.subscrpt-int-sidebar {
+  position: sticky;
+  top: 104px;
+  max-height: calc(100vh - 124px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.subscrpt-int-filters {
+  padding: 12px;
+  background: var(--wpsubs-surface, #fff);
+  border: 1px solid var(--wpsubs-border, #e5e7eb);
+  border-radius: var(--wpsubs-radius, 8px);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.subscrpt-int-filters__top {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.subscrpt-int-filters__top:empty {
+  display: none;
+}
+
+.subscrpt-int-filters__summary {
+  margin: 0;
+  font-size: 12px;
+  color: var(--wpsubs-text-muted, #6b7280);
+}
+
+.subscrpt-int-filters__row {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.subscrpt-int-filters__legend {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--wpsubs-text-subtle, #9ca3af);
+}
+
+.subscrpt-int-chips {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+/*
+ * Full-width rows rather than pills: in a 232px column, wrapped pills leave
+ * ragged gaps and the counts never line up. A row per option puts every count
+ * on the same right edge, so the distribution is readable at a glance.
+ */
+.subscrpt-int-chip {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  width: 100%;
+  padding: 4px 8px;
+  border: 1px solid transparent;
+  border-radius: var(--wpsubs-radius-sm, 5px);
+  background: none;
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--wpsubs-text, #374151);
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
+  line-height: 1.5;
+  transition:
+    background 0.12s,
+    color 0.12s;
+}
+
+.subscrpt-int-chip:hover {
+  background: var(--wpsubs-surface-muted, #f9fafb);
+}
+
+.subscrpt-int-chip:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px var(--wpsubs-brand-ring, rgba(255, 77, 0, 0.2));
+}
+
+.subscrpt-int-chip.is-active {
+  background: var(--wpsubs-brand-light, #fff1eb);
+  color: var(--wpsubs-brand-dark, #d93f00);
+  font-weight: 600;
+}
+
+.subscrpt-int-chip__count {
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+  padding: 0 6px;
+  border-radius: 9999px;
+  background: var(--wpsubs-surface-muted, #f3f4f6);
+  color: var(--wpsubs-text-muted, #6b7280);
+  flex-shrink: 0;
+}
+
+.subscrpt-int-chip.is-active .subscrpt-int-chip__count {
+  background: var(--wpsubs-brand, #ff4d00);
+  color: #fff;
+}
+
+.subscrpt-int-empty {
+  margin: 0 0 20px;
+  padding: 40px 24px;
+  text-align: center;
+  font-size: 13px;
+  color: var(--wpsubs-text-muted, #6b7280);
+  background: var(--wpsubs-surface, #fff);
+  border: 1px solid var(--wpsubs-border, #e5e7eb);
+  border-radius: var(--wpsubs-radius, 8px);
+}
+
+/* Below this the rail would squeeze the card grid to one column, so it goes
+   back on top and stops sticking. */
+@media screen and (max-width: 1200px) {
+  .subscrpt-int-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .subscrpt-int-sidebar {
+    position: static;
+    max-height: none;
+    overflow: visible;
+  }
+
+  .subscrpt-int-filters {
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    gap: 12px 20px;
+  }
+
+  .subscrpt-int-filters__top {
+    flex-direction: row;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+  }
+
+  .subscrpt-int-chips {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .subscrpt-int-chip {
+    width: auto;
+    border-radius: 9999px;
+    border-color: var(--wpsubs-border, #e5e7eb);
+    padding: 3px 10px;
+  }
+}
