@@ -25,19 +25,14 @@ $has_terms = ! empty( $plan['terms'] );
 		<div class="wpsubs-empty">
 			<div class="wpsubs-empty__icon">📦</div>
 			<h3 class="wpsubs-empty__title"><?php esc_html_e( 'No products connected', 'subscription' ); ?></h3>
-			<?php if ( $pro_active && ! $has_terms ) : ?>
-				<p class="wpsubs-empty__desc"><?php esc_html_e( 'Add at least one plan on the Plans tab before attaching products.', 'subscription' ); ?></p>
-			<?php elseif ( $pro_active ) : ?>
-				<p class="wpsubs-empty__desc"><?php esc_html_e( 'Add products to this plan group and set their prices here, or connect a product from its own Subscription tab.', 'subscription' ); ?></p>
+			<?php if ( ! $has_terms ) : ?>
+				<p class="wpsubs-empty__desc"><?php esc_html_e( 'Add at least one duration on the Durations tab before attaching products.', 'subscription' ); ?></p>
+			<?php else : ?>
+				<p class="wpsubs-empty__desc"><?php esc_html_e( 'Add products to this plan and set their prices here, or connect a product from its own Subscription tab.', 'subscription' ); ?></p>
 				<button type="button" class="wpsubs-btn wpsubs-btn--primary" style="margin-top:20px;" data-wpsubs-modal-open="subscrpt-add-product">
 					<span class="dashicons dashicons-plus-alt2" style="font-size:16px;width:16px;height:16px;line-height:1;"></span>
 					<?php esc_html_e( 'Add Products', 'subscription' ); ?>
 				</button>
-			<?php else : ?>
-				<p class="wpsubs-empty__desc"><?php esc_html_e( 'Products are connected from their own editor: open a product, go to its Subscription tab, pick this plan group, and set the price. Bulk-add from here is available with WPSubscription Pro.', 'subscription' ); ?></p>
-				<a href="<?php echo esc_url( admin_url( 'edit.php?post_type=product' ) ); ?>" class="wpsubs-btn wpsubs-btn--primary" style="margin-top:20px;">
-					<?php esc_html_e( 'Go to Products', 'subscription' ); ?>
-				</a>
 			<?php endif; ?>
 		</div>
 	<?php else : ?>
@@ -246,7 +241,7 @@ $has_terms = ! empty( $plan['terms'] );
 
 				<div class="wpsubs-toolbar__spacer"></div>
 
-				<?php if ( $pro_active && $has_terms ) : ?>
+				<?php if ( $has_terms ) : ?>
 					<button type="button" class="wpsubs-btn wpsubs-btn--primary" data-wpsubs-modal-open="subscrpt-add-product">
 						<span class="dashicons dashicons-edit" style="font-size:16px;width:16px;height:16px;line-height:1;"></span>
 						<?php esc_html_e( 'Manage Products', 'subscription' ); ?>
@@ -358,6 +353,4 @@ $has_terms = ! empty( $plan['terms'] );
 </div>
 
 <?php
-if ( $pro_active ) {
-	require __DIR__ . '/modal-add-product.php';
-}
+require __DIR__ . '/modal-add-product.php';

@@ -434,7 +434,7 @@
       label.style.cursor = "not-allowed";
       li.title = (i18n.usedInPlan || "This product is being used in '%s'").replace("%s", p.plan_group_name || "");
       var note = document.createElement("span");
-      note.textContent = i18n.inOtherPlan || "In another plan group";
+      note.textContent = i18n.inOtherPlan || "Added to another plan";
       note.style.cssText = "flex:0 0 auto;font-size:11px;font-style:italic;color:var(--wpsubs-text-subtle);";
       label.appendChild(note);
     }
