@@ -117,6 +117,7 @@ class Dashboard {
 
 		return array(
 			'pulse'  => $this->get_pulse( $counts ),
+			'chart'  => $this->get_chart(),
 			'setup'  => $setup,
 			'health' => $this->get_health( $counts, $setup ),
 			'build'  => $this->get_build_cards(),
@@ -176,6 +177,39 @@ class Dashboard {
 				'value' => Stats::count_new_since( 7 ),
 				'url'   => $list,
 			),
+		);
+	}
+
+	/**
+	 * Monthly subscription revenue for the chart.
+	 *
+	 * Values are pre-formatted here rather than in the browser: the store's
+	 * currency, decimal separator and symbol position all live in WooCommerce
+	 * settings, and reimplementing wc_price() in JavaScript gets them wrong for
+	 * every locale that is not the developer's.
+	 *
+	 * @return array<string,mixed>
+	 */
+	private function get_chart(): array {
+		$months = Stats::get_monthly_revenue( 6 );
+		$total  = 0.0;
+
+		foreach ( $months as &$month ) {
+			$total           += $month['total'];
+			$month['display'] = function_exists( 'wc_price' )
+				? wp_strip_all_tags( html_entity_decode( wc_price( $month['total'] ), ENT_QUOTES, 'UTF-8' ) )
+				: number_format_i18n( $month['total'], 2 );
+		}
+		unset( $month );
+
+		return array(
+			'months'  => $months,
+			'total'   => $total,
+			'display' => function_exists( 'wc_price' )
+				? wp_strip_all_tags( html_entity_decode( wc_price( $total ), ENT_QUOTES, 'UTF-8' ) )
+				: number_format_i18n( $total, 2 ),
+			'empty'   => $total <= 0,
+			'url'     => admin_url( 'admin.php?page=wp-subscription-stats' ),
 		);
 	}
 

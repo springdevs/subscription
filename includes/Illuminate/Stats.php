@@ -47,6 +47,22 @@ class Stats {
 
 		add_action( 'subscrpt_hourly_cron', array( $this, 'maybe_take_daily_snapshot' ) );
 		add_action( 'admin_init', array( $this, 'maybe_take_daily_snapshot' ) );
+
+		// A cached monthly total that ignores the sale that just happened is
+		// worse than no cache: the figure is wrong and nothing says so. Any
+		// order changing status can move a month's revenue in or out.
+		add_action( 'woocommerce_order_status_changed', array( __CLASS__, 'flush_monthly_revenue' ) );
+	}
+
+	/**
+	 * Drop the cached monthly revenue.
+	 *
+	 * @return void
+	 */
+	public static function flush_monthly_revenue() {
+		for ( $months = 1; $months <= 24; $months++ ) {
+			delete_transient( 'subscrpt_monthly_revenue_' . $months );
+		}
 	}
 
 	/**
@@ -232,6 +248,88 @@ class Stats {
 				$since
 			)
 		);
+	}
+
+	/**
+	 * Revenue from subscription orders, grouped by month.
+	 *
+	 * Read from real orders rather than the snapshot table: snapshots record
+	 * counts and MRR from the day this plugin started taking them, so a store
+	 * that installed last week has no history to chart. Orders go back as far
+	 * as the store does.
+	 *
+	 * Cached, because this is the one figure on the dashboard that does not
+	 * change minute to minute and the only one whose cost grows with the size
+	 * of the store.
+	 *
+	 * @param int $months How many months to return, including the current one.
+	 * @return array<int,array{label:string,month:string,total:float}> Oldest first.
+	 */
+	public static function get_monthly_revenue( int $months = 6 ): array {
+		global $wpdb;
+
+		$months = max( 1, min( 24, $months ) );
+		$key    = 'subscrpt_monthly_revenue_' . $months;
+		$cached = get_transient( $key );
+
+		if ( is_array( $cached ) ) {
+			return $cached;
+		}
+
+		// Every month in the window, so a month with no sales is a gap in the
+		// chart rather than a missing bar that shifts everything along.
+		$buckets = array();
+		for ( $i = $months - 1; $i >= 0; $i-- ) {
+			$stamp                              = strtotime( "-{$i} months", strtotime( gmdate( 'Y-m-01' ) ) );
+			$buckets[ gmdate( 'Y-m', $stamp ) ] = array(
+				'label' => gmdate( 'M', $stamp ),
+				'month' => gmdate( 'Y-m', $stamp ),
+				'total' => 0.0,
+			);
+		}
+
+		if ( ! function_exists( 'wc_get_orders' ) ) {
+			return array_values( $buckets );
+		}
+
+		$table = $wpdb->prefix . 'subscrpt_order_relation';
+
+		// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- table name from the prefix.
+		$order_ids = $wpdb->get_col( "SELECT DISTINCT order_id FROM {$table}" );
+		$order_ids = array_filter( array_map( 'intval', (array) $order_ids ) );
+
+		if ( ! empty( $order_ids ) ) {
+			$since = gmdate( 'Y-m-d H:i:s', strtotime( "-{$months} months", strtotime( gmdate( 'Y-m-01' ) ) ) );
+
+			$orders = wc_get_orders(
+				array(
+					'post__in'     => $order_ids,
+					'status'       => array( 'completed', 'processing' ),
+					'date_created' => '>=' . $since,
+					'limit'        => -1,
+				)
+			);
+
+			foreach ( (array) $orders as $order ) {
+				$created = $order->get_date_created();
+
+				if ( ! $created ) {
+					continue;
+				}
+
+				$bucket = $created->date( 'Y-m' );
+
+				if ( isset( $buckets[ $bucket ] ) ) {
+					$buckets[ $bucket ]['total'] += (float) $order->get_total();
+				}
+			}
+		}
+
+		$out = array_values( $buckets );
+
+		set_transient( $key, $out, 6 * HOUR_IN_SECONDS );
+
+		return $out;
 	}
 
 	/**
