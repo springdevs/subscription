@@ -326,6 +326,16 @@
     if (wrap) {
       wrap.style.display = "0" === groupId ? "none" : "";
     }
+
+    // Picking a plan means this product is a subscription — turn the Enable
+    // subscription toggle on if it is still off (the :checked sibling styles the
+    // switch; no change event, so the classic-settings pane is left as-is).
+    if ("0" !== groupId) {
+      var enableToggle = document.getElementById("subscrpt_enable");
+      if (enableToggle && !enableToggle.checked) {
+        enableToggle.checked = true;
+      }
+    }
   });
 
   /* ------------------------------------------------------------------ *
