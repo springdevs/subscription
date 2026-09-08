@@ -313,8 +313,23 @@
     }
     var card = sel.closest("[data-subscrpt-connect-card]");
     var groupId = String(parseInt(e.detail && e.detail.value, 10) || 0);
+
+    // Prefill the plan's regular prices from WooCommerce's regular price field
+    // (product edit page only — that field does not exist elsewhere). Only fills
+    // inputs left empty, so a saved or manually-entered price is never overwritten.
+    var regularField = document.getElementById("_regular_price");
+    var regularVal = regularField ? String(regularField.value).trim() : "";
+
     card.querySelectorAll("[data-connect-block]").forEach(function (block) {
-      block.style.display = block.getAttribute("data-group-id") === groupId ? "block" : "none";
+      var on = block.getAttribute("data-group-id") === groupId;
+      block.style.display = on ? "block" : "none";
+      if (on && regularVal !== "") {
+        block.querySelectorAll('[data-field="regular_price"]').forEach(function (input) {
+          if (!String(input.value).trim()) {
+            input.value = regularVal;
+          }
+        });
+      }
     });
     var divider = card.querySelector("[data-subscrpt-connect-divider]");
     if (divider) {
