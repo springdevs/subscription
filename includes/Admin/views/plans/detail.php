@@ -64,10 +64,17 @@ use SpringDevs\Subscription\Admin\Plans;
 					</button>
 				</div>
 				<span aria-hidden="true" style="flex:1 1 auto;border-top:1px dashed #d0d3d7;margin-bottom:9px;"></span>
+				<?php // One slot, one button: each tab's primary action, swapped by plans.js. ?>
 				<button type="button" class="wpsubs-btn wpsubs-btn--primary" data-wpsubs-modal-open="subscrpt-term-modal" data-subscrpt-add-term data-subscrpt-tab-action="subscrpt-tab-selling">
 					<span class="dashicons dashicons-plus-alt2" style="font-size:16px;width:16px;height:16px;line-height:1;"></span>
 					<?php esc_html_e( 'Add Duration', 'subscription' ); ?>
 				</button>
+				<?php if ( ! empty( $plan['terms'] ) ) : ?>
+					<button type="button" class="wpsubs-btn wpsubs-btn--primary" data-wpsubs-modal-open="subscrpt-add-product" data-subscrpt-tab-action="subscrpt-tab-products">
+						<span class="dashicons dashicons-edit" style="font-size:16px;width:16px;height:16px;line-height:1;"></span>
+						<?php esc_html_e( 'Manage Products', 'subscription' ); ?>
+					</button>
+				<?php endif; ?>
 			</div>
 
 			<div class="wpsubs-tab-panel" role="tabpanel" id="subscrpt-panel-selling" aria-labelledby="subscrpt-tab-selling">
