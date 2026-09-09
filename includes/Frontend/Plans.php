@@ -173,8 +173,9 @@ class Plans {
 	/**
 	 * Build the selector groups for a simple product from resolved plan data.
 	 *
-	 * One entry per plan group, each with its terms (id, label, price, note).
-	 * No One-Time card and no discount badge — those are Pro-only.
+	 * One entry per plan group, each with its terms (id, label, price, note),
+	 * followed by the One-Time card when the merchant offers one. No discount
+	 * badge — that is Pro-only.
 	 *
 	 * @param \WC_Product $product Simple product.
 	 *
@@ -216,7 +217,16 @@ class Plans {
 		}
 		unset( $group );
 
-		return array_values( $groups );
+		$groups = array_values( $groups );
+
+		// One-Time purchase card, after the plans so a subscription stays the
+		// pre-selected default. The base template already renders this type.
+		$one_time = subscrpt_one_time_group( $product );
+		if ( $one_time ) {
+			$groups[] = $one_time;
+		}
+
+		return $groups;
 	}
 
 	/**

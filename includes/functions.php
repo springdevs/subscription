@@ -145,6 +145,54 @@ function subscrpt_is_subscription_enabled( $product_id, $variation_id = 0 ): boo
 }
 
 /**
+ * Build the storefront One-Time Purchase card for a product or variation.
+ *
+ * Offered only when the merchant opted in on this exact product or variation:
+ * `_subscrpt_one_time_enabled` is stored per variation, so pass the variation
+ * itself, never its parent, whose flag only means "any variation enabled".
+ *
+ * The single source of the one-time price maths. Both selectors call it so the
+ * free and Pro storefronts can never disagree on a price; Pro layers its
+ * discount badge onto the returned group rather than recomputing anything.
+ *
+ * @param \WC_Product $product Product or variation.
+ *
+ * @return array|null Selector group in plan-selector.php shape, or null when
+ *                    one-time purchase is not offered for this product.
+ */
+function subscrpt_one_time_group( $product ) {
+	if ( ! $product instanceof \WC_Product || ! function_exists( 'wc_price' ) ) {
+		return null;
+	}
+
+	if ( 'yes' !== get_post_meta( $product->get_id(), '_subscrpt_one_time_enabled', true ) ) {
+		return null;
+	}
+
+	$regular = (float) $product->get_regular_price();
+	$sale    = $product->get_sale_price();
+	$price   = '' !== $sale ? (float) $sale : $regular;
+
+	// Strike the regular price through only when one-time is genuinely on sale.
+	$old_price = ( '' !== $sale && (float) $sale < $regular ) ? wc_price( $regular ) : '';
+	$percent   = ( '' !== $old_price && $regular > 0 )
+		? (int) round( ( $regular - $price ) / $regular * 100 )
+		: 0;
+
+	return array(
+		'id'               => 'one_time',
+		'type'             => 'one_time',
+		'label'            => __( 'One Time Purchase', 'subscription' ),
+		'price'            => wc_price( $price ),
+		'old_price'        => $old_price,
+		'terms'            => array(),
+		'note'             => '',
+		'badge'            => '',
+		'discount_percent' => $percent,
+	);
+}
+
+/**
  * Truncate a string to a max length, appending an ellipsis when shortened.
  *
  * Multibyte-safe. Returns the text unchanged when it is within the limit, so
