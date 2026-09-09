@@ -105,39 +105,6 @@ class ProSettingsFields {
 					'checked'     => '1' === get_option( 'subscrpt_early_renew', '1' ),
 				],
 			],
-			[
-				'type'       => 'select',
-				'group'      => 'cancellation',
-				'priority'   => 1,
-				'field_data' => [
-					'id'          => 'subscrpt_cancellation_delay',
-					'title'       => __( 'Cancellation Timing', 'subscription' ),
-					'description' => __( 'When a subscription is cancelled, choose when it actually ends.', 'subscription' ),
-					'options'     => [
-						'24h'     => __( 'After 24 hours', 'subscription' ),
-						'instant' => __( 'Immediately', 'subscription' ),
-						'period'  => __( 'At end of billing period (before next renewal)', 'subscription' ),
-					],
-					'selected'    => esc_attr( \SpringDevs\Subscription\Illuminate\Cancellation::get_settings( 'subscrpt_cancellation_delay' ) ),
-				],
-			],
-			[
-				'type'       => 'editlist',
-				'group'      => 'cancellation',
-				'priority'   => 4,
-				'field_data' => [
-					'id'              => 'subscrpt_cancellation_reasons',
-					'title'           => __( 'Cancellation Reasons', 'subscription' ),
-					'description'     => __( 'Reasons offered in the cancellation survey form. Shown when Cancellation Survey is enabled.', 'subscription' ),
-					'value'           => \SpringDevs\Subscription\Illuminate\Cancellation::get_reasons(),
-					'modal'           => true,
-					'button_label'    => __( 'Manage reasons', 'subscription' ),
-					'modal_title'     => __( 'Cancellation Reasons', 'subscription' ),
-					'add_placeholder' => __( 'Add a reason…', 'subscription' ),
-					'add_label'       => __( 'Add reason', 'subscription' ),
-					'empty_text'      => __( 'No reasons yet. Add one below.', 'subscription' ),
-				],
-			],
 		];
 	}
 

@@ -245,3 +245,114 @@
     flex-wrap: wrap;
   }
 }
+
+/* --------------------------------------------------------------------------
+   Cancellation Flow
+
+   A wide tab panel with an options rail beside it. Deliberately not the
+   settings layout above: that one leads with a 216px nav rail and makes its
+   sidebar sticky and scrollable, which is right for navigation and wrong for
+   a panel of fields.
+   -------------------------------------------------------------------------- */
+.subscrpt-flow__layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 340px;
+  gap: 20px;
+  align-items: start;
+}
+
+@media (max-width: 960px) {
+  .subscrpt-flow__layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* The options rail is far narrower than a settings panel, so its fields stack
+   rather than using the shared 220px label / 260px control row, which needs
+   about 500px before it fits. */
+.subscrpt-flow__options .wpsubs-settings-field {
+  flex-direction: column;
+  gap: 8px;
+}
+
+.subscrpt-flow__options .wpsubs-settings-field + .wpsubs-settings-field {
+  margin-top: 18px;
+}
+
+.subscrpt-flow__options .wpsubs-settings-field__label {
+  flex: 0 0 auto;
+}
+
+.subscrpt-flow__options .wpsubs-settings-field__control .wpsubs-input,
+.subscrpt-flow__options .wpsubs-settings-field__control .wpsubs-select,
+.subscrpt-flow__options .wpsubs-settings-field__control .wpsubs-adv-select__trigger {
+  min-width: 0;
+  max-width: 100%;
+  width: 100%;
+}
+
+/* Both panels share one padding rhythm so the two columns line up. */
+.subscrpt-flow__panel {
+  padding: 20px;
+}
+
+/* The saved reason list: the same row treatment the manage modal uses, so the
+   page and the modal read as one thing. Numbered, because the order is what a
+   customer sees. */
+.subscrpt-flow__reasons {
+  list-style: none;
+  margin: 0 0 18px;
+  padding: 0;
+  counter-reset: subscrpt-reason;
+}
+
+.subscrpt-flow__reasons li {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  border: 1px solid var(--wpsubs-border, #e5e7eb);
+  border-radius: var(--wpsubs-radius-sm, 5px);
+  background: var(--wpsubs-surface, #fff);
+  font-size: 13px;
+  color: var(--wpsubs-text, #374151);
+}
+
+.subscrpt-flow__reasons li + li {
+  margin-top: 8px;
+}
+
+.subscrpt-flow__reasons li::before {
+  counter-increment: subscrpt-reason;
+  content: counter(subscrpt-reason);
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 999px;
+  background: var(--wpsubs-surface-muted, #f9fafb);
+  color: var(--wpsubs-text-muted, #6b7280);
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.subscrpt-flow__empty {
+  margin: 0 0 18px;
+  color: var(--wpsubs-text-subtle, #9ca3af);
+  font-size: 13px;
+}
+
+/* The reasons control carries no label of its own - the tab names the panel.
+   The label element is still emitted (with whitespace, so `:empty` never
+   matches) and its `flex: 0 0 220px` becomes a 220px tall gap once the row
+   stacks, so hide it outright. */
+.subscrpt-flow__panel--reasons .wpsubs-settings-field {
+  flex-direction: column;
+  gap: 10px;
+}
+
+.subscrpt-flow__panel--reasons .wpsubs-settings-field__label {
+  display: none;
+}
