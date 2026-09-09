@@ -18,7 +18,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 		<div class="wpsubs-empty">
 			<div class="wpsubs-empty__icon">🗓️</div>
 			<h3 class="wpsubs-empty__title"><?php esc_html_e( 'No durations yet', 'subscription' ); ?></h3>
-			<p class="wpsubs-empty__desc"><?php esc_html_e( 'A duration sets how often the customer is charged, like every month or every year. Add at least one so this plan group can be sold.', 'subscription' ); ?></p>
+			<p class="wpsubs-empty__desc"><?php esc_html_e( 'A duration sets how often the customer is charged, like every month or every year. Add at least one so this plan can be sold.', 'subscription' ); ?></p>
 			<button type="button" class="wpsubs-btn wpsubs-btn--primary" style="margin-top:20px;" data-wpsubs-modal-open="subscrpt-term-modal" data-subscrpt-add-term>
 				<?php esc_html_e( 'Add your first duration', 'subscription' ); ?>
 			</button>
@@ -32,12 +32,15 @@ if ( ! defined( 'ABSPATH' ) ) {
 						<span class="dashicons dashicons-calendar-alt"></span>
 					</span>
 					<div style="flex:1 1 auto;min-width:0;">
-						<span style="font-weight:600;font-size:13.5px;"><?php echo esc_html( $selling_term['name'] ); ?></span>
-						<?php if ( 'draft' === $selling_term['status'] ) : ?>
-							<span class="wpsubs-badge wpsubs-badge--draft" style="margin-left:6px;"><?php esc_html_e( 'Draft', 'subscription' ); ?></span>
-						<?php endif; ?>
+						<?php // min-height is the badge's height, so a draft row is exactly as tall as an active one. ?>
+						<div data-subscrpt-term-name-row style="display:flex;align-items:center;gap:6px;min-height:24px;min-width:0;">
+							<span style="font-weight:600;font-size:13.5px;"><?php echo esc_html( $selling_term['name'] ); ?></span>
+							<?php if ( 'draft' === $selling_term['status'] ) : ?>
+								<span class="wpsubs-badge wpsubs-badge--draft" data-subscrpt-term-badge><?php esc_html_e( 'Draft', 'subscription' ); ?></span>
+							<?php endif; ?>
+						</div>
 						<?php $subscrpt_meta_parts = array_merge( array( $selling_term['breakdown'] ), $selling_term['chips'] ); ?>
-						<div style="display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-top:4px;font-size:12px;color:var(--wpsubs-text-muted);">
+						<div style="display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-top:2px;font-size:12px;color:var(--wpsubs-text-muted);">
 							<span title="<?php esc_attr_e( 'Plan ID', 'subscription' ); ?>">#<?php echo esc_html( $selling_term['id'] ); ?></span>
 							<span style="color:var(--wpsubs-text-subtle);">&middot;</span>
 							<?php foreach ( $subscrpt_meta_parts as $subscrpt_i => $subscrpt_part ) : ?>
