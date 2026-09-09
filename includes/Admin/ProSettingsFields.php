@@ -79,7 +79,7 @@ class ProSettingsFields {
 		return [
 			[
 				'type'       => 'select',
-				'group'      => 'main',
+				'group'      => 'renewals',
 				'priority'   => 7,
 				'field_data' => [
 					'id'          => 'subscrpt_renewal_price',
@@ -94,7 +94,7 @@ class ProSettingsFields {
 			],
 			[
 				'type'       => 'toggle',
-				'group'      => 'main',
+				'group'      => 'renewals',
 				'priority'   => 8,
 				'field_data' => [
 					'id'          => 'subscrpt_early_renew',

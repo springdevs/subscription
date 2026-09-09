@@ -118,6 +118,11 @@ class SettingsHelper {
 	 * `live_qr_settings` reads as "Live Qr Settings", which is wrong-ish but
 	 * findable, and the fix is for that add-on to add a heading.
 	 *
+	 * `main` is the exception. It is what a field with no `group` falls back to,
+	 * so it holds whatever nobody placed rather than anything named "Main". No
+	 * field ships in it — this plugin has no settings that are merely general —
+	 * and it only becomes a tab when something lands there uninvited.
+	 *
 	 * @param string $group_id Group key.
 	 * @param array  $group    Group data: `fields`, `priority`.
 	 * @return string Unescaped label.
@@ -127,6 +132,10 @@ class SettingsHelper {
 			if ( 'heading' === ( $field['type'] ?? '' ) && ! empty( $field['field_data']['title'] ) ) {
 				return $field['field_data']['title'];
 			}
+		}
+
+		if ( 'main' === $group_id ) {
+			return __( 'General', 'subscription' );
 		}
 
 		return ucwords( str_replace( array( '_', '-' ), ' ', (string) $group_id ) );

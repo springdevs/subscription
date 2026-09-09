@@ -62,15 +62,15 @@ class Settings {
 		$settings_fields = [
 			[
 				'type'       => 'heading',
-				'group'      => 'main',
+				'group'      => 'renewals',
 				'priority'   => 0,
 				'field_data' => [
-					'title' => __( 'General Settings', 'subscription' ),
+					'title' => __( 'Renewals', 'subscription' ),
 				],
 			],
 			[
 				'type'       => 'select',
-				'group'      => 'main',
+				'group'      => 'renewals',
 				'priority'   => 1,
 				'field_data' => [
 					'id'          => 'wp_subscription_renewal_process',
@@ -85,7 +85,7 @@ class Settings {
 			],
 			[
 				'type'       => 'input',
-				'group'      => 'main',
+				'group'      => 'renewals',
 				'priority'   => 2,
 				'field_data' => [
 					'id'          => 'wp_subscription_manual_renew_cart_notice',
@@ -96,7 +96,7 @@ class Settings {
 			],
 			[
 				'type'       => 'toggle',
-				'group'      => 'main',
+				'group'      => 'renewals',
 				'priority'   => 3,
 				'field_data' => [
 					'id'          => 'wp_subscription_stripe_auto_renew',
@@ -114,7 +114,7 @@ class Settings {
 			],
 			[
 				'type'       => 'toggle',
-				'group'      => 'main',
+				'group'      => 'renewals',
 				'priority'   => 4,
 				'field_data' => [
 					'id'          => 'wp_subscription_auto_renewal_toggle',
