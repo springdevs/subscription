@@ -63,7 +63,7 @@ use SpringDevs\Subscription\Admin\Plans;
 						<?php esc_html_e( 'Products', 'subscription' ); ?>
 					</button>
 				</div>
-				<span aria-hidden="true" style="flex:1 1 auto;border-top:1px dashed #d0d3d7;margin-bottom:9px;"></span>
+				<span aria-hidden="true" style="flex:1 1 auto;border-top:1px dashed #d0d3d7;"></span>
 				<?php // One slot, one button: each tab's primary action, swapped by plans.js. ?>
 				<button type="button" class="wpsubs-btn wpsubs-btn--primary" data-wpsubs-modal-open="subscrpt-term-modal" data-subscrpt-add-term data-subscrpt-tab-action="subscrpt-tab-selling">
 					<span class="dashicons dashicons-plus-alt2" style="font-size:16px;width:16px;height:16px;line-height:1;"></span>

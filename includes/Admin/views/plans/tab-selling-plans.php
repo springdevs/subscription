@@ -25,19 +25,6 @@ if ( ! defined( 'ABSPATH' ) ) {
 		</div>
 	<?php else : ?>
 		<div data-subscrpt-browse data-per-page="10">
-			<div class="wpsubs-toolbar" style="margin-bottom:14px;">
-				<?php
-				wpsubs_render_per_page_select(
-					array(
-						'name'  => 'subscrpt_plans_per_page',
-						'attrs' => array( 'data-subscrpt-browse-perpage' => '1' ),
-					)
-				);
-				?>
-
-				<div class="wpsubs-toolbar__spacer"></div>
-			</div>
-
 			<div style="display:flex;flex-direction:column;gap:10px;">
 			<?php foreach ( $plan['terms'] as $selling_term ) : ?>
 				<div class="wpsubs-table-card" data-term-id="<?php echo esc_attr( $selling_term['id'] ); ?>" data-subscrpt-browse-item data-name="<?php echo esc_attr( strtolower( $selling_term['name'] ) ); ?>" style="display:flex;align-items:center;gap:14px;padding:14px 16px;">
