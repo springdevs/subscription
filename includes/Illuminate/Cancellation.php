@@ -205,8 +205,8 @@ class Cancellation {
 						<p class="subscrpt-feedback-modal__offer-note" data-subscrpt-offer-result hidden></p>
 					</div>
 					<div class="subscrpt-feedback-modal__footer" data-subscrpt-offer-step>
-						<button type="button" class="subscrpt-feedback-modal__btn subscrpt-feedback-modal__keep" data-subscrpt-offer-decline><?php esc_html_e( 'No thanks, continue', 'subscription' ); ?></button>
-						<button type="button" class="subscrpt-feedback-modal__btn subscrpt-feedback-modal__confirm" data-subscrpt-offer-claim>
+						<button type="button" class="subscrpt-feedback-modal__btn subscrpt-feedback-modal__offer-decline" data-subscrpt-offer-decline><?php esc_html_e( 'No thanks, continue', 'subscription' ); ?></button>
+						<button type="button" class="subscrpt-feedback-modal__btn subscrpt-feedback-modal__offer-claim" data-subscrpt-offer-claim>
 							<?php esc_html_e( 'Claim discount', 'subscription' ); ?>
 						</button>
 					</div>
@@ -237,8 +237,8 @@ class Cancellation {
 					<?php endif; ?>
 				</div>
 				<div class="subscrpt-feedback-modal__footer"<?php echo \SpringDevs\Subscription\Admin\CancellationFlow::offer_enabled() ? ' data-subscrpt-reason-step hidden' : ''; ?>>
-					<button type="button" class="subscrpt-feedback-modal__btn subscrpt-feedback-modal__keep" data-subscrpt-feedback-dismiss><?php esc_html_e( 'Keep subscription', 'subscription' ); ?></button>
 					<button type="button" class="subscrpt-feedback-modal__btn subscrpt-feedback-modal__confirm" id="subscrpt-feedback-confirm"><?php esc_html_e( 'Confirm cancellation', 'subscription' ); ?></button>
+					<button type="button" class="subscrpt-feedback-modal__btn subscrpt-feedback-modal__keep" data-subscrpt-feedback-dismiss><?php esc_html_e( 'Keep subscription', 'subscription' ); ?></button>
 				</div>
 			</div>
 		</div>
