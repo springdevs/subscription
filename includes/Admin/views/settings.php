@@ -58,12 +58,15 @@ $subscrpt_settings_base = admin_url( 'admin.php?page=wp-subscription-settings' )
 				// Every non-`all` category's tab list is rendered and all but the
 				// active one hidden, so the sidebar can switch categories client-side
 				// without a page load. `all` shows no list and stacks every panel.
+				// The save button shares this row with the tabs, pinned to the right.
 				?>
-				<?php foreach ( $category_groups as $subscrpt_cat_id => $subscrpt_cat_group_ids ) : ?>
-					<?php if ( 0 === count( $subscrpt_cat_group_ids ) ) : ?>
-						<?php continue; ?>
+				<div class="subscrpt-settings__toolbar">
+					<div class="subscrpt-settings__toolbar-tabs">
+					<?php foreach ( $category_groups as $subscrpt_cat_id => $subscrpt_cat_group_ids ) : ?>
+						<?php if ( 0 === count( $subscrpt_cat_group_ids ) ) : ?>
+							<?php continue; ?>
 					<?php endif; ?>
-					<?php $subscrpt_list_open = 'all' !== $active_cat && $subscrpt_cat_id === $active_cat; ?>
+						<?php $subscrpt_list_open = 'all' !== $active_cat && $subscrpt_cat_id === $active_cat; ?>
 					<div
 						class="wpsubs-tabs__list"
 						role="tablist"
@@ -105,6 +108,11 @@ $subscrpt_settings_base = admin_url( 'admin.php?page=wp-subscription-settings' )
 						<?php endforeach; ?>
 					</div>
 				<?php endforeach; ?>
+					</div>
+					<button type="submit" class="wpsubs-btn wpsubs-btn--primary subscrpt-settings__save">
+						<?php esc_html_e( 'Save changes', 'subscription' ); ?>
+					</button>
+				</div>
 
 				<div class="subscrpt-settings__panels">
 					<?php foreach ( $settings_fields as $subscrpt_group_id => $subscrpt_group ) : ?>
@@ -137,15 +145,6 @@ $subscrpt_settings_base = admin_url( 'admin.php?page=wp-subscription-settings' )
 
 			</div>
 
-		</div>
-
-		<div class="subscrpt-settings__actions">
-			<button type="submit" class="wpsubs-btn wpsubs-btn--primary">
-				<?php esc_html_e( 'Save changes', 'subscription' ); ?>
-			</button>
-			<span class="subscrpt-settings__actions-hint">
-				<?php esc_html_e( 'Saves every section, not just the one open.', 'subscription' ); ?>
-			</span>
 		</div>
 	</form>
 

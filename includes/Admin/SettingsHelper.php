@@ -177,7 +177,7 @@ class SettingsHelper {
 	 */
 	public static function categories() {
 		return array(
-			'all'       => __( 'All', 'subscription' ),
+			'all'       => __( 'All Settings', 'subscription' ),
 			'general'   => __( 'General', 'subscription' ),
 			'payments'  => __( 'Payments', 'subscription' ),
 			'customers' => __( 'Customers', 'subscription' ),
