@@ -356,3 +356,10 @@
 .subscrpt-flow__panel--reasons .wpsubs-settings-field__label {
   display: none;
 }
+
+.subscrpt-flow__note {
+  margin: 18px 0 0;
+  color: var(--wpsubs-text-muted, #6b7280);
+  font-size: 12px;
+  line-height: 1.6;
+}

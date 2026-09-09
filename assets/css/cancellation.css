@@ -260,7 +260,8 @@
 
 .subscrpt-feedback-modal__footer {
   display: flex;
-  justify-content: flex-end;
+  align-items: center;
+  justify-content: space-between;
   gap: 10px;
   padding: 16px 24px 20px;
 }
@@ -290,27 +291,41 @@
     box-shadow 0.12s;
 }
 
-.subscrpt-feedback-modal__keep {
-  background: var(--subscrpt-cfm-surface);
-  border-color: var(--subscrpt-cfm-border-strong);
-  color: var(--subscrpt-cfm-text);
-}
-
-.subscrpt-feedback-modal__keep:hover {
-  background: var(--subscrpt-cfm-hover-bg-strong);
-  border-color: var(--subscrpt-cfm-subtle);
-}
-
-.subscrpt-feedback-modal__confirm {
+/* Staying is the button, leaving is a link. The offer step means the opposite
+   thing by "keep" and "confirm" - declining an offer is the leaving action
+   there - so it carries its own pair rather than reusing these. */
+.subscrpt-feedback-modal__keep,
+.subscrpt-feedback-modal__offer-claim {
   background: var(--subscrpt-brand);
   color: var(--subscrpt-cfm-on-brand);
 }
 
-.subscrpt-feedback-modal__confirm:hover {
+.subscrpt-feedback-modal__keep:hover,
+.subscrpt-feedback-modal__offer-claim:hover {
   background: var(--subscrpt-brand-dark);
+  color: var(--subscrpt-cfm-on-brand);
 }
 
-.subscrpt-feedback-modal__confirm[disabled] {
+.subscrpt-feedback-modal__confirm,
+.subscrpt-feedback-modal__offer-decline {
+  height: auto;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--subscrpt-cfm-subtle);
+  font-weight: 500;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.subscrpt-feedback-modal__confirm:hover,
+.subscrpt-feedback-modal__offer-decline:hover {
+  background: none;
+  color: var(--subscrpt-cfm-text);
+}
+
+.subscrpt-feedback-modal__confirm[disabled],
+.subscrpt-feedback-modal__offer-claim[disabled] {
   opacity: 0.65;
   cursor: not-allowed;
 }
@@ -350,4 +365,36 @@
   .subscrpt-feedback-modal__btn {
     width: 100%;
   }
+
+  /* The link keeps its size when the row stacks - a full-width underline reads
+     as a second button, which is what this change exists to avoid. */
+  .subscrpt-feedback-modal__confirm,
+  .subscrpt-feedback-modal__offer-decline {
+    width: auto;
+    align-self: center;
+  }
+}
+
+/* The issued discount code, shown in place of the offer copy once claimed. */
+.subscrpt-feedback-modal__offer-note {
+  margin: 14px 0 0;
+  padding: 12px 14px;
+  border: 1px dashed #d0d3d7;
+  border-radius: 6px;
+  background: #f6f7f7;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-align: center;
+  color: #1d2327;
+}
+
+/* The `hidden` attribute is only a user-agent `display: none`, so any class
+   that sets `display` beats it - and both of these do. Say it again with the
+   weight the attribute cannot bring on its own, or the step being swapped out
+   stays on screen underneath the one being swapped in. */
+.subscrpt-feedback-modal__body[hidden],
+.subscrpt-feedback-modal__footer[hidden] {
+  display: none !important;
 }

@@ -95,6 +95,19 @@ $subscrpt_pro_active = subscrpt_pro_activated();
 						?>
 					</div>
 				<?php endif; ?>
+
+				<?php if ( 'offers' === $active_tab ) : ?>
+					<div class="wpsubs-table-card subscrpt-flow__panel">
+						<?php
+						foreach ( CancellationFlow::offer_fields() as $subscrpt_offer_field ) {
+							SettingsHelper::render_settings_field( $subscrpt_offer_field['type'], $subscrpt_offer_field['field_data'] );
+						}
+						?>
+						<p class="subscrpt-flow__note">
+							<?php esc_html_e( 'Accepting the offer issues a single-use WooCommerce coupon locked to that customer, and keeps the subscription.', 'subscription' ); ?>
+						</p>
+					</div>
+				<?php endif; ?>
 			</div>
 
 			<aside>

@@ -164,6 +164,7 @@ class CancellationFlow {
 	public static function tabs() {
 		return array(
 			'reasons' => array( 'label' => __( 'Reasons', 'subscription' ) ),
+			'offers'  => array( 'label' => __( 'Offers', 'subscription' ) ),
 		);
 	}
 
@@ -190,6 +191,100 @@ class CancellationFlow {
 			'empty_text'      => __( 'No reasons yet. Add one below.', 'subscription' ),
 			'pro_locked'      => ! subscrpt_pro_activated(),
 		);
+	}
+
+	/**
+	 * The Offers tab fields: one retention discount.
+	 *
+	 * Pro-locked like the rest of this page's write settings - Pro registers and
+	 * sanitizes them, and only Pro turns an accepted offer into a coupon.
+	 *
+	 * @return array<int,array{type:string,field_data:array}>
+	 */
+	public static function offer_fields() {
+		$pro_locked = ! subscrpt_pro_activated();
+
+		return array(
+			array(
+				'type'       => 'toggle',
+				'field_data' => array(
+					'id'          => 'subscrpt_cancellation_offer_enabled',
+					'title'       => __( 'Retention Offer', 'subscription' ),
+					'label'       => __( 'Offer a discount before cancelling', 'subscription' ),
+					'description' => __( 'Show the customer a one-off discount code when they start cancelling. Accepting it keeps the subscription.', 'subscription' ),
+					'value'       => '1',
+					'checked'     => self::offer_enabled(),
+					'pro_locked'  => $pro_locked,
+				),
+			),
+			array(
+				'type'       => 'input',
+				'field_data' => array(
+					'id'          => 'subscrpt_cancellation_offer_percent',
+					'title'       => __( 'Discount', 'subscription' ),
+					'type'        => 'number',
+					'description' => __( 'Percentage off, applied store-wide by the generated coupon.', 'subscription' ),
+					'value'       => self::offer_percent(),
+					'attrs'       => array(
+						'min'  => '1',
+						'max'  => '100',
+						'step' => '1',
+					),
+					'pro_locked'  => $pro_locked,
+				),
+			),
+			array(
+				'type'       => 'input',
+				'field_data' => array(
+					'id'          => 'subscrpt_cancellation_offer_days',
+					'title'       => __( 'Valid for', 'subscription' ),
+					'type'        => 'number',
+					'description' => __( 'Days before the generated coupon expires.', 'subscription' ),
+					'value'       => self::offer_days(),
+					'attrs'       => array(
+						'min'  => '1',
+						'max'  => '365',
+						'step' => '1',
+					),
+					'pro_locked'  => $pro_locked,
+				),
+			),
+		);
+	}
+
+	/**
+	 * Whether a retention offer should be shown.
+	 *
+	 * Free stores and reads the settings so the UI round-trips, but only ever
+	 * answers false without Pro - Pro is what turns an accepted offer into a
+	 * coupon, so offering one free would be a promise nothing keeps.
+	 *
+	 * @return bool
+	 */
+	public static function offer_enabled() {
+		if ( ! subscrpt_pro_activated() ) {
+			return false;
+		}
+
+		return '1' === get_option( 'subscrpt_cancellation_offer_enabled', '' ) && self::offer_percent() > 0;
+	}
+
+	/**
+	 * Configured discount percentage.
+	 *
+	 * @return int
+	 */
+	public static function offer_percent() {
+		return max( 0, min( 100, (int) get_option( 'subscrpt_cancellation_offer_percent', 20 ) ) );
+	}
+
+	/**
+	 * Configured coupon lifetime in days.
+	 *
+	 * @return int
+	 */
+	public static function offer_days() {
+		return max( 1, (int) get_option( 'subscrpt_cancellation_offer_days', 7 ) );
 	}
 
 	/**

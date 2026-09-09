@@ -138,6 +138,39 @@ if ( ! function_exists( 'subscrpt_preview_format_price' ) ) {
 		return function_exists( 'wc_price' ) ? wc_price( $amount ) : esc_html( '$' . number_format( $amount, 2 ) );
 	}
 }
+
+// Sample cancellation reasons, shaped exactly like Pro's real query result so
+// the preview and the real report render from the same structure.
+$dummy_cancellation_reasons = array(
+	'reasons' => array(
+		array(
+			'reason'  => __( 'Too expensive', 'subscription' ),
+			'count'   => 14,
+			'percent' => 38.9,
+		),
+		array(
+			'reason'  => __( 'Missing features I need', 'subscription' ),
+			'count'   => 9,
+			'percent' => 25.0,
+		),
+		array(
+			'reason'  => __( 'Found a better alternative', 'subscription' ),
+			'count'   => 7,
+			'percent' => 19.4,
+		),
+		array(
+			'reason'  => __( 'No longer needed', 'subscription' ),
+			'count'   => 4,
+			'percent' => 11.1,
+		),
+		array(
+			'reason'  => __( 'Technical issues', 'subscription' ),
+			'count'   => 2,
+			'percent' => 5.6,
+		),
+	),
+	'total'   => 36,
+);
 ?>
 
 <!-- Page content -->
@@ -172,6 +205,18 @@ if ( ! function_exists( 'subscrpt_preview_format_price' ) ) {
 		</div>
 		<div style="border-top:1px dashed #d0d3d7;"></div>
 	</div>
+
+	<div class="wpsubs-tabs" data-tabs-query="report" style="max-width:1240px;margin:0 auto;">
+		<div class="wpsubs-tabs__list" role="tablist">
+			<button class="wpsubs-tabs__tab" role="tab" id="subscrpt-report-tab-overview" data-tab-key="overview" aria-controls="subscrpt-report-panel-overview" aria-selected="true">
+				<?php esc_html_e( 'Overview', 'subscription' ); ?>
+			</button>
+			<button class="wpsubs-tabs__tab" role="tab" id="subscrpt-report-tab-cancellation" data-tab-key="cancellation" aria-controls="subscrpt-report-panel-cancellation" aria-selected="false">
+				<?php esc_html_e( 'Cancellation', 'subscription' ); ?>
+			</button>
+		</div>
+
+	<div class="wpsubs-tab-panel" role="tabpanel" id="subscrpt-report-panel-overview" aria-labelledby="subscrpt-report-tab-overview">
 
 	<!-- KPI stat cards -->
 	<div style="display:grid;grid-template-columns:repeat(5,1fr);gap:16px;margin-bottom:16px;">
@@ -411,6 +456,55 @@ if ( ! function_exists( 'subscrpt_preview_format_price' ) ) {
 			<canvas id="subscrpt-preview-detailed-chart" style="width:100%;height:360px;"></canvas>
 		</div>
 	</div>
+
+	</div><!-- /overview panel -->
+
+	<div class="wpsubs-tab-panel" role="tabpanel" id="subscrpt-report-panel-cancellation" aria-labelledby="subscrpt-report-tab-cancellation" hidden>
+
+		<div class="wpsubs-table-card">
+			<div style="padding:16px 20px;border-bottom:1px solid var(--wpsubs-border);">
+				<h2 style="font-size:13px;font-weight:600;color:var(--wpsubs-text-muted);text-transform:uppercase;letter-spacing:0.07em;margin:0;"><?php esc_html_e( 'Cancellation Reasons', 'subscription' ); ?></h2>
+				<p style="font-size:12px;color:var(--wpsubs-text-muted);margin:4px 0 0;"><?php esc_html_e( 'Why customers cancelled, based on submitted feedback.', 'subscription' ); ?></p>
+			</div>
+			<div style="padding:10px 20px 14px;">
+				<?php
+				foreach ( $dummy_cancellation_reasons['reasons'] as $subscrpt_reason_row ) :
+					$subscrpt_reason_fill = max( 2, min( 100, (float) $subscrpt_reason_row['percent'] ) );
+					?>
+					<div style="display:flex;align-items:baseline;justify-content:space-between;gap:12px;padding:11px 14px;margin-bottom:6px;border-radius:8px;border:1px solid var(--wpsubs-border);background:linear-gradient(to left, var(--wpsubs-brand-light) 0, var(--wpsubs-brand-light) calc(<?php echo esc_attr( $subscrpt_reason_fill ); ?>% - 2px), var(--wpsubs-brand) calc(<?php echo esc_attr( $subscrpt_reason_fill ); ?>% - 2px), var(--wpsubs-brand) <?php echo esc_attr( $subscrpt_reason_fill ); ?>%, transparent <?php echo esc_attr( $subscrpt_reason_fill ); ?>%);">
+						<span style="font-size:13px;font-weight:600;color:var(--wpsubs-text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0;"><?php echo esc_html( $subscrpt_reason_row['reason'] ); ?></span>
+						<span style="flex-shrink:0;">
+							<span style="font-size:14px;font-weight:700;color:var(--wpsubs-text);"><?php echo esc_html( $subscrpt_reason_row['percent'] ); ?>%</span>
+							<span style="font-size:12px;color:var(--wpsubs-text-muted);margin-left:4px;">
+								<?php
+								printf(
+									/* translators: %s: number of subscriptions. */
+									esc_html__( '%s subs', 'subscription' ),
+									esc_html( number_format_i18n( $subscrpt_reason_row['count'] ) )
+								);
+								?>
+							</span>
+						</span>
+					</div>
+				<?php endforeach; ?>
+			</div>
+			<div style="padding:12px 20px;border-top:1px solid var(--wpsubs-border);font-size:12px;color:var(--wpsubs-text-muted);">
+				<?php
+				printf(
+					/* translators: %s: total number of cancellations with feedback. */
+					esc_html__( 'Total cancellations with feedback: %s', 'subscription' ),
+					esc_html( number_format_i18n( $dummy_cancellation_reasons['total'] ) )
+				);
+				?>
+			</div>
+		</div>
+
+		<p style="margin:14px 0 0;font-size:13px;color:var(--wpsubs-text-muted);text-align:center;">
+			<?php esc_html_e( 'Sample data. Pro reports the reasons your own customers gave.', 'subscription' ); ?>
+		</p>
+
+	</div><!-- /cancellation panel -->
+	</div><!-- /tabs -->
 
 </div>
 
