@@ -269,6 +269,58 @@
     });
   }
 
+  // Per-plan "Copy checkout link": copies the direct checkout link for that plan
+  // (WooCommerce checkout-link endpoint + subscrpt_plan_id — not an add-to-cart
+  // link). Reuses the checkout-link data blob for the base URL + product id.
+  document.addEventListener("click", function (e) {
+    var btn = e.target.closest("[data-subscrpt-copy-checkout]");
+    if (!btn) {
+      return;
+    }
+    e.preventDefault();
+
+    var modal = document.getElementById("subscrpt-checkout-link");
+    var data;
+    try {
+      data = JSON.parse((modal && modal.getAttribute("data-subscrpt-checkout-data")) || "{}");
+    } catch (err) {
+      return;
+    }
+    if (!data.checkoutLinkBase) {
+      return;
+    }
+
+    var planId = btn.getAttribute("data-plan-id");
+    var vid = btn.getAttribute("data-vid");
+    var target = "variable" === data.type && vid && "0" !== vid ? vid : data.productId;
+    var base = data.checkoutLinkBase;
+    // One-time purchase carries no plan; the storefront resolves it without a
+    // subscrpt_plan_id (matches the "onetime" sentinel in the checkout modal).
+    var planParam = planId && "onetime" !== planId ? "&subscrpt_plan_id=" + encodeURIComponent(planId) : "";
+    var link =
+      base + (base.indexOf("?") === -1 ? "?" : "&") + "products=" + encodeURIComponent(target + ":1") + planParam;
+
+    // Flash a check on the icon to confirm the copy.
+    var done = function () {
+      var icon = btn.querySelector(".dashicons");
+      if (icon) {
+        var prev = icon.className;
+        icon.className = "dashicons dashicons-yes";
+        setTimeout(function () {
+          icon.className = prev;
+        }, 1500);
+      }
+    };
+
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(link).then(done, function () {
+        window.prompt(i18n.copyLinkPrompt || "Copy this link:", link);
+      });
+    } else {
+      window.prompt(i18n.copyLinkPrompt || "Copy this link:", link);
+    }
+  });
+
   // On load, default to the plan view — unless the product carries legacy
   // classic settings (data-subscrpt-default-classic), then open classic mode.
   function init() {

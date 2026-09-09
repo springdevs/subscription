@@ -522,8 +522,8 @@ class Plans {
 							</div>
 						<?php else : ?>
 							<!-- Read view: offered plans + one-time as chips. -->
-							<div class="subscrpt-pe-view" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:10px;">
-								<?php self::render_variation_summary( $all_terms, $group['term_map'], $subscrpt_simple_ot ); ?>
+							<div class="subscrpt-pe-view" style="display:flex;flex-wrap:wrap;gap:6px;margin:12px -14px 0;padding:12px 14px 0;border-top:1px solid var(--wpsubs-border,#e5e7eb);">
+								<?php self::render_variation_summary( $all_terms, $group['term_map'], $subscrpt_simple_ot, 0 ); ?>
 							</div>
 
 							<!-- Edit view: plan rows + the one-time row (mirrors the Plans page). -->
@@ -690,7 +690,7 @@ class Plans {
 							<?php esc_html_e( 'Offer Price', 'subscription' ); ?>
 							<?php echo wp_kses_post( wpsubs_render_hint( __( 'A discounted recurring price shown in place of the regular price. Leave empty for no discount.', 'subscription' ) ) ); ?>
 						</th>
-					<th><?php esc_html_e( 'Status', 'subscription' ); ?></th>
+					<th><?php esc_html_e( 'Actions', 'subscription' ); ?></th>
 				</tr>
 			</thead>
 			<tbody>
@@ -718,10 +718,17 @@ class Plans {
 						<td><input type="number" min="0" step="0.01" class="wpsubs-input" data-field="regular_price" value="<?php echo esc_attr( $subscrpt_vals['regular'] ); ?>" placeholder="0.00" style="max-width:110px;" /></td>
 						<td><input type="number" min="0" step="0.01" class="wpsubs-input" data-field="sale_price" value="<?php echo esc_attr( $subscrpt_vals['offer'] ); ?>" placeholder="0.00" style="max-width:110px;" /></td>
 						<td>
-							<label class="wpsubs-settings-toggle-label" style="display:inline-flex;align-items:center;">
-								<input type="checkbox" class="wpsubs-toggle" data-subscrpt-term-toggle <?php checked( $subscrpt_enabled ); ?> />
-								<span class="wpsubs-toggle-ui" aria-hidden="true"></span>
-							</label>
+							<div style="display:inline-flex;align-items:center;gap:8px;">
+								<label class="wpsubs-settings-toggle-label" style="display:inline-flex;align-items:center;" title="<?php esc_attr_e( 'Enable this plan for the product', 'subscription' ); ?>">
+									<input type="checkbox" class="wpsubs-toggle" data-subscrpt-term-toggle <?php checked( $subscrpt_enabled ); ?> />
+									<span class="wpsubs-toggle-ui" aria-hidden="true"></span>
+								</label>
+								<?php if ( ! $connect && '' !== trim( (string) $subscrpt_vals['regular'] ) ) : ?>
+									<button type="button" class="wpsubs-icon-action" data-subscrpt-copy-checkout data-plan-id="<?php echo esc_attr( $subscrpt_tid ); ?>" data-vid="<?php echo esc_attr( $vid ); ?>" title="<?php esc_attr_e( 'Copy checkout link', 'subscription' ); ?>" aria-label="<?php esc_attr_e( 'Copy checkout link', 'subscription' ); ?>">
+										<span class="dashicons dashicons-admin-links"></span>
+									</button>
+								<?php endif; ?>
+							</div>
 						</td>
 					</tr>
 				<?php endforeach; ?>
@@ -737,10 +744,17 @@ class Plans {
 						<td><input type="number" min="0" step="0.01" class="wpsubs-input" data-ot-field="price" value="<?php echo esc_attr( $one_time['regular'] ); ?>" placeholder="0.00" style="max-width:110px;" /></td>
 						<td><input type="number" min="0" step="0.01" class="wpsubs-input" data-ot-field="offer" value="<?php echo esc_attr( $one_time['offer'] ); ?>" placeholder="<?php esc_attr_e( 'No offer', 'subscription' ); ?>" style="max-width:110px;" /></td>
 						<td>
-							<label class="wpsubs-settings-toggle-label" style="display:inline-flex;align-items:center;" title="<?php esc_attr_e( 'Offer this variation for one-time purchase', 'subscription' ); ?>">
-								<input type="checkbox" class="wpsubs-toggle" data-subscrpt-onetime-enable <?php checked( ! empty( $one_time['enabled'] ) ); ?> />
-								<span class="wpsubs-toggle-ui" aria-hidden="true"></span>
-							</label>
+							<div style="display:inline-flex;align-items:center;gap:8px;">
+								<label class="wpsubs-settings-toggle-label" style="display:inline-flex;align-items:center;" title="<?php esc_attr_e( 'Offer this variation for one-time purchase', 'subscription' ); ?>">
+									<input type="checkbox" class="wpsubs-toggle" data-subscrpt-onetime-enable <?php checked( ! empty( $one_time['enabled'] ) ); ?> />
+									<span class="wpsubs-toggle-ui" aria-hidden="true"></span>
+								</label>
+								<?php if ( ! $connect && '' !== trim( (string) $one_time['regular'] ) ) : ?>
+									<button type="button" class="wpsubs-icon-action" data-subscrpt-copy-checkout data-plan-id="onetime" data-vid="<?php echo esc_attr( $vid ); ?>" title="<?php esc_attr_e( 'Copy checkout link', 'subscription' ); ?>" aria-label="<?php esc_attr_e( 'Copy checkout link', 'subscription' ); ?>">
+										<span class="dashicons dashicons-admin-links"></span>
+									</button>
+								<?php endif; ?>
+							</div>
 						</td>
 					</tr>
 				<?php endif; ?>
@@ -831,7 +845,7 @@ class Plans {
 					</div>
 				<?php else : ?>
 					<div class="subscrpt-pe-view" style="display:flex;flex-wrap:wrap;gap:6px;padding:10px 12px 12px;border-top:1px solid var(--wpsubs-border,#e5e7eb);">
-						<?php self::render_variation_summary( $all_terms, $subscrpt_vmap, $subscrpt_one_time ); ?>
+						<?php self::render_variation_summary( $all_terms, $subscrpt_vmap, $subscrpt_one_time, $subscrpt_vid ); ?>
 					</div>
 					<div class="subscrpt-pe-edit" style="display:none;padding:2px 0;border-top:1px solid var(--wpsubs-border,#e5e7eb);">
 						<?php self::render_price_table( $all_terms, $subscrpt_vmap, false, $subscrpt_vid, $subscrpt_one_time ); ?>
@@ -850,10 +864,11 @@ class Plans {
 	 * @param array      $all_terms All terms of the group.
 	 * @param array      $vmap      This variation's plan_id => relation values.
 	 * @param array|null $one_time  One-time values (enabled, regular, offer).
+	 * @param int        $vid       Variation id (0 for simple), for the checkout link.
 	 *
 	 * @return void
 	 */
-	protected static function render_variation_summary( $all_terms, $vmap, $one_time ) {
+	protected static function render_variation_summary( $all_terms, $vmap, $one_time, $vid = 0 ) {
 		foreach ( $all_terms as $subscrpt_term ) :
 			$subscrpt_tid   = (int) $subscrpt_term['id'];
 			$subscrpt_row   = isset( $vmap[ $subscrpt_tid ] ) ? $vmap[ $subscrpt_tid ] : null;
@@ -866,6 +881,8 @@ class Plans {
 				<?php self::price_pair( $subscrpt_reg, $subscrpt_offer ); ?>
 				<?php if ( $subscrpt_off ) : ?>
 					<span style="font-style:italic;">(<?php esc_html_e( 'off', 'subscription' ); ?>)</span>
+				<?php elseif ( '' !== trim( $subscrpt_reg ) ) : ?>
+					<?php self::render_chip_copy_link( (string) $subscrpt_tid, $vid ); ?>
 				<?php endif; ?>
 			</span>
 			<?php
@@ -877,9 +894,28 @@ class Plans {
 				<span class="dashicons dashicons-cart" style="font-size:13px;width:13px;height:13px;line-height:1;color:var(--wpsubs-text-subtle);"></span>
 				<?php esc_html_e( 'One-time', 'subscription' ); ?>
 				<?php self::price_pair( (string) $one_time['regular'], (string) $one_time['offer'] ); ?>
+				<?php if ( '' !== trim( (string) $one_time['regular'] ) ) : ?>
+					<?php self::render_chip_copy_link( 'onetime', $vid ); ?>
+				<?php endif; ?>
 			</span>
 			<?php
 		endif;
+	}
+
+	/**
+	 * Compact "Copy checkout link" icon button for a summary chip.
+	 *
+	 * @param string $plan_id Plan (term) id, or the 'onetime' sentinel.
+	 * @param int    $vid     Variation id (0 for simple).
+	 *
+	 * @return void
+	 */
+	protected static function render_chip_copy_link( $plan_id, $vid ) {
+		?>
+		<button type="button" data-subscrpt-copy-checkout data-plan-id="<?php echo esc_attr( $plan_id ); ?>" data-vid="<?php echo esc_attr( $vid ); ?>" title="<?php esc_attr_e( 'Copy checkout link', 'subscription' ); ?>" aria-label="<?php esc_attr_e( 'Copy checkout link', 'subscription' ); ?>" style="display:inline-flex;align-items:center;justify-content:center;padding:0;border:none;background:transparent;color:var(--wpsubs-text-subtle);cursor:pointer;line-height:1;">
+			<span class="dashicons dashicons-admin-links" style="font-size:13px;width:13px;height:13px;line-height:1;"></span>
+		</button>
+		<?php
 	}
 
 	/**
