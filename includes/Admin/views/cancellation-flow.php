@@ -52,7 +52,7 @@ $subscrpt_pro_active = subscrpt_pro_activated();
 		</div>
 	</div>
 
-	<div class="wpsubs-tabs__list" role="tablist" style="margin-bottom:18px;">
+	<div class="wpsubs-tabs__list" role="tablist" style="margin-bottom:16px;">
 		<?php foreach ( $tabs as $subscrpt_tab_key => $subscrpt_tab ) : ?>
 			<a
 				class="wpsubs-tabs__tab"
@@ -70,17 +70,15 @@ $subscrpt_pro_active = subscrpt_pro_activated();
 
 			<div>
 				<?php if ( 'reasons' === $active_tab ) : ?>
-					<div class="wpsubs-table-card" style="padding:6px 20px 20px;">
+					<div class="wpsubs-table-card subscrpt-flow__panel subscrpt-flow__panel--reasons">
 						<?php
-						SettingsHelper::render_settings_field( 'heading', array( 'title' => __( 'Reasons', 'subscription' ) ) );
-
-						// The saved list, in the order customers see it. Editing happens
-						// in the modal below; this reflects what is stored, so it catches
-						// up on save rather than while the modal is open.
+						// The saved list, in the order customers see it. Editing happens in
+						// the modal; this reflects what is stored, so it catches up on save
+						// rather than while the modal is open.
 						$subscrpt_reasons = \SpringDevs\Subscription\Illuminate\Cancellation::get_reasons();
 						?>
 						<?php if ( empty( $subscrpt_reasons ) ) : ?>
-							<p style="margin:0 0 16px;color:var(--wpsubs-text-subtle);font-size:13px;">
+							<p class="subscrpt-flow__empty">
 								<?php esc_html_e( 'No reasons yet. Add one with Manage reasons.', 'subscription' ); ?>
 							</p>
 						<?php else : ?>
@@ -90,15 +88,18 @@ $subscrpt_pro_active = subscrpt_pro_activated();
 								<?php endforeach; ?>
 							</ol>
 						<?php endif; ?>
-						<?php SettingsHelper::render_settings_field( 'editlist', CancellationFlow::reasons_field() ); ?>
+						<?php
+						$subscrpt_reasons_field          = CancellationFlow::reasons_field();
+						$subscrpt_reasons_field['title'] = '';
+						SettingsHelper::render_settings_field( 'editlist', $subscrpt_reasons_field );
+						?>
 					</div>
 				<?php endif; ?>
 			</div>
 
 			<aside>
-				<div class="wpsubs-table-card subscrpt-flow__options" style="padding:6px 20px 20px;">
+				<div class="wpsubs-table-card subscrpt-flow__panel subscrpt-flow__options">
 					<?php
-					SettingsHelper::render_settings_field( 'heading', array( 'title' => __( 'Flow Options', 'subscription' ) ) );
 					foreach ( CancellationFlow::sidebar_fields() as $subscrpt_field ) {
 						SettingsHelper::render_settings_field( $subscrpt_field['type'], $subscrpt_field['field_data'] );
 					}

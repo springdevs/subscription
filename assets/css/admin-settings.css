@@ -291,15 +291,68 @@
   width: 100%;
 }
 
-/* The saved reason list, numbered so the order customers see is obvious. */
-.subscrpt-flow__reasons {
-  margin: 0 0 18px;
-  padding-left: 22px;
-  color: var(--wpsubs-text);
-  font-size: 13px;
-  line-height: 2;
+/* Both panels share one padding rhythm so the two columns line up. */
+.subscrpt-flow__panel {
+  padding: 20px;
 }
 
-.subscrpt-flow__reasons li::marker {
-  color: var(--wpsubs-text-subtle);
+/* The saved reason list: the same row treatment the manage modal uses, so the
+   page and the modal read as one thing. Numbered, because the order is what a
+   customer sees. */
+.subscrpt-flow__reasons {
+  list-style: none;
+  margin: 0 0 18px;
+  padding: 0;
+  counter-reset: subscrpt-reason;
+}
+
+.subscrpt-flow__reasons li {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  border: 1px solid var(--wpsubs-border, #e5e7eb);
+  border-radius: var(--wpsubs-radius-sm, 5px);
+  background: var(--wpsubs-surface, #fff);
+  font-size: 13px;
+  color: var(--wpsubs-text, #374151);
+}
+
+.subscrpt-flow__reasons li + li {
+  margin-top: 8px;
+}
+
+.subscrpt-flow__reasons li::before {
+  counter-increment: subscrpt-reason;
+  content: counter(subscrpt-reason);
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 999px;
+  background: var(--wpsubs-surface-muted, #f9fafb);
+  color: var(--wpsubs-text-muted, #6b7280);
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.subscrpt-flow__empty {
+  margin: 0 0 18px;
+  color: var(--wpsubs-text-subtle, #9ca3af);
+  font-size: 13px;
+}
+
+/* The reasons control carries no label of its own - the tab names the panel.
+   The label element is still emitted (with whitespace, so `:empty` never
+   matches) and its `flex: 0 0 220px` becomes a 220px tall gap once the row
+   stacks, so hide it outright. */
+.subscrpt-flow__panel--reasons .wpsubs-settings-field {
+  flex-direction: column;
+  gap: 10px;
+}
+
+.subscrpt-flow__panel--reasons .wpsubs-settings-field__label {
+  display: none;
 }
