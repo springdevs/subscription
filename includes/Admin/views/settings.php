@@ -35,14 +35,14 @@ $subscrpt_settings_base = admin_url( 'admin.php?page=wp-subscription-settings' )
 		<div class="subscrpt-settings__layout">
 
 			<aside class="subscrpt-settings__sidebar">
-				<nav class="subscrpt-settings__nav" role="tablist" aria-orientation="vertical" aria-label="<?php esc_attr_e( 'Settings sections', 'subscription' ); ?>">
+				<nav class="wpsubs-vnav" role="tablist" aria-orientation="vertical" aria-label="<?php esc_attr_e( 'Settings sections', 'subscription' ); ?>">
 					<?php foreach ( $settings_fields as $subscrpt_group_id => $subscrpt_group ) : ?>
 						<?php
 						$subscrpt_is_active = $subscrpt_group_id === $active_tab;
 						$subscrpt_label     = SettingsHelper::group_label( $subscrpt_group_id, $subscrpt_group );
 						?>
 						<a
-							class="subscrpt-settings__tab<?php echo $subscrpt_is_active ? ' is-active' : ''; ?>"
+							class="wpsubs-vnav__item<?php echo $subscrpt_is_active ? ' is-active' : ''; ?>"
 							id="subscrpt-tab-<?php echo esc_attr( $subscrpt_group_id ); ?>"
 							href="<?php echo esc_url( add_query_arg( 'tab', $subscrpt_group_id, $subscrpt_settings_base ) ); ?>"
 							role="tab"
@@ -50,7 +50,7 @@ $subscrpt_settings_base = admin_url( 'admin.php?page=wp-subscription-settings' )
 							aria-controls="subscrpt-panel-<?php echo esc_attr( $subscrpt_group_id ); ?>"
 							data-subscrpt-tab="<?php echo esc_attr( $subscrpt_group_id ); ?>"
 						>
-							<span class="subscrpt-settings__tab-label"><?php echo esc_html( $subscrpt_label ); ?></span>
+							<span class="wpsubs-vnav__label"><?php echo esc_html( $subscrpt_label ); ?></span>
 							<?php if ( SettingsHelper::group_is_pro_locked( $subscrpt_group ) ) : ?>
 								<?php echo wp_kses_post( SettingsHelper::pro_badge_html() ); ?>
 							<?php endif; ?>

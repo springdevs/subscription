@@ -173,59 +173,8 @@
   overscroll-behavior: contain;
 }
 
-.subscrpt-settings__nav {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  padding: 8px;
-  background: var(--wpsubs-surface, #fff);
-  border: 1px solid var(--wpsubs-border, #e5e7eb);
-  border-radius: var(--wpsubs-radius, 8px);
-}
-
-.subscrpt-settings__tab {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-  padding: 8px 10px;
-  border-radius: var(--wpsubs-radius-sm, 6px);
-  font-size: 13px;
-  font-weight: 500;
-  line-height: 1.4;
-  color: var(--wpsubs-text, #1e293b);
-  text-decoration: none;
-  transition:
-    background-color 0.12s ease,
-    color 0.12s ease;
-}
-
-.subscrpt-settings__tab:hover,
-.subscrpt-settings__tab:focus {
-  background: var(--wpsubs-surface-muted, #f8fafc);
-  color: var(--wpsubs-text, #1e293b);
-}
-
-.subscrpt-settings__tab:focus-visible {
-  outline: 2px solid var(--wpsubs-brand, #2271b1);
-  outline-offset: -2px;
-}
-
-/* Clicking a tab focuses it, so without this the focus ring is the only thing
-   you see on the tab you just chose and the active tint reads as missing. */
-.subscrpt-settings__tab.is-active:focus-visible {
-  outline-color: var(--wpsubs-brand-dark, #1d4ed8);
-}
-
-.subscrpt-settings__tab.is-active {
-  background: var(--wpsubs-brand-light, #eff6ff);
-  color: var(--wpsubs-brand-dark, #1d4ed8);
-  font-weight: 600;
-}
-
-.subscrpt-settings__tab-label {
-  min-width: 0;
-}
+/* The sidebar rail itself is the reusable `wpsubs-vnav` component
+   (admin-components/vnav.css); only its placement lives here. */
 
 .subscrpt-settings__panel {
   padding: 20px 24px;
@@ -271,7 +220,7 @@
     overflow: visible;
   }
 
-  .subscrpt-settings__nav {
+  .subscrpt-settings__sidebar .wpsubs-vnav {
     flex-direction: row;
     flex-wrap: wrap;
   }

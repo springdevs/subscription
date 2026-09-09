@@ -164,6 +164,7 @@ class Assets {
 			'modal',
 			'editlist',
 			'tabs',
+			'vnav',
 			'accordion',
 			'tooltip',
 		);
