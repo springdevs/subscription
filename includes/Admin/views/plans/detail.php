@@ -54,13 +54,19 @@ use SpringDevs\Subscription\Admin\Plans;
 		</div>
 
 		<div class="wpsubs-tabs" data-tabs-query="tab">
-			<div class="wpsubs-tabs__list" role="tablist" style="align-items:end;border-bottom:none;margin-top:-24px;margin-bottom:8px;">
-				<span aria-hidden="true" style="flex:1 1 auto;border-top:1px dashed #d0d3d7;margin-right:8px;"></span>
-				<button class="wpsubs-tabs__tab" role="tab" id="subscrpt-tab-selling" data-tab-key="plans" aria-controls="subscrpt-panel-selling" aria-selected="true">
-					<?php esc_html_e( 'Durations', 'subscription' ); ?>
-				</button>
-				<button class="wpsubs-tabs__tab" role="tab" id="subscrpt-tab-products" data-tab-key="products" aria-controls="subscrpt-panel-products" aria-selected="false">
-					<?php esc_html_e( 'Products', 'subscription' ); ?>
+			<div style="display:flex;align-items:end;gap:8px;margin-bottom:8px;">
+				<div class="wpsubs-tabs__list" role="tablist" style="border-bottom:none;margin-bottom:0;">
+					<button class="wpsubs-tabs__tab" role="tab" id="subscrpt-tab-selling" data-tab-key="plans" aria-controls="subscrpt-panel-selling" aria-selected="true">
+						<?php esc_html_e( 'Durations', 'subscription' ); ?>
+					</button>
+					<button class="wpsubs-tabs__tab" role="tab" id="subscrpt-tab-products" data-tab-key="products" aria-controls="subscrpt-panel-products" aria-selected="false">
+						<?php esc_html_e( 'Products', 'subscription' ); ?>
+					</button>
+				</div>
+				<span aria-hidden="true" style="flex:1 1 auto;border-top:1px dashed #d0d3d7;margin-bottom:9px;"></span>
+				<button type="button" class="wpsubs-btn wpsubs-btn--primary" data-wpsubs-modal-open="subscrpt-term-modal" data-subscrpt-add-term data-subscrpt-tab-action="subscrpt-tab-selling">
+					<span class="dashicons dashicons-plus-alt2" style="font-size:16px;width:16px;height:16px;line-height:1;"></span>
+					<?php esc_html_e( 'Add Duration', 'subscription' ); ?>
 				</button>
 			</div>
 

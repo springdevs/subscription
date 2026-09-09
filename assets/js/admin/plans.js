@@ -180,6 +180,32 @@
   });
 
   /* ------------------------------------------------------------------ *
+   * Tab-scoped header actions (Add Duration).
+   * ------------------------------------------------------------------ */
+
+  /**
+   * Show a header action only while the tab it belongs to is selected. The
+   * button sits beside the tab list rather than inside a panel, so it does not
+   * hide with the panel and has to follow the selection itself.
+   */
+  function syncTabActions() {
+    document.querySelectorAll("[data-subscrpt-tab-action]").forEach(function (action) {
+      var tab = document.getElementById(action.getAttribute("data-subscrpt-tab-action"));
+      action.style.display = tab && "true" === tab.getAttribute("aria-selected") ? "" : "none";
+    });
+  }
+
+  document.addEventListener("wpsubs:tab:change", syncTabActions);
+
+  // WPSubsTabs activates the initial tab on DOMContentLoaded; match it either
+  // way so the action is never left showing on the wrong tab.
+  if ("loading" === document.readyState) {
+    document.addEventListener("DOMContentLoaded", syncTabActions);
+  } else {
+    syncTabActions();
+  }
+
+  /* ------------------------------------------------------------------ *
    * Plan group: inline rename of the detail page title.
    * ------------------------------------------------------------------ */
 
