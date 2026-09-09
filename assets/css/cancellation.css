@@ -351,3 +351,27 @@
     width: 100%;
   }
 }
+
+/* The issued discount code, shown in place of the offer copy once claimed. */
+.subscrpt-feedback-modal__offer-note {
+  margin: 14px 0 0;
+  padding: 12px 14px;
+  border: 1px dashed #d0d3d7;
+  border-radius: 6px;
+  background: #f6f7f7;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-align: center;
+  color: #1d2327;
+}
+
+/* The `hidden` attribute is only a user-agent `display: none`, so any class
+   that sets `display` beats it - and both of these do. Say it again with the
+   weight the attribute cannot bring on its own, or the step being swapped out
+   stays on screen underneath the one being swapped in. */
+.subscrpt-feedback-modal__body[hidden],
+.subscrpt-feedback-modal__footer[hidden] {
+  display: none !important;
+}

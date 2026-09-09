@@ -96,6 +96,64 @@
       window.location.href = cancelUrl;
     }
 
+    /**
+     * Swap the offer step for the reasons step.
+     */
+    function showReasons() {
+      modal.querySelectorAll("[data-subscrpt-offer-step]").forEach(function (el) {
+        el.hidden = true;
+      });
+      modal.querySelectorAll("[data-subscrpt-reason-step]").forEach(function (el) {
+        el.hidden = false;
+      });
+    }
+
+    var claimBtn = modal.querySelector("[data-subscrpt-offer-claim]");
+    var declineBtn = modal.querySelector("[data-subscrpt-offer-decline]");
+    var offerResult = modal.querySelector("[data-subscrpt-offer-result]");
+
+    if (declineBtn) {
+      declineBtn.addEventListener("click", showReasons);
+    }
+
+    if (claimBtn) {
+      claimBtn.addEventListener("click", function () {
+        claimBtn.disabled = true;
+
+        // A claimed offer is a save, reported by the endpoint itself.
+        reported = true;
+
+        post("subscrpt_claim_cancellation_offer")
+          .then(function (res) {
+            return res.json();
+          })
+          .then(function (data) {
+            if (!data || !data.success || !data.data || !data.data.code) {
+              throw new Error("no offer");
+            }
+            if (offerResult) {
+              offerResult.textContent = data.data.code;
+              offerResult.hidden = false;
+            }
+            claimBtn.hidden = true;
+            if (declineBtn) {
+              declineBtn.textContent = subscrptCancellationFeedback.doneLabel || "Done";
+              declineBtn.removeEventListener("click", showReasons);
+              declineBtn.addEventListener("click", function () {
+                window.location.reload();
+              });
+            }
+          })
+          .catch(function () {
+            // No offer could be issued - never strand the customer on a step
+            // that cannot complete.
+            claimBtn.disabled = false;
+            reported = false;
+            showReasons();
+          });
+      });
+    }
+
     cancelLink.addEventListener("click", openModal);
 
     var dismissEls = modal.querySelectorAll("[data-subscrpt-feedback-dismiss]");
