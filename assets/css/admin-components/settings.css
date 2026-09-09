@@ -14,6 +14,16 @@
   padding: 13px 24px;
 }
 
+/* A heading that is not the panel's first band separates two groups rather
+   than capping the card. It keeps the full-bleed width but sits below the
+   field above it, squared off and ruled on both edges — without this the
+   -20px top margin drags it over that field's description. */
+.wpsubs-settings-heading:not(:first-child) {
+  margin-top: 20px;
+  border-top: 1px solid var(--wpsubs-border);
+  border-radius: 0;
+}
+
 .wpsubs-settings-heading__title {
   font-size: 12px !important;
   font-weight: 600 !important;
