@@ -167,64 +167,73 @@ class SettingsHelper {
 	}
 
 	/**
-	 * Broad sidebar categories, in display order.
+	 * The settings sections, in display order.
 	 *
-	 * The sidebar is one level up from the panels: each entry gathers several
-	 * settings groups, which are then the horizontal tabs inside it. `all` is
-	 * first and special — it has no group list and shows every panel at once.
+	 * One level, named for the job a merchant came to do rather than for the
+	 * plugin's internals. Each section is one rail item and one panel; the
+	 * groups inside it stack, so nothing is ever two clicks deep.
 	 *
-	 * @return array<string,string> Category key => label.
+	 * There is deliberately no "All settings" entry. It duplicated every panel
+	 * on one page, which made the rail beside it look like decoration and gave
+	 * every setting two addresses.
+	 *
+	 * @return array<string,string> Section key => label.
 	 */
 	public static function categories() {
 		return array(
-			'all'       => __( 'All Settings', 'subscription' ),
-			'general'   => __( 'General', 'subscription' ),
+			'renewals'  => __( 'Renewals', 'subscription' ),
 			'payments'  => __( 'Payments', 'subscription' ),
+			'switching' => __( 'Switching & Upgrades', 'subscription' ),
 			'customers' => __( 'Customers', 'subscription' ),
 			'advanced'  => __( 'Advanced', 'subscription' ),
 		);
 	}
 
 	/**
-	 * Which broad category a settings group belongs to.
+	 * Which section a settings group belongs to.
 	 *
-	 * Unmapped groups — including any an add-on registers without knowing
-	 * categories exist — fall into `advanced`, so a new group is always
-	 * reachable from the sidebar rather than only from `all`.
+	 * Groups are merged rather than mapped one-to-one: a section holding a
+	 * single option is a wasted click, so `health_queue` sits with the other
+	 * plumbing in Advanced, and everything the customer meets — the role they
+	 * are given, checking out as a guest, what their subscription's quick view
+	 * shows — is in Customers.
+	 *
+	 * Unmapped groups, including any an add-on registers without knowing
+	 * sections exist, fall into `advanced`, so a new group is always reachable.
 	 *
 	 * @param string $group_id Group key.
-	 * @return string Category key.
+	 * @return string Section key.
 	 */
 	public static function group_category( $group_id ) {
 		$map = array(
-			'renewals'            => 'general',
-			'switching'           => 'general',
-			'guest_checkout'      => 'general',
+			'renewals'            => 'renewals',
 			'payment_gateways'    => 'payments',
 			'payment_failure'     => 'payments',
 			'grace_period'        => 'payments',
+			'switching'           => 'switching',
 			'role_based_settings' => 'customers',
-			'live_qr_settings'    => 'advanced',
-			'health_queue'        => 'advanced',
+			'guest_checkout'      => 'customers',
+			'live_qr_settings'    => 'customers',
 			'api_settings'        => 'advanced',
+			'health_queue'        => 'advanced',
 		);
 
 		return $map[ $group_id ] ?? 'advanced';
 	}
 
 	/**
-	 * Group keys bucketed by category, each list in the order the groups
-	 * already sort in.
+	 * Group keys bucketed by section, each list in the order the groups already
+	 * sort in.
+	 *
+	 * Empty sections are dropped. Most of them are filled by Pro, and free
+	 * alone would otherwise show rail items that open onto nothing.
 	 *
 	 * @param array $settings_fields Grouped, sorted settings fields.
-	 * @return array<string,string[]> Category key => ordered group keys.
+	 * @return array<string,string[]> Section key => ordered group keys.
 	 */
 	public static function category_groups( array $settings_fields ) {
 		$out = array();
 		foreach ( array_keys( self::categories() ) as $cat ) {
-			if ( 'all' === $cat ) {
-				continue;
-			}
 			$out[ $cat ] = array();
 		}
 
@@ -233,7 +242,36 @@ class SettingsHelper {
 			$out[ $cat ][] = $group_id;
 		}
 
-		return $out;
+		return array_filter(
+			$out,
+			function ( $group_ids ) {
+				return ! empty( $group_ids );
+			}
+		);
+	}
+
+	/**
+	 * Whether every group in a section is locked behind Pro.
+	 *
+	 * Drives the "Pro" marker on the rail item, so a section none of which can
+	 * be changed yet says so before it is opened.
+	 *
+	 * @param string[] $group_ids       Group keys in the section.
+	 * @param array    $settings_fields Grouped settings fields.
+	 * @return bool
+	 */
+	public static function category_is_pro_locked( array $group_ids, array $settings_fields ) {
+		if ( empty( $group_ids ) ) {
+			return false;
+		}
+
+		foreach ( $group_ids as $group_id ) {
+			if ( ! self::group_is_pro_locked( $settings_fields[ $group_id ] ?? array() ) ) {
+				return false;
+			}
+		}
+
+		return true;
 	}
 
 	/**

@@ -168,7 +168,7 @@
 .subscrpt-settings__sidebar {
   position: sticky;
   top: 104px;
-  /* Small top offset so the rail's first item sits a little below the tab row. */
+  /* Small top offset so the rail's first item sits a little below the save row. */
   padding-top: 10px;
   max-height: calc(100vh - 140px);
   overflow-y: auto;
@@ -201,27 +201,15 @@
   margin: 16px 0;
 }
 
-/* Tabs and the save button share one row: the tabs take the space on the left,
-   the button is pinned right. The toolbar owns the full-width underline so it
-   spans behind both, and is present even when a category has no tabs. */
+/* The save button's row. It keeps the full-width rule the tab lists used to
+   share, so the panel below still reads as hanging off a header. */
 .subscrpt-settings__toolbar {
   display: flex;
   align-items: flex-end;
+  justify-content: flex-end;
   gap: 16px;
   border-bottom: 1px solid var(--wpsubs-border, #e5e7eb);
   margin-bottom: 20px;
-}
-
-/* Left cell — fills the row whether or not it holds a tab list. */
-.subscrpt-settings__toolbar-tabs {
-  flex: 1 1 auto;
-  min-width: 0;
-}
-
-/* The list gives up its own divider and bottom margin to the toolbar. */
-.subscrpt-settings__toolbar-tabs .wpsubs-tabs__list {
-  border-bottom: none;
-  margin-bottom: 0;
 }
 
 .subscrpt-settings__save {
