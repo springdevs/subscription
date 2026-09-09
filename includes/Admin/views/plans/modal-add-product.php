@@ -31,7 +31,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 		</div>
 		<div class="wpsubs-modal__footer">
 			<button type="button" class="wpsubs-btn wpsubs-btn--outline" data-wpsubs-modal-close><?php esc_html_e( 'Cancel', 'subscription' ); ?></button>
-			<button type="button" class="wpsubs-btn wpsubs-btn--primary" data-subscrpt-add-product-submit><?php esc_html_e( 'Save Changes', 'subscription' ); ?></button>
+			<button type="button" class="wpsubs-btn wpsubs-btn--primary" data-subscrpt-add-product-submit><?php esc_html_e( 'Connect Product', 'subscription' ); ?></button>
 		</div>
 	</div>
 </div>
