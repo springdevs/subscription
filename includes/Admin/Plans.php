@@ -62,7 +62,7 @@ class Plans {
 	 */
 	public function position_submenu( $order ) {
 		if ( is_array( $order ) ) {
-			$order[ self::SLUG ] = 25;
+			$order[ self::SLUG ] = 10;
 		}
 		return $order;
 	}
