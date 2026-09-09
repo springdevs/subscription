@@ -398,24 +398,16 @@ class Menu {
 				 */
 				$license = apply_filters( 'subscrpt_admin_header_license', null );
 
-				if ( is_array( $license ) && isset( $license['active'] ) ) :
+				// Only the "Activate license" badge is shown; the "License active"
+				// badge is intentionally hidden from the header.
+				if ( is_array( $license ) && isset( $license['active'] ) && ! $license['active'] ) :
 					$license_url = isset( $license['url'] ) ? (string) $license['url'] : '';
-
-					if ( $license['active'] ) :
-						?>
-						<span class="wpsubs-badge wpsubs-badge--active wp-subscription-license-badge">
-							<span class="wpsubs-badge__dot"></span>
-							<?php esc_html_e( 'License active', 'subscription' ); ?>
-						</span>
-						<?php
-					else :
-						?>
-						<a href="<?php echo esc_url( $license_url ); ?>" class="wpsubs-badge wpsubs-badge--warning wp-subscription-license-badge">
-							<span class="wpsubs-badge__dot"></span>
-							<?php esc_html_e( 'Activate license', 'subscription' ); ?>
-						</a>
-						<?php
-					endif;
+					?>
+					<a href="<?php echo esc_url( $license_url ); ?>" class="wpsubs-badge wpsubs-badge--warning wp-subscription-license-badge">
+						<span class="wpsubs-badge__dot"></span>
+						<?php esc_html_e( 'Activate license', 'subscription' ); ?>
+					</a>
+					<?php
 				endif;
 				?>
 
