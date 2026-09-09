@@ -145,6 +145,42 @@ function subscrpt_is_subscription_enabled( $product_id, $variation_id = 0 ): boo
 }
 
 /**
+ * Discount badge text for a storefront plan selector card.
+ *
+ * The single source both selectors share, so free and Pro word a discount
+ * identically. Returning an empty string from the filter hides the badge.
+ *
+ * @param array       $group   Plan group (id, type, label, terms, discount_percent, …).
+ * @param \WC_Product $product Product or variation being rendered.
+ * @param int         $percent The group's best discount percentage.
+ * @param bool        $varying Whether the group's terms discount by differing
+ *                             amounts, in which case the badge reads "up to".
+ *
+ * @return string
+ */
+function subscrpt_card_badge_text( $group, $product, $percent = 0, $varying = false ) {
+	if ( $percent > 0 ) {
+		$default = $varying
+			/* translators: %d: discount percentage. */
+			? sprintf( __( 'Save up to %d%%', 'subscription' ), $percent )
+			/* translators: %d: discount percentage. */
+			: sprintf( __( 'Save %d%%', 'subscription' ), $percent );
+	} else {
+		$default = __( 'Sale', 'subscription' );
+	}
+
+	/**
+	 * Filters the discount badge text on a storefront plan selector card.
+	 *
+	 * @param string      $text    Badge text (empty string hides the badge).
+	 * @param array       $group   The plan group (id, type, label, terms, discount_percent, …).
+	 * @param \WC_Product $product Product or variation being rendered.
+	 * @param int         $percent Computed discount percentage for the group.
+	 */
+	return (string) apply_filters( 'subscrpt_plan_card_badge', $default, $group, $product, $percent );
+}
+
+/**
  * Build the storefront One-Time Purchase card for a product or variation.
  *
  * Offered only when the merchant opted in on this exact product or variation:
@@ -179,7 +215,7 @@ function subscrpt_one_time_group( $product ) {
 		? (int) round( ( $regular - $price ) / $regular * 100 )
 		: 0;
 
-	return array(
+	$group = array(
 		'id'               => 'one_time',
 		'type'             => 'one_time',
 		'label'            => __( 'One Time Purchase', 'subscription' ),
@@ -190,6 +226,12 @@ function subscrpt_one_time_group( $product ) {
 		'badge'            => '',
 		'discount_percent' => $percent,
 	);
+
+	if ( $percent > 0 ) {
+		$group['badge'] = subscrpt_card_badge_text( $group, $product, $percent, false );
+	}
+
+	return $group;
 }
 
 /**
