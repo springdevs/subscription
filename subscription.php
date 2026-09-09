@@ -20,8 +20,6 @@
  * WC requires at least: 6.0
  * WC tested up to: 10.3
  *
- * Requires Plugins: woocommerce
- *
  * License: GPLv2 or later
  * License URI: https://www.gnu.org/licenses/gpl-2.0.html
  *
