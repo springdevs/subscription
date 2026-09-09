@@ -162,12 +162,64 @@ function subscrpt_truncate_text( $text, $length = 30 ) {
 }
 
 /**
+ * Resolve a setting that was renamed without its readers being updated.
+ *
+ * Commit d4719e1 ("changed SUBSCRPT to WP_SUBSCRIPTION") renamed six option ids
+ * inside Admin/Settings.php and touched no reader. Four were caught later; two
+ * were not, so since 2025-05-08 the settings screen has been writing
+ * `wp_subscription_*` while the code kept reading `subscrpt_*` — the saved value
+ * never reached the feature, and the feature's default never reached the screen.
+ *
+ * Reading both names is what makes the two agree again. It is deliberately a
+ * read and not a migration: `subscrpt_is_auto_renew_enabled()` is called from
+ * the Stripe gateway and the renewal actions, and an option write on that path
+ * to fix a display problem is a bad trade. A site that saves its settings once
+ * writes the current name and never consults the legacy one again.
+ *
+ * @param string $option        Current option name.
+ * @param string $legacy_option Name used before the rename.
+ * @param mixed  $default_value Value when neither is set.
+ * @return mixed
+ */
+function subscrpt_get_renamed_option( $option, $legacy_option, $default_value = '' ) {
+	$value = get_option( $option, '' );
+
+	if ( '' !== $value && false !== $value && null !== $value ) {
+		return $value;
+	}
+
+	return get_option( $legacy_option, $default_value );
+}
+
+/**
+ * Get renewal process settings.
+ *
+ * Must be used everywhere the renewal process is read, including the settings
+ * field itself — if the screen resolved the value differently from the code it
+ * would show "Automatic" to a site that is in fact set to manual.
+ *
+ * @return string 'auto' or 'manual'.
+ */
+function subscrpt_get_renewal_process() {
+	return (string) subscrpt_get_renamed_option( 'wp_subscription_renewal_process', 'subscrpt_renewal_process', 'auto' );
+}
+
+/**
+ * Notice shown when a manual renewal puts the product in the cart.
+ *
+ * @return string
+ */
+function subscrpt_get_manual_renew_cart_notice() {
+	return (string) subscrpt_get_renamed_option( 'wp_subscription_manual_renew_cart_notice', 'subscrpt_manual_renew_cart_notice', '' );
+}
+
+/**
  * Get renewal process settings.
  *
  * @return bool
  */
 function subscrpt_is_auto_renew_enabled() {
-	return 'auto' === get_option( 'subscrpt_renewal_process', 'auto' );
+	return 'auto' === subscrpt_get_renewal_process();
 }
 
 /**

@@ -80,7 +80,7 @@ class Settings {
 						'auto'   => __( 'Automatic', 'subscription' ),
 						'manual' => __( 'Manual', 'subscription' ),
 					],
-					'selected'    => esc_attr( get_option( 'wp_subscription_renewal_process', 'auto' ) ),
+					'selected'    => esc_attr( subscrpt_get_renewal_process() ),
 				],
 			],
 			[
@@ -91,7 +91,7 @@ class Settings {
 					'id'          => 'wp_subscription_manual_renew_cart_notice',
 					'title'       => __( 'Renewal Cart Notice', 'subscription' ),
 					'description' => __( 'Display Notice when Renewal Subscription product add to cart. Only available for Manual Renewal Process.', 'subscription' ),
-					'value'       => esc_attr( get_option( 'wp_subscription_manual_renew_cart_notice' ) ),
+					'value'       => esc_attr( subscrpt_get_manual_renew_cart_notice() ),
 				],
 			],
 			[
