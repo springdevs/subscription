@@ -54,7 +54,9 @@
   }
 
   /**
-   * Disable a button while its request is in flight.
+   * Mark a button busy while its request is in flight, and lock the controls
+   * beside it so the same write cannot be fired twice or abandoned midway.
+   * The `is-loading` class draws the spinner (admin-components/buttons.css).
    *
    * @param {HTMLElement} btn     Button.
    * @param {boolean}     loading Loading state.
@@ -65,6 +67,30 @@
     }
     btn.disabled = loading;
     btn.classList.toggle("is-loading", loading);
+
+    // The row the button sits in: a modal footer, or the inline edit form.
+    var row = btn.closest(".wpsubs-modal__footer") || btn.parentNode;
+    if (row && row.querySelectorAll) {
+      row.querySelectorAll("button, input, select, textarea").forEach(function (el) {
+        if (el !== btn) {
+          el.disabled = loading;
+        }
+      });
+    }
+
+    // Inside a modal, the dismiss affordances go with it. Escape is left
+    // working on purpose, as the way out of a request that never returns.
+    var modal = btn.closest(".wpsubs-modal");
+    if (modal) {
+      var close = modal.querySelector(".wpsubs-modal__close");
+      if (close) {
+        close.disabled = loading;
+      }
+      var backdrop = modal.querySelector(".wpsubs-modal__backdrop");
+      if (backdrop) {
+        backdrop.style.pointerEvents = loading ? "none" : "";
+      }
+    }
   }
 
   /**
