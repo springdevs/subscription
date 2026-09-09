@@ -204,7 +204,6 @@ class SettingsHelper {
 			'payment_failure'     => 'payments',
 			'grace_period'        => 'payments',
 			'role_based_settings' => 'customers',
-			'cancellation'        => 'customers',
 			'live_qr_settings'    => 'advanced',
 			'health_queue'        => 'advanced',
 			'api_settings'        => 'advanced',

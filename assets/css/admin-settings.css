@@ -245,3 +245,61 @@
     flex-wrap: wrap;
   }
 }
+
+/* --------------------------------------------------------------------------
+   Cancellation Flow
+
+   A wide tab panel with an options rail beside it. Deliberately not the
+   settings layout above: that one leads with a 216px nav rail and makes its
+   sidebar sticky and scrollable, which is right for navigation and wrong for
+   a panel of fields.
+   -------------------------------------------------------------------------- */
+.subscrpt-flow__layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 340px;
+  gap: 20px;
+  align-items: start;
+}
+
+@media (max-width: 960px) {
+  .subscrpt-flow__layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* The options rail is far narrower than a settings panel, so its fields stack
+   rather than using the shared 220px label / 260px control row, which needs
+   about 500px before it fits. */
+.subscrpt-flow__options .wpsubs-settings-field {
+  flex-direction: column;
+  gap: 8px;
+}
+
+.subscrpt-flow__options .wpsubs-settings-field + .wpsubs-settings-field {
+  margin-top: 18px;
+}
+
+.subscrpt-flow__options .wpsubs-settings-field__label {
+  flex: 0 0 auto;
+}
+
+.subscrpt-flow__options .wpsubs-settings-field__control .wpsubs-input,
+.subscrpt-flow__options .wpsubs-settings-field__control .wpsubs-select,
+.subscrpt-flow__options .wpsubs-settings-field__control .wpsubs-adv-select__trigger {
+  min-width: 0;
+  max-width: 100%;
+  width: 100%;
+}
+
+/* The saved reason list, numbered so the order customers see is obvious. */
+.subscrpt-flow__reasons {
+  margin: 0 0 18px;
+  padding-left: 22px;
+  color: var(--wpsubs-text);
+  font-size: 13px;
+  line-height: 2;
+}
+
+.subscrpt-flow__reasons li::marker {
+  color: var(--wpsubs-text-subtle);
+}
