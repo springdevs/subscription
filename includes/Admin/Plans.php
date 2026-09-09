@@ -120,6 +120,11 @@ class Plans {
 					'nameRequired'           => __( 'Please enter a name.', 'subscription' ),
 					'addTerm'                => __( 'Add Duration', 'subscription' ),
 					'editTerm'               => __( 'Edit Duration', 'subscription' ),
+					'draft'                  => __( 'Draft', 'subscription' ),
+					'setDraft'               => __( 'Set as Draft', 'subscription' ),
+					'setActive'              => __( 'Set as Active', 'subscription' ),
+					'termActivated'          => __( 'Duration activated.', 'subscription' ),
+					'termDrafted'            => __( 'Duration set to draft.', 'subscription' ),
 					/* translators: %1$s: first item number, %2$s: last item number, %3$s: total. */
 					'showingRange'           => __( 'Showing %1-%2 of %3', 'subscription' ),
 				),

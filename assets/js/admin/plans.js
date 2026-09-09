@@ -519,21 +519,91 @@
       });
   });
 
-  // Set a term active/draft from its actions menu, then refresh.
-  document.addEventListener("click", function (e) {
-    var link = e.target.closest("[data-subscrpt-set-term-status]");
-    if (!link) {
+  /**
+   * Lock a term's toggle while its write is in flight. The switch keeps
+   * showing the state it is moving to, dimmed, so the click reads as accepted
+   * rather than ignored.
+   *
+   * @param {HTMLElement} label The toggle's label.
+   * @param {boolean}     busy  Busy state.
+   */
+  function setTermBusy(label, busy) {
+    label.setAttribute("aria-busy", busy ? "true" : "false");
+    label.classList.toggle("wpsubs-toggle-busy", busy);
+  }
+
+  /**
+   * Reflect a saved status on the row: the action the toggle now offers, its
+   * tooltip, and the Draft badge beside the name.
+   *
+   * @param {HTMLElement} label  The toggle's label.
+   * @param {boolean}     active Whether the term is now active.
+   */
+  function applyTermStatus(label, active) {
+    label.setAttribute("data-subscrpt-set-term-status", active ? "draft" : "active");
+    label.setAttribute("title", active ? i18n.setDraft : i18n.setActive);
+
+    var card = label.closest(".wpsubs-table-card");
+    var badge = card && card.querySelector("[data-subscrpt-term-badge]");
+
+    if (active) {
+      if (badge) {
+        badge.parentNode.removeChild(badge);
+      }
       return;
     }
+    if (badge || !card) {
+      return;
+    }
+    var row = card.querySelector("[data-subscrpt-term-name-row]");
+    if (!row) {
+      return;
+    }
+    badge = document.createElement("span");
+    badge.className = "wpsubs-badge wpsubs-badge--draft";
+    badge.setAttribute("data-subscrpt-term-badge", "");
+    badge.textContent = i18n.draft;
+    row.appendChild(badge);
+  }
+
+  // Set a term active/draft from its row toggle. The row is updated in place
+  // rather than reloaded: a full reload for a one-field write left the switch
+  // sitting on its old state for the whole round trip, which read as a dead
+  // control.
+  document.addEventListener("click", function (e) {
+    var label = e.target.closest("[data-subscrpt-set-term-status]");
+    if (!label) {
+      return;
+    }
+    // The label owns the checkbox, so let it drive the switch itself.
     e.preventDefault();
-    var id = link.getAttribute("data-term-id");
-    var status = link.getAttribute("data-subscrpt-set-term-status");
+    if ("true" === label.getAttribute("aria-busy")) {
+      return;
+    }
+
+    var id = label.getAttribute("data-term-id");
+    var status = label.getAttribute("data-subscrpt-set-term-status");
+    var active = "active" === status;
+    var cb = label.querySelector(".wpsubs-toggle");
+
+    setTermBusy(label, true);
+    if (cb) {
+      cb.checked = active;
+    }
+
     api("PUT", "/terms/" + id, { status: status })
       .then(function () {
-        window.location.reload();
+        applyTermStatus(label, active);
+        planNotice(active ? i18n.termActivated : i18n.termDrafted);
       })
       .catch(function (err) {
-        window.alert(err.message || i18n.genericError);
+        if (cb) {
+          cb.checked = !active;
+        }
+        planNotice(err.message || i18n.genericError, "error");
+      })
+      .then(function () {
+        setTermBusy(label, false);
       });
   });
 
