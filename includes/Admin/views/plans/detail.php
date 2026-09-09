@@ -34,9 +34,19 @@ use SpringDevs\Subscription\Admin\Plans;
 		/* translators: %d: number of connected products. */
 		$meta[] = esc_html( sprintf( _n( '%d product', '%d products', $product_count, 'subscription' ), $product_count ) );
 		?>
+		<div data-subscrpt-plan-notice aria-live="polite"></div>
+
 		<div style="margin-bottom:4px;">
-			<div style="display:flex;align-items:center;gap:10px;margin:0 0 8px;">
-				<h1 style="font-size:1.375rem;font-weight:700;color:var(--wpsubs-text);margin:0;line-height:1.2;"><?php echo esc_html( $plan['name'] ); ?></h1>
+			<div style="display:flex;align-items:center;gap:10px;margin:0 0 8px;" data-subscrpt-rename>
+				<h1 data-subscrpt-rename-display style="font-size:1.375rem;font-weight:700;color:var(--wpsubs-text);margin:0;line-height:1.2;"><?php echo esc_html( $plan['name'] ); ?></h1>
+				<button type="button" class="wpsubs-icon-action" data-subscrpt-rename-open title="<?php esc_attr_e( 'Rename plan', 'subscription' ); ?>" aria-label="<?php esc_attr_e( 'Rename plan', 'subscription' ); ?>">
+					<span class="dashicons dashicons-edit"></span>
+				</button>
+				<span data-subscrpt-rename-form style="display:none;align-items:center;gap:8px;">
+					<input type="text" class="wpsubs-input" data-subscrpt-rename-input value="<?php echo esc_attr( $plan['name'] ); ?>" aria-label="<?php esc_attr_e( 'Plan name', 'subscription' ); ?>" style="min-width:260px;" />
+					<button type="button" class="wpsubs-btn wpsubs-btn--primary wpsubs-btn--sm" data-subscrpt-rename-save><?php esc_html_e( 'Save', 'subscription' ); ?></button>
+					<button type="button" class="wpsubs-btn wpsubs-btn--outline wpsubs-btn--sm" data-subscrpt-rename-cancel><?php esc_html_e( 'Cancel', 'subscription' ); ?></button>
+				</span>
 			</div>
 			<div style="display:flex;align-items:center;flex-wrap:wrap;gap:8px;font-size:13px;color:var(--wpsubs-text-muted);margin:0;line-height:1.5;">
 				<?php echo wp_kses_post( implode( $sep, $meta ) ); ?>

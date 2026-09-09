@@ -180,6 +180,174 @@
   });
 
   /* ------------------------------------------------------------------ *
+   * Plan group: inline rename of the detail page title.
+   * ------------------------------------------------------------------ */
+
+  /**
+   * Show a transient WP admin notice above the plan header.
+   *
+   * @param {string} message Notice text.
+   * @param {string} [type]  WP notice type - "success" (default) or "error".
+   */
+  function planNotice(message, type) {
+    var host = document.querySelector("[data-subscrpt-plan-notice]");
+    if (!host) {
+      return;
+    }
+    host.textContent = "";
+
+    var notice = document.createElement("div");
+    notice.className = "notice notice-" + (type || "success");
+    notice.style.margin = "0 0 16px";
+
+    var line = document.createElement("p");
+    line.textContent = message;
+    notice.appendChild(line);
+    host.appendChild(notice);
+
+    window.setTimeout(function () {
+      if (notice.parentNode === host) {
+        host.removeChild(notice);
+      }
+    }, 4000);
+  }
+
+  /**
+   * The rename widget's parts, or null when not on the detail page.
+   *
+   * @return {?Object} { wrap, display, pencil, form, input, save }.
+   */
+  function renameParts() {
+    var wrap = document.querySelector("[data-subscrpt-rename]");
+    if (!wrap) {
+      return null;
+    }
+    return {
+      wrap: wrap,
+      display: wrap.querySelector("[data-subscrpt-rename-display]"),
+      pencil: wrap.querySelector("[data-subscrpt-rename-open]"),
+      form: wrap.querySelector("[data-subscrpt-rename-form]"),
+      input: wrap.querySelector("[data-subscrpt-rename-input]"),
+      save: wrap.querySelector("[data-subscrpt-rename-save]"),
+    };
+  }
+
+  /**
+   * Swap the title between its read and edit state.
+   *
+   * @param {boolean} editing Whether to show the input.
+   */
+  function renameToggle(editing) {
+    var parts = renameParts();
+    if (!parts) {
+      return;
+    }
+    parts.display.style.display = editing ? "none" : "";
+    parts.pencil.style.display = editing ? "none" : "";
+    parts.form.style.display = editing ? "inline-flex" : "none";
+
+    if (editing) {
+      parts.input.value = parts.display.textContent.trim();
+      parts.input.focus();
+      parts.input.select();
+    }
+  }
+
+  /**
+   * Mirror the server-side breadcrumb label so the trail matches the new name
+   * without a reload - 30 characters, ellipsis, full text as the title
+   * attribute (see subscrpt_truncate_text()).
+   *
+   * @param {string} name New plan name.
+   */
+  function renameBreadcrumb(name) {
+    var crumb = document.querySelector(".wp-subscription-breadcrumb-current");
+    if (!crumb) {
+      return;
+    }
+    var chars = Array.from(name);
+    var label = chars.length > 30 ? chars.slice(0, 30).join("") + "\u2026" : name;
+
+    crumb.textContent = label;
+    if (label === name) {
+      crumb.removeAttribute("title");
+    } else {
+      crumb.setAttribute("title", name);
+    }
+  }
+
+  /**
+   * Persist the new plan name, then update the heading and breadcrumb in place.
+   */
+  function renameSave() {
+    var parts = renameParts();
+    if (!parts) {
+      return;
+    }
+
+    var host = parts.wrap.closest("[data-plan-id]");
+    var name = parts.input.value.trim();
+
+    if (!name) {
+      window.alert(i18n.nameRequired);
+      parts.input.focus();
+      return;
+    }
+
+    if (!host || name === parts.display.textContent.trim()) {
+      renameToggle(false);
+      return;
+    }
+
+    setLoading(parts.save, true);
+
+    api("PUT", "/groups/" + host.getAttribute("data-plan-id"), { title: name })
+      .then(function () {
+        parts.display.textContent = name;
+        renameBreadcrumb(name);
+        renameToggle(false);
+        planNotice(i18n.saved);
+      })
+      .catch(function (err) {
+        window.alert(err.message || i18n.genericError);
+      })
+      .then(function () {
+        setLoading(parts.save, false);
+      });
+  }
+
+  document.addEventListener("click", function (e) {
+    if (e.target.closest("[data-subscrpt-rename-open]")) {
+      e.preventDefault();
+      renameToggle(true);
+      return;
+    }
+    if (e.target.closest("[data-subscrpt-rename-cancel]")) {
+      e.preventDefault();
+      renameToggle(false);
+      return;
+    }
+    if (e.target.closest("[data-subscrpt-rename-save]")) {
+      e.preventDefault();
+      renameSave();
+    }
+  });
+
+  // Enter commits the rename, Escape abandons it.
+  document.addEventListener("keydown", function (e) {
+    if (!e.target.matches || !e.target.matches("[data-subscrpt-rename-input]")) {
+      return;
+    }
+    if ("Enter" === e.key) {
+      e.preventDefault();
+      renameSave();
+    } else if ("Escape" === e.key) {
+      e.preventDefault();
+      renameToggle(false);
+    }
+  });
+
+  /* ------------------------------------------------------------------ *
    * Bulk actions on plan groups (select-all + per-row + Apply).
    * ------------------------------------------------------------------ */
 
