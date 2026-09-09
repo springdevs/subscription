@@ -721,7 +721,7 @@ body[class*="wpsubscription_page_wp-subscription"] #wpcontent {
 .subscrpt-int-layout {
   display: grid;
   grid-template-columns: 232px minmax(0, 1fr);
-  gap: 24px;
+  gap: 48px;
   align-items: start;
 }
 
@@ -739,93 +739,13 @@ body[class*="wpsubscription_page_wp-subscription"] #wpcontent {
 }
 
 .subscrpt-int-filters {
-  padding: 12px;
-  background: var(--wpsubs-surface, #fff);
-  border: 1px solid var(--wpsubs-border, #e5e7eb);
-  border-radius: var(--wpsubs-radius, 8px);
   display: flex;
   flex-direction: column;
   gap: 14px;
 }
 
-.subscrpt-int-filters__top {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.subscrpt-int-filters__top:empty {
-  display: none;
-}
-
-.subscrpt-int-filters__summary {
-  margin: 0;
-  font-size: 12px;
-  color: var(--wpsubs-text-muted, #6b7280);
-}
-
-.subscrpt-int-filters__row {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.subscrpt-int-filters__legend {
-  font-size: 11px;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: var(--wpsubs-text-subtle, #9ca3af);
-}
-
-.subscrpt-int-chips {
-  display: flex;
-  flex-direction: column;
-  gap: 1px;
-}
-
-/*
- * Full-width rows rather than pills: in a 232px column, wrapped pills leave
- * ragged gaps and the counts never line up. A row per option puts every count
- * on the same right edge, so the distribution is readable at a glance.
- */
-.subscrpt-int-chip {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-  width: 100%;
-  padding: 4px 8px;
-  border: 1px solid transparent;
-  border-radius: var(--wpsubs-radius-sm, 5px);
-  background: none;
-  font-size: 12.5px;
-  font-weight: 500;
-  color: var(--wpsubs-text, #374151);
-  font-family: inherit;
-  text-align: left;
-  cursor: pointer;
-  line-height: 1.5;
-  transition:
-    background 0.12s,
-    color 0.12s;
-}
-
-.subscrpt-int-chip:hover {
-  background: var(--wpsubs-surface-muted, #f9fafb);
-}
-
-.subscrpt-int-chip:focus-visible {
-  outline: none;
-  box-shadow: 0 0 0 3px var(--wpsubs-brand-ring, rgba(255, 77, 0, 0.2));
-}
-
-.subscrpt-int-chip.is-active {
-  background: var(--wpsubs-brand-light, #fff1eb);
-  color: var(--wpsubs-brand-dark, #d93f00);
-  font-weight: 600;
-}
-
+/* The filter rail is the shared `wpsubs-vnav` component (one nav per facet).
+   Only the count badge at the end of each row is page-specific. */
 .subscrpt-int-chip__count {
   font-size: 11px;
   font-variant-numeric: tabular-nums;
@@ -836,7 +756,7 @@ body[class*="wpsubscription_page_wp-subscription"] #wpcontent {
   flex-shrink: 0;
 }
 
-.subscrpt-int-chip.is-active .subscrpt-int-chip__count {
+.wpsubs-vnav__item.is-active .subscrpt-int-chip__count {
   background: var(--wpsubs-brand, #ff4d00);
   color: #fff;
 }
@@ -872,23 +792,12 @@ body[class*="wpsubscription_page_wp-subscription"] #wpcontent {
     gap: 12px 20px;
   }
 
-  .subscrpt-int-filters__top {
-    flex-direction: row;
-    align-items: center;
-    gap: 12px;
-    width: 100%;
+  /* Each facet's vnav sits as its own column in the wrapped rail. */
+  .subscrpt-int-filters .wpsubs-vnav {
+    flex: 1 1 180px;
   }
 
-  .subscrpt-int-chips {
-    flex-direction: row;
-    flex-wrap: wrap;
-    gap: 6px;
-  }
-
-  .subscrpt-int-chip {
-    width: auto;
-    border-radius: 9999px;
-    border-color: var(--wpsubs-border, #e5e7eb);
-    padding: 3px 10px;
+  [data-subscrpt-int-reset] {
+    flex: 0 0 100%;
   }
 }
