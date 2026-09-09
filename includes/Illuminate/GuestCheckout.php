@@ -49,7 +49,7 @@ class GuestCheckout {
 			[
 				'type'       => 'heading',
 				'group'      => 'guest_checkout',
-				'priority'   => 1,
+				'priority'   => 2,
 				'field_data' => [
 					'title'       => __( 'Guest Checkout', 'subscription' ),
 					'description' => __( 'Manage guest checkout settings for subscriptions.', 'subscription' ),

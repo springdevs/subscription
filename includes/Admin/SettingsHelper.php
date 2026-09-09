@@ -110,6 +110,134 @@ class SettingsHelper {
 	}
 
 	/**
+	 * Label a settings group for its tab.
+	 *
+	 * The label is the group's `heading` field, which is also what the panel
+	 * shows, so a tab and its panel can never disagree. An add-on that adds a
+	 * group without a heading still gets a usable tab rather than a blank one:
+	 * `live_qr_settings` reads as "Live Qr Settings", which is wrong-ish but
+	 * findable, and the fix is for that add-on to add a heading.
+	 *
+	 * `main` is the exception. It is what a field with no `group` falls back to,
+	 * so it holds whatever nobody placed rather than anything named "Main". No
+	 * field ships in it — this plugin has no settings that are merely general —
+	 * and it only becomes a tab when something lands there uninvited.
+	 *
+	 * @param string $group_id Group key.
+	 * @param array  $group    Group data: `fields`, `priority`.
+	 * @return string Unescaped label.
+	 */
+	public static function group_label( $group_id, array $group ) {
+		foreach ( $group['fields'] ?? array() as $field ) {
+			if ( 'heading' === ( $field['type'] ?? '' ) && ! empty( $field['field_data']['title'] ) ) {
+				return $field['field_data']['title'];
+			}
+		}
+
+		if ( 'main' === $group_id ) {
+			return __( 'General', 'subscription' );
+		}
+
+		return ucwords( str_replace( array( '_', '-' ), ' ', (string) $group_id ) );
+	}
+
+	/**
+	 * Whether every field in a group is locked behind Pro.
+	 *
+	 * Drives the "Pro" marker on the tab, so the whole panel does not have to be
+	 * opened to find out that none of it can be changed yet.
+	 *
+	 * @param array $group Group data.
+	 * @return bool
+	 */
+	public static function group_is_pro_locked( array $group ) {
+		$has_field = false;
+
+		foreach ( $group['fields'] ?? array() as $field ) {
+			if ( 'heading' === ( $field['type'] ?? '' ) ) {
+				continue;
+			}
+			$has_field = true;
+			if ( empty( $field['field_data']['pro_locked'] ) ) {
+				return false;
+			}
+		}
+
+		return $has_field;
+	}
+
+	/**
+	 * Broad sidebar categories, in display order.
+	 *
+	 * The sidebar is one level up from the panels: each entry gathers several
+	 * settings groups, which are then the horizontal tabs inside it. `all` is
+	 * first and special — it has no group list and shows every panel at once.
+	 *
+	 * @return array<string,string> Category key => label.
+	 */
+	public static function categories() {
+		return array(
+			'all'       => __( 'All Settings', 'subscription' ),
+			'general'   => __( 'General', 'subscription' ),
+			'payments'  => __( 'Payments', 'subscription' ),
+			'customers' => __( 'Customers', 'subscription' ),
+			'advanced'  => __( 'Advanced', 'subscription' ),
+		);
+	}
+
+	/**
+	 * Which broad category a settings group belongs to.
+	 *
+	 * Unmapped groups — including any an add-on registers without knowing
+	 * categories exist — fall into `advanced`, so a new group is always
+	 * reachable from the sidebar rather than only from `all`.
+	 *
+	 * @param string $group_id Group key.
+	 * @return string Category key.
+	 */
+	public static function group_category( $group_id ) {
+		$map = array(
+			'renewals'            => 'general',
+			'switching'           => 'general',
+			'guest_checkout'      => 'general',
+			'payment_gateways'    => 'payments',
+			'payment_failure'     => 'payments',
+			'grace_period'        => 'payments',
+			'role_based_settings' => 'customers',
+			'cancellation'        => 'customers',
+			'live_qr_settings'    => 'advanced',
+			'health_queue'        => 'advanced',
+			'api_settings'        => 'advanced',
+		);
+
+		return $map[ $group_id ] ?? 'advanced';
+	}
+
+	/**
+	 * Group keys bucketed by category, each list in the order the groups
+	 * already sort in.
+	 *
+	 * @param array $settings_fields Grouped, sorted settings fields.
+	 * @return array<string,string[]> Category key => ordered group keys.
+	 */
+	public static function category_groups( array $settings_fields ) {
+		$out = array();
+		foreach ( array_keys( self::categories() ) as $cat ) {
+			if ( 'all' === $cat ) {
+				continue;
+			}
+			$out[ $cat ] = array();
+		}
+
+		foreach ( array_keys( $settings_fields ) as $group_id ) {
+			$cat           = self::group_category( $group_id );
+			$out[ $cat ][] = $group_id;
+		}
+
+		return $out;
+	}
+
+	/**
 	 * Render specified settings field.
 	 *
 	 * @param string $field Field type.

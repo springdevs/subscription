@@ -1,0 +1,84 @@
+/* --------------------------------------------------------------------------
+   Vertical nav  (wpsubs-vnav)
+
+   Broad-category rail for settings-style pages. Borderless and minimal: the
+   active item is marked by a left accent bar and brand-coloured text, not a
+   filled pill. Pair with `wpsubs-tabs` for a second, more explicit level.
+   -------------------------------------------------------------------------- */
+.wpsubs-vnav {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.wpsubs-vnav__title {
+  margin: 0 0 8px;
+  padding: 0 12px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--wpsubs-text-subtle, #9ca3af);
+}
+
+.wpsubs-vnav__item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 7px 12px;
+  border-left: 2px solid transparent;
+  border-radius: var(--wpsubs-radius-sm, 5px);
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.4;
+  color: var(--wpsubs-text, #374151);
+  text-decoration: none;
+  transition:
+    color 0.12s ease,
+    background-color 0.12s ease,
+    border-color 0.12s ease;
+}
+
+.wpsubs-vnav__item:hover,
+.wpsubs-vnav__item:focus {
+  background: var(--wpsubs-surface-muted, #f9fafb);
+  color: var(--wpsubs-text, #374151);
+}
+
+/* WP admin puts a blue box-shadow ring on any focused link; drop it here. */
+.wpsubs-vnav__item:focus {
+  box-shadow: none;
+  outline: none;
+}
+
+.wpsubs-vnav__item:focus-visible {
+  outline: 2px solid var(--wpsubs-brand-ring, rgba(255, 77, 0, 0.2));
+  outline-offset: -2px;
+}
+
+.wpsubs-vnav__item.is-active {
+  border-left-color: var(--wpsubs-brand, #ff4d00);
+  /* Keep the accent bar edge square; only the right corners stay rounded. */
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+  color: var(--wpsubs-brand, #ff4d00);
+  font-weight: 600;
+}
+
+.wpsubs-vnav__item.is-active:hover,
+.wpsubs-vnav__item.is-active:focus {
+  color: var(--wpsubs-brand, #ff4d00);
+}
+
+.wpsubs-vnav__label {
+  min-width: 0;
+}
+
+/* Splits the rail into sections. Follow with a `wpsubs-vnav__title` to name the
+   next group, or use it alone as a plain rule between blocks of items. */
+.wpsubs-vnav__divider {
+  height: 1px;
+  margin: 8px 12px;
+  background: var(--wpsubs-border, #e5e7eb);
+}

@@ -62,15 +62,15 @@ class Settings {
 		$settings_fields = [
 			[
 				'type'       => 'heading',
-				'group'      => 'main',
+				'group'      => 'renewals',
 				'priority'   => 0,
 				'field_data' => [
-					'title' => __( 'General Settings', 'subscription' ),
+					'title' => __( 'Renewals', 'subscription' ),
 				],
 			],
 			[
 				'type'       => 'select',
-				'group'      => 'main',
+				'group'      => 'renewals',
 				'priority'   => 1,
 				'field_data' => [
 					'id'          => 'wp_subscription_renewal_process',
@@ -85,7 +85,7 @@ class Settings {
 			],
 			[
 				'type'       => 'input',
-				'group'      => 'main',
+				'group'      => 'renewals',
 				'priority'   => 2,
 				'field_data' => [
 					'id'          => 'wp_subscription_manual_renew_cart_notice',
@@ -96,7 +96,7 @@ class Settings {
 			],
 			[
 				'type'       => 'toggle',
-				'group'      => 'main',
+				'group'      => 'renewals',
 				'priority'   => 3,
 				'field_data' => [
 					'id'          => 'wp_subscription_stripe_auto_renew',
@@ -114,7 +114,7 @@ class Settings {
 			],
 			[
 				'type'       => 'toggle',
-				'group'      => 'main',
+				'group'      => 'renewals',
 				'priority'   => 4,
 				'field_data' => [
 					'id'          => 'wp_subscription_auto_renewal_toggle',
@@ -127,8 +127,8 @@ class Settings {
 			],
 			[
 				'type'       => 'select',
-				'group'      => 'main',
-				'priority'   => 5,
+				'group'      => 'role_based_settings',
+				'priority'   => 2,
 				'field_data' => [
 					'id'          => 'wp_subscription_active_role',
 					'title'       => __( 'Subscriber Default Role', 'subscription' ),
@@ -139,8 +139,8 @@ class Settings {
 			],
 			[
 				'type'       => 'select',
-				'group'      => 'main',
-				'priority'   => 6,
+				'group'      => 'role_based_settings',
+				'priority'   => 3,
 				'field_data' => [
 					'id'          => 'wp_subscription_unactive_role',
 					'title'       => __( 'Subscriber Inactive Role', 'subscription' ),
@@ -150,9 +150,17 @@ class Settings {
 				],
 			],
 			[
+				'type'       => 'heading',
+				'group'      => 'cancellation',
+				'priority'   => 4,
+				'field_data' => [
+					'title' => __( 'Cancellation', 'subscription' ),
+				],
+			],
+			[
 				'type'       => 'toggle',
-				'group'      => 'main',
-				'priority'   => 9.5,
+				'group'      => 'cancellation',
+				'priority'   => 2,
 				'field_data' => [
 					'id'          => 'subscrpt_cancellation_feedback_enabled',
 					'title'       => __( 'Cancellation Survey', 'subscription' ),
@@ -164,8 +172,8 @@ class Settings {
 			],
 			[
 				'type'       => 'toggle',
-				'group'      => 'main',
-				'priority'   => 9.6,
+				'group'      => 'cancellation',
+				'priority'   => 3,
 				'field_data' => [
 					'id'          => 'subscrpt_cancellation_feedback_comment',
 					'title'       => __( 'Survey Comment Box', 'subscription' ),
@@ -264,6 +272,9 @@ class Settings {
 	 */
 	public function settings_content() {
 		$settings_fields = $this->settings_fields;
+		$active_cat      = $this->get_active_category();
+		$active_tab      = $this->get_active_tab( $settings_fields, $active_cat );
+		$category_groups = SettingsHelper::category_groups( $settings_fields );
 
 		// Header.
 		$menu = new Menu();
@@ -273,6 +284,71 @@ class Settings {
 
 		// Footer.
 		$menu->render_admin_footer();
+	}
+
+	/**
+	 * Which settings group the page opens on.
+	 *
+	 * Read from `?tab=`, and it has to be a query argument rather than a
+	 * fragment: the form posts to `options.php`, which redirects back to
+	 * `_wp_http_referer`, and a fragment never reaches the server. Keeping the
+	 * tab in the query string is what returns you to the panel you saved from.
+	 *
+	 * The value is only ever used to pick one of the groups already built above,
+	 * so an unknown or hostile one falls back to the category's first group.
+	 * Under `all` no single group is active, so it returns an empty string
+	 * unless a specific group was requested.
+	 *
+	 * @param array  $settings_fields Grouped settings fields.
+	 * @param string $active_cat      Active sidebar category.
+	 * @return string Group key, or an empty string when there are no groups.
+	 */
+	private function get_active_tab( array $settings_fields, $active_cat = 'all' ) {
+		$groups = array_keys( $settings_fields );
+
+		if ( empty( $groups ) ) {
+			return '';
+		}
+
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- read-only tab selection, validated against the groups built above.
+		$requested = isset( $_GET['tab'] ) ? sanitize_key( wp_unslash( $_GET['tab'] ) ) : '';
+
+		// `all` stacks every panel, so no single tab is active unless one was asked for.
+		if ( 'all' === $active_cat ) {
+			return in_array( $requested, $groups, true ) ? $requested : '';
+		}
+
+		// Otherwise the active tab must be one of the category's own groups.
+		$cat_groups = SettingsHelper::category_groups( $settings_fields )[ $active_cat ] ?? array();
+
+		if ( in_array( $requested, $cat_groups, true ) ) {
+			return $requested;
+		}
+
+		return $cat_groups[0] ?? $groups[0];
+	}
+
+	/**
+	 * Which broad sidebar category the page opens on.
+	 *
+	 * Read from `?cat=` and, like the tab, validated against the categories
+	 * built in {@see SettingsHelper::categories()}; an unknown or absent one
+	 * falls back to `general`, so the page opens on real settings rather than
+	 * the full `all` stack.
+	 *
+	 * @return string Category key.
+	 */
+	private function get_active_category() {
+		$cats = array_keys( SettingsHelper::categories() );
+
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- read-only category selection, validated against the list above.
+		$requested = isset( $_GET['cat'] ) ? sanitize_key( wp_unslash( $_GET['cat'] ) ) : '';
+
+		if ( in_array( $requested, $cats, true ) ) {
+			return $requested;
+		}
+
+		return in_array( 'general', $cats, true ) ? 'general' : 'all';
 	}
 
 	/**

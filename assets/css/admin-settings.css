@@ -151,3 +151,97 @@
   width: max-content;
   min-width: unset;
 }
+
+/* ──────────────────────────────────────────────────────────────────────────
+   Sidebar tabs
+   Every panel is in the DOM on every request, because the form posts to
+   options.php and an unrendered field is a field that saves nothing.
+   ────────────────────────────────────────────────────────────────────────── */
+
+.subscrpt-settings__layout {
+  display: grid;
+  grid-template-columns: 216px minmax(0, 1fr);
+  gap: 20px;
+  align-items: start;
+}
+
+.subscrpt-settings__sidebar {
+  position: sticky;
+  top: 104px;
+  /* Small top offset so the rail's first item sits a little below the tab row. */
+  padding-top: 10px;
+  max-height: calc(100vh - 140px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+/* The sidebar rail itself is the reusable `wpsubs-vnav` component
+   (admin-components/vnav.css); only its placement lives here. */
+
+/* Stacks the panels in the `All` category, and holds a single one otherwise. */
+.subscrpt-settings__panels {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.subscrpt-settings__panel {
+  padding: 20px 24px;
+}
+
+/* The `hidden` attribute is only a user-agent `display: none`, so any class
+   that sets `display` beats it. Panels carry `wpsubs-table-card`, so say it
+   again with the weight the attribute cannot bring on its own. */
+.subscrpt-settings__panel[hidden] {
+  display: none !important;
+}
+
+.subscrpt-settings__rule {
+  border-top: 1px solid var(--wpsubs-border, #f1f5f9);
+  margin: 16px 0;
+}
+
+/* Tabs and the save button share one row: the tabs take the space on the left,
+   the button is pinned right. The toolbar owns the full-width underline so it
+   spans behind both, and is present even when a category has no tabs. */
+.subscrpt-settings__toolbar {
+  display: flex;
+  align-items: flex-end;
+  gap: 16px;
+  border-bottom: 1px solid var(--wpsubs-border, #e5e7eb);
+  margin-bottom: 20px;
+}
+
+/* Left cell — fills the row whether or not it holds a tab list. */
+.subscrpt-settings__toolbar-tabs {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+/* The list gives up its own divider and bottom margin to the toolbar. */
+.subscrpt-settings__toolbar-tabs .wpsubs-tabs__list {
+  border-bottom: none;
+  margin-bottom: 0;
+}
+
+.subscrpt-settings__save {
+  flex: 0 0 auto;
+  margin-bottom: 8px;
+}
+
+@media screen and (max-width: 960px) {
+  .subscrpt-settings__layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .subscrpt-settings__sidebar {
+    position: static;
+    max-height: none;
+    overflow: visible;
+  }
+
+  .subscrpt-settings__sidebar .wpsubs-vnav {
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+}

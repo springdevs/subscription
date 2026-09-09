@@ -8,8 +8,16 @@
   margin-bottom: 20px;
 }
 
+/* `display: flex` outweighs the bare `hidden` attribute, so restate it. */
+.wpsubs-tabs__list[hidden] {
+  display: none !important;
+}
+
 .wpsubs-tabs__tab {
   appearance: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   border: none;
   background: none;
   margin: 0;
@@ -17,12 +25,20 @@
   font-size: 14px;
   font-weight: 500;
   color: var(--wpsubs-text-muted, #6b7280);
+  text-decoration: none;
   cursor: pointer;
   border-bottom: 2px solid transparent;
   margin-bottom: -1px;
   transition:
     color 0.12s,
     border-color 0.12s;
+}
+
+/* Used as a link in the settings tabs; keep it un-underlined in every state. */
+.wpsubs-tabs__tab:hover,
+.wpsubs-tabs__tab:focus {
+  text-decoration: none;
+  box-shadow: none;
 }
 
 .wpsubs-tabs__tab:hover {
