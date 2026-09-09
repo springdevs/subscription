@@ -167,6 +167,77 @@ class SettingsHelper {
 	}
 
 	/**
+	 * Broad sidebar categories, in display order.
+	 *
+	 * The sidebar is one level up from the panels: each entry gathers several
+	 * settings groups, which are then the horizontal tabs inside it. `all` is
+	 * first and special — it has no group list and shows every panel at once.
+	 *
+	 * @return array<string,string> Category key => label.
+	 */
+	public static function categories() {
+		return array(
+			'all'       => __( 'All', 'subscription' ),
+			'general'   => __( 'General', 'subscription' ),
+			'payments'  => __( 'Payments', 'subscription' ),
+			'customers' => __( 'Customers', 'subscription' ),
+			'advanced'  => __( 'Advanced', 'subscription' ),
+		);
+	}
+
+	/**
+	 * Which broad category a settings group belongs to.
+	 *
+	 * Unmapped groups — including any an add-on registers without knowing
+	 * categories exist — fall into `advanced`, so a new group is always
+	 * reachable from the sidebar rather than only from `all`.
+	 *
+	 * @param string $group_id Group key.
+	 * @return string Category key.
+	 */
+	public static function group_category( $group_id ) {
+		$map = array(
+			'renewals'            => 'general',
+			'switching'           => 'general',
+			'guest_checkout'      => 'general',
+			'payment_gateways'    => 'payments',
+			'payment_failure'     => 'payments',
+			'grace_period'        => 'payments',
+			'role_based_settings' => 'customers',
+			'cancellation'        => 'customers',
+			'live_qr_settings'    => 'advanced',
+			'health_queue'        => 'advanced',
+			'api_settings'        => 'advanced',
+		);
+
+		return $map[ $group_id ] ?? 'advanced';
+	}
+
+	/**
+	 * Group keys bucketed by category, each list in the order the groups
+	 * already sort in.
+	 *
+	 * @param array $settings_fields Grouped, sorted settings fields.
+	 * @return array<string,string[]> Category key => ordered group keys.
+	 */
+	public static function category_groups( array $settings_fields ) {
+		$out = array();
+		foreach ( array_keys( self::categories() ) as $cat ) {
+			if ( 'all' === $cat ) {
+				continue;
+			}
+			$out[ $cat ] = array();
+		}
+
+		foreach ( array_keys( $settings_fields ) as $group_id ) {
+			$cat           = self::group_category( $group_id );
+			$out[ $cat ][] = $group_id;
+		}
+
+		return $out;
+	}
+
+	/**
 	 * Render specified settings field.
 	 *
 	 * @param string $field Field type.

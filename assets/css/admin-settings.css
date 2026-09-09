@@ -168,6 +168,8 @@
 .subscrpt-settings__sidebar {
   position: sticky;
   top: 104px;
+  /* Small top offset so the rail's first item sits a little below the tab row. */
+  padding-top: 10px;
   max-height: calc(100vh - 140px);
   overflow-y: auto;
   overscroll-behavior: contain;
@@ -175,6 +177,13 @@
 
 /* The sidebar rail itself is the reusable `wpsubs-vnav` component
    (admin-components/vnav.css); only its placement lives here. */
+
+/* Stacks the panels in the `All` category, and holds a single one otherwise. */
+.subscrpt-settings__panels {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
 
 .subscrpt-settings__panel {
   padding: 20px 24px;

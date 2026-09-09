@@ -11,7 +11,9 @@
  * @package SpringDevs\Subscription\Admin
  *
  * @var array  $settings_fields Grouped and sorted settings fields.
- * @var string $active_tab      Group key of the panel to open on.
+ * @var string $active_cat      Broad sidebar category currently open.
+ * @var string $active_tab      Group key of the panel to open on ('' under 'all').
+ * @var array  $category_groups Category key => ordered group keys.
  */
 
 // Exit if accessed directly.
@@ -35,56 +37,104 @@ $subscrpt_settings_base = admin_url( 'admin.php?page=wp-subscription-settings' )
 		<div class="subscrpt-settings__layout">
 
 			<aside class="subscrpt-settings__sidebar">
-				<nav class="wpsubs-vnav" role="tablist" aria-orientation="vertical" aria-label="<?php esc_attr_e( 'Settings sections', 'subscription' ); ?>">
-					<?php foreach ( $settings_fields as $subscrpt_group_id => $subscrpt_group ) : ?>
-						<?php
-						$subscrpt_is_active = $subscrpt_group_id === $active_tab;
-						$subscrpt_label     = SettingsHelper::group_label( $subscrpt_group_id, $subscrpt_group );
-						?>
+				<nav class="wpsubs-vnav" aria-label="<?php esc_attr_e( 'Settings categories', 'subscription' ); ?>">
+					<?php foreach ( SettingsHelper::categories() as $subscrpt_cat_id => $subscrpt_cat_label ) : ?>
+						<?php $subscrpt_cat_active = $subscrpt_cat_id === $active_cat; ?>
 						<a
-							class="wpsubs-vnav__item<?php echo $subscrpt_is_active ? ' is-active' : ''; ?>"
-							id="subscrpt-tab-<?php echo esc_attr( $subscrpt_group_id ); ?>"
-							href="<?php echo esc_url( add_query_arg( 'tab', $subscrpt_group_id, $subscrpt_settings_base ) ); ?>"
-							role="tab"
-							aria-selected="<?php echo $subscrpt_is_active ? 'true' : 'false'; ?>"
-							aria-controls="subscrpt-panel-<?php echo esc_attr( $subscrpt_group_id ); ?>"
-							data-subscrpt-tab="<?php echo esc_attr( $subscrpt_group_id ); ?>"
+							class="wpsubs-vnav__item<?php echo $subscrpt_cat_active ? ' is-active' : ''; ?>"
+							href="<?php echo esc_url( add_query_arg( 'cat', $subscrpt_cat_id, remove_query_arg( 'tab', $subscrpt_settings_base ) ) ); ?>"
+							data-subscrpt-cat="<?php echo esc_attr( $subscrpt_cat_id ); ?>"
+							aria-current="<?php echo $subscrpt_cat_active ? 'page' : 'false'; ?>"
 						>
-							<span class="wpsubs-vnav__label"><?php echo esc_html( $subscrpt_label ); ?></span>
-							<?php if ( SettingsHelper::group_is_pro_locked( $subscrpt_group ) ) : ?>
-								<?php echo wp_kses_post( SettingsHelper::pro_badge_html() ); ?>
-							<?php endif; ?>
+							<span class="wpsubs-vnav__label"><?php echo esc_html( $subscrpt_cat_label ); ?></span>
 						</a>
 					<?php endforeach; ?>
 				</nav>
 			</aside>
 
-			<div class="subscrpt-settings__panels">
-				<?php foreach ( $settings_fields as $subscrpt_group_id => $subscrpt_group ) : ?>
-					<?php
-					$subscrpt_is_active = $subscrpt_group_id === $active_tab;
-					$subscrpt_fields    = array_values( $subscrpt_group['fields'] ?? array() );
-					$subscrpt_count     = count( $subscrpt_fields );
-					?>
-					<section
-						class="subscrpt-settings__panel wpsubs-table-card"
-						id="subscrpt-panel-<?php echo esc_attr( $subscrpt_group_id ); ?>"
-						role="tabpanel"
-						aria-labelledby="subscrpt-tab-<?php echo esc_attr( $subscrpt_group_id ); ?>"
-						data-subscrpt-panel="<?php echo esc_attr( $subscrpt_group_id ); ?>"
-						<?php echo $subscrpt_is_active ? '' : 'hidden'; ?>
+			<div class="subscrpt-settings__content">
+
+				<?php
+				// Every non-`all` category's tab list is rendered and all but the
+				// active one hidden, so the sidebar can switch categories client-side
+				// without a page load. `all` shows no list and stacks every panel.
+				?>
+				<?php foreach ( $category_groups as $subscrpt_cat_id => $subscrpt_cat_group_ids ) : ?>
+					<?php if ( 0 === count( $subscrpt_cat_group_ids ) ) : ?>
+						<?php continue; ?>
+					<?php endif; ?>
+					<?php $subscrpt_list_open = 'all' !== $active_cat && $subscrpt_cat_id === $active_cat; ?>
+					<div
+						class="wpsubs-tabs__list"
+						role="tablist"
+						aria-label="<?php esc_attr_e( 'Settings sections', 'subscription' ); ?>"
+						data-subscrpt-tablist="<?php echo esc_attr( $subscrpt_cat_id ); ?>"
+						<?php echo $subscrpt_list_open ? '' : 'hidden'; ?>
 					>
-						<?php foreach ( $subscrpt_fields as $subscrpt_idx => $subscrpt_field ) : ?>
+						<?php foreach ( $subscrpt_cat_group_ids as $subscrpt_tab_idx => $subscrpt_group_id ) : ?>
 							<?php
-							$subscrpt_type = $subscrpt_field['type'] ?? 'input';
-							SettingsHelper::render_settings_field( $subscrpt_type, $subscrpt_field['field_data'] ?? array() );
+							$subscrpt_group = $settings_fields[ $subscrpt_group_id ];
+							$subscrpt_label = SettingsHelper::group_label( $subscrpt_group_id, $subscrpt_group );
+							// Active tab when this is the open category, otherwise pre-select
+							// the first so a JS reveal always has a selected tab.
+							$subscrpt_tab_open = ( $subscrpt_cat_id === $active_cat )
+								? ( $subscrpt_group_id === $active_tab )
+								: ( 0 === $subscrpt_tab_idx );
+							$subscrpt_tab_url  = add_query_arg(
+								array(
+									'cat' => $subscrpt_cat_id,
+									'tab' => $subscrpt_group_id,
+								),
+								$subscrpt_settings_base
+							);
 							?>
-							<?php if ( 'heading' !== $subscrpt_type && $subscrpt_idx + 1 < $subscrpt_count ) : ?>
-								<div class="subscrpt-settings__rule"></div>
-							<?php endif; ?>
+							<a
+								class="wpsubs-tabs__tab"
+								id="subscrpt-tab-<?php echo esc_attr( $subscrpt_group_id ); ?>"
+								href="<?php echo esc_url( $subscrpt_tab_url ); ?>"
+								role="tab"
+								aria-selected="<?php echo $subscrpt_tab_open ? 'true' : 'false'; ?>"
+								aria-controls="subscrpt-panel-<?php echo esc_attr( $subscrpt_group_id ); ?>"
+								data-subscrpt-tab="<?php echo esc_attr( $subscrpt_group_id ); ?>"
+							>
+								<?php echo esc_html( $subscrpt_label ); ?>
+								<?php if ( SettingsHelper::group_is_pro_locked( $subscrpt_group ) ) : ?>
+									<?php echo wp_kses_post( SettingsHelper::pro_badge_html() ); ?>
+								<?php endif; ?>
+							</a>
 						<?php endforeach; ?>
-					</section>
+					</div>
 				<?php endforeach; ?>
+
+				<div class="subscrpt-settings__panels">
+					<?php foreach ( $settings_fields as $subscrpt_group_id => $subscrpt_group ) : ?>
+						<?php
+						$subscrpt_panel_open = ( 'all' === $active_cat ) || ( $subscrpt_group_id === $active_tab );
+						$subscrpt_fields     = array_values( $subscrpt_group['fields'] ?? array() );
+						$subscrpt_count      = count( $subscrpt_fields );
+						?>
+						<section
+							class="subscrpt-settings__panel wpsubs-table-card"
+							id="subscrpt-panel-<?php echo esc_attr( $subscrpt_group_id ); ?>"
+							role="tabpanel"
+							aria-labelledby="subscrpt-tab-<?php echo esc_attr( $subscrpt_group_id ); ?>"
+							data-subscrpt-panel="<?php echo esc_attr( $subscrpt_group_id ); ?>"
+							data-subscrpt-cat="<?php echo esc_attr( SettingsHelper::group_category( $subscrpt_group_id ) ); ?>"
+							<?php echo $subscrpt_panel_open ? '' : 'hidden'; ?>
+						>
+							<?php foreach ( $subscrpt_fields as $subscrpt_idx => $subscrpt_field ) : ?>
+								<?php
+								$subscrpt_type = $subscrpt_field['type'] ?? 'input';
+								SettingsHelper::render_settings_field( $subscrpt_type, $subscrpt_field['field_data'] ?? array() );
+								?>
+								<?php if ( 'heading' !== $subscrpt_type && $subscrpt_idx + 1 < $subscrpt_count ) : ?>
+									<div class="subscrpt-settings__rule"></div>
+								<?php endif; ?>
+							<?php endforeach; ?>
+						</section>
+					<?php endforeach; ?>
+				</div>
+
 			</div>
 
 		</div>
