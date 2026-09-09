@@ -173,8 +173,9 @@ class Plans {
 	/**
 	 * Build the selector groups for a simple product from resolved plan data.
 	 *
-	 * One entry per plan group, each with its terms (id, label, price, note).
-	 * No One-Time card and no discount badge — those are Pro-only.
+	 * One entry per plan group, each with its terms (id, label, price, note)
+	 * and a discount badge when its offer price beats the regular one, followed
+	 * by the One-Time card when the merchant offers one.
 	 *
 	 * @param \WC_Product $product Simple product.
 	 *
@@ -192,15 +193,25 @@ class Plans {
 
 			if ( ! isset( $groups[ $gid ] ) ) {
 				$groups[ $gid ] = array(
-					'id'    => 'grp_' . $gid,
-					'type'  => PlanRepository::type_to_string( (int) $row['group_type'] ),
-					'label' => $row['group_title'],
-					'price' => '',
-					'terms' => array(),
+					'id'               => 'grp_' . $gid,
+					'type'             => PlanRepository::type_to_string( (int) $row['group_type'] ),
+					'label'            => $row['group_title'],
+					'price'            => '',
+					'terms'            => array(),
+					'badge'            => '',
+					'discount_percent' => 0,
+					'pcts'             => array(),
 				);
 			}
 
 			$price_num = $this->term_price( $row );
+
+			// Each term's discount (offer below regular). Installments price on a
+			// different basis, so they never contribute a percentage.
+			$row_regular = isset( $row['relation_data']['regular_price'] ) ? (float) $row['relation_data']['regular_price'] : 0.0;
+			if ( 'installments' !== $groups[ $gid ]['type'] && $row_regular > 0 && $price_num < $row_regular ) {
+				$groups[ $gid ]['pcts'][] = (int) round( ( $row_regular - $price_num ) / $row_regular * 100 );
+			}
 
 			$groups[ $gid ]['terms'][] = array(
 				'id'    => (int) $row['plan_id'],
@@ -210,13 +221,30 @@ class Plans {
 			);
 		}
 
-		// Card header price = the first term of each group.
+		// Card header price = the first term of each group; the badge reports the
+		// group's best discount, and says "up to" when its terms differ.
 		foreach ( $groups as &$group ) {
 			$group['price'] = $group['terms'][0]['price'];
+
+			if ( ! empty( $group['pcts'] ) ) {
+				$max                       = max( $group['pcts'] );
+				$group['discount_percent'] = $max;
+				$group['badge']            = subscrpt_card_badge_text( $group, $product, $max, min( $group['pcts'] ) !== $max );
+			}
+			unset( $group['pcts'] );
 		}
 		unset( $group );
 
-		return array_values( $groups );
+		$groups = array_values( $groups );
+
+		// One-Time purchase card, after the plans so a subscription stays the
+		// pre-selected default. The base template already renders this type.
+		$one_time = subscrpt_one_time_group( $product );
+		if ( $one_time ) {
+			$groups[] = $one_time;
+		}
+
+		return $groups;
 	}
 
 	/**

@@ -145,6 +145,96 @@ function subscrpt_is_subscription_enabled( $product_id, $variation_id = 0 ): boo
 }
 
 /**
+ * Discount badge text for a storefront plan selector card.
+ *
+ * The single source both selectors share, so free and Pro word a discount
+ * identically. Returning an empty string from the filter hides the badge.
+ *
+ * @param array       $group   Plan group (id, type, label, terms, discount_percent, …).
+ * @param \WC_Product $product Product or variation being rendered.
+ * @param int         $percent The group's best discount percentage.
+ * @param bool        $varying Whether the group's terms discount by differing
+ *                             amounts, in which case the badge reads "up to".
+ *
+ * @return string
+ */
+function subscrpt_card_badge_text( $group, $product, $percent = 0, $varying = false ) {
+	if ( $percent > 0 ) {
+		$default = $varying
+			/* translators: %d: discount percentage. */
+			? sprintf( __( 'Save up to %d%%', 'subscription' ), $percent )
+			/* translators: %d: discount percentage. */
+			: sprintf( __( 'Save %d%%', 'subscription' ), $percent );
+	} else {
+		$default = __( 'Sale', 'subscription' );
+	}
+
+	/**
+	 * Filters the discount badge text on a storefront plan selector card.
+	 *
+	 * @param string      $text    Badge text (empty string hides the badge).
+	 * @param array       $group   The plan group (id, type, label, terms, discount_percent, …).
+	 * @param \WC_Product $product Product or variation being rendered.
+	 * @param int         $percent Computed discount percentage for the group.
+	 */
+	return (string) apply_filters( 'subscrpt_plan_card_badge', $default, $group, $product, $percent );
+}
+
+/**
+ * Build the storefront One-Time Purchase card for a product or variation.
+ *
+ * Offered only when the merchant opted in on this exact product or variation:
+ * `_subscrpt_one_time_enabled` is stored per variation, so pass the variation
+ * itself, never its parent, whose flag only means "any variation enabled".
+ *
+ * The single source of the one-time price maths. Both selectors call it so the
+ * free and Pro storefronts can never disagree on a price; Pro layers its
+ * discount badge onto the returned group rather than recomputing anything.
+ *
+ * @param \WC_Product $product Product or variation.
+ *
+ * @return array|null Selector group in plan-selector.php shape, or null when
+ *                    one-time purchase is not offered for this product.
+ */
+function subscrpt_one_time_group( $product ) {
+	if ( ! $product instanceof \WC_Product || ! function_exists( 'wc_price' ) ) {
+		return null;
+	}
+
+	if ( 'yes' !== get_post_meta( $product->get_id(), '_subscrpt_one_time_enabled', true ) ) {
+		return null;
+	}
+
+	$regular = (float) $product->get_regular_price();
+	$sale    = $product->get_sale_price();
+	$price   = '' !== $sale ? (float) $sale : $regular;
+
+	// Strike the regular price through only when one-time is genuinely on sale.
+	$old_price = ( '' !== $sale && (float) $sale < $regular ) ? wc_price( $regular ) : '';
+	$percent   = ( '' !== $old_price && $regular > 0 )
+		? (int) round( ( $regular - $price ) / $regular * 100 )
+		: 0;
+
+	$group = array(
+		'id'               => 'one_time',
+		'type'             => 'one_time',
+		'label'            => __( 'One Time Purchase', 'subscription' ),
+		'price'            => wc_price( $price ),
+		'old_price'        => $old_price,
+		'terms'            => array(),
+		'note'             => '',
+		'badge'            => '',
+		'discount_percent' => $percent,
+	);
+
+	if ( $percent > 0 ) {
+		$group['badge'] = subscrpt_card_badge_text( $group, $product, $percent, false );
+	}
+
+	return $group;
+}
+
+/**
  * Truncate a string to a max length, appending an ellipsis when shortened.
  *
  * Multibyte-safe. Returns the text unchanged when it is within the limit, so
