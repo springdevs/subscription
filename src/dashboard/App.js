@@ -6,6 +6,8 @@
  */
 
 import { __ } from "@wordpress/i18n";
+// TODO(refactor): replace @wordpress/components with our `wpsubs-*` admin
+// components (wpsubs-table-card, wpsubs-btn, …) — see src/dashboard/index.js.
 import { Card, CardHeader, CardBody, Button } from "@wordpress/components";
 import StatTiles from "./StatTiles";
 import SalesChart from "./SalesChart";
