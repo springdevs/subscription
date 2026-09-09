@@ -44,6 +44,7 @@ class Cancellation {
 		add_action( 'before_single_subscrpt_content', [ $this, 'display_pending_cancellation_notice' ] );
 		add_action( 'before_single_subscrpt_content', [ $this, 'maybe_render_feedback_modal' ] );
 		add_action( 'wp_ajax_subscrpt_record_cancellation_feedback', [ $this, 'record_feedback' ] );
+		add_action( 'wp_ajax_subscrpt_record_cancellation_save', [ $this, 'record_save' ] );
 		add_action( 'subscrpt_details_side_bottom', [ $this, 'render_admin_feedback_card' ] );
 	}
 
@@ -316,6 +317,87 @@ class Cancellation {
 		do_action( 'subscrpt_cancellation_feedback_recorded', $subscription_id, $data );
 
 		wp_send_json_success( [ 'id' => $data['id'] ] );
+	}
+
+	/**
+	 * Transient guarding one save report per subscription per day.
+	 *
+	 * Every way out of the modal counts as a save - Keep subscription, the X, the
+	 * overlay, Escape - so without this a customer idly opening and closing it
+	 * would mail the store owner each time.
+	 *
+	 * @param int $subscription_id Subscription post ID.
+	 * @return string
+	 */
+	protected static function save_throttle_key( $subscription_id ) {
+		return 'subscrpt_save_reported_' . (int) $subscription_id;
+	}
+
+	/**
+	 * AJAX: the customer backed out of cancelling.
+	 *
+	 * Records nothing - the reason list is only meaningful for an actual
+	 * cancellation - but fires `subscrpt_subscription_saved` so the retention can
+	 * be reported. Throttled to once a day per subscription.
+	 *
+	 * @return void
+	 */
+	public function record_save() {
+		check_ajax_referer( 'subscrpt_cancellation_feedback', 'nonce' );
+
+		$subscription_id = isset( $_POST['subscription_id'] ) ? absint( wp_unslash( $_POST['subscription_id'] ) ) : 0;
+		if ( $subscription_id <= 0 ) {
+			wp_send_json_error( [ 'message' => 'invalid_subscription' ] );
+		}
+
+		$subs_post = get_post( $subscription_id );
+		if ( ! $subs_post || 'subscrpt_order' !== $subs_post->post_type ) {
+			wp_send_json_error( [ 'message' => 'invalid_subscription' ] );
+		}
+
+		$author_id = (int) $subs_post->post_author;
+		if ( ! current_user_can( 'manage_options' ) && $author_id !== get_current_user_id() ) {
+			wp_send_json_error( [ 'message' => 'forbidden' ] );
+		}
+
+		$throttle = self::save_throttle_key( $subscription_id );
+		if ( get_transient( $throttle ) ) {
+			wp_send_json_success( [ 'throttled' => true ] );
+		}
+		set_transient( $throttle, 1, DAY_IN_SECONDS );
+
+		$reason_key = isset( $_POST['reason_key'] ) ? sanitize_key( wp_unslash( $_POST['reason_key'] ) ) : '';
+
+		$reason_label = '';
+		foreach ( self::get_reasons() as $reason ) {
+			if ( isset( $reason['key'] ) && (string) $reason['key'] === $reason_key ) {
+				$reason_label = isset( $reason['label'] ) ? (string) $reason['label'] : '';
+				break;
+			}
+		}
+
+		$data = [
+			'subscription_id' => $subscription_id,
+			'customer_id'     => $author_id,
+			'reason_key'      => $reason_key,
+			'reason_label'    => $reason_label,
+			'offer_accepted'  => false,
+		];
+
+		/**
+		 * Fires when a customer opens the cancellation modal and backs out.
+		 *
+		 * Throttled to once a day per subscription, so a listener may treat each
+		 * call as a distinct retention event.
+		 *
+		 * @param int   $subscription_id Subscription ID.
+		 * @param array $data            Save context: the reason that had been
+		 *                               selected (may be empty) and whether a
+		 *                               retention offer was accepted.
+		 */
+		do_action( 'subscrpt_subscription_saved', $subscription_id, $data );
+
+		wp_send_json_success( [ 'saved' => true ] );
 	}
 
 	/**
