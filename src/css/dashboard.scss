@@ -1,0 +1,534 @@
+/**
+ * Dashboard styles.
+ *
+ * @wordpress/components carries the card, button and header chrome. What is
+ * written here is what core has no component for — stat tiles, a status
+ * banner, a progress checklist and the bottom card row — kept in WordPress's
+ * own type scale and greys so they sit beside the components rather than
+ * competing with them.
+ */
+
+$border: #e0e0e0;
+$muted: #757575;
+$ink: #1e1e1e;
+
+.subscrpt-dash {
+  max-width: 1240px;
+  margin: 0 auto;
+  padding-bottom: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.subscrpt-heading {
+  font-size: 14px;
+  font-weight: 600;
+  color: $ink;
+  margin: 0;
+  padding: 0;
+  line-height: 1.4;
+}
+
+.subscrpt-sub {
+  font-size: 13px;
+  color: $muted;
+  margin: 4px 0 0;
+  line-height: 1.5;
+}
+
+/* --------------------------------------------------------------------------
+   Split: chart on the left, things that want doing on the right
+   -------------------------------------------------------------------------- */
+
+.subscrpt-dash {
+  &__split {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 340px;
+    gap: 16px;
+    align-items: start;
+  }
+
+  &__main {
+    min-width: 0;
+  }
+
+  &__aside {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    min-width: 0;
+  }
+}
+
+/* Below this the chart would be too narrow to read six months, so the aside
+   drops underneath rather than squeezing it. */
+@media screen and (max-width: 1100px) {
+  .subscrpt-dash__split {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* --------------------------------------------------------------------------
+   Monthly sales chart
+   -------------------------------------------------------------------------- */
+
+.subscrpt-chart {
+  &__total {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    margin-bottom: 18px;
+  }
+
+  &__amount {
+    font-size: 26px;
+    font-weight: 400;
+    color: $ink;
+    line-height: 1.1;
+    font-variant-numeric: tabular-nums;
+  }
+
+  &__caption {
+    font-size: 12px;
+    color: $muted;
+  }
+
+  &__empty {
+    margin: 0;
+    padding: 32px 0;
+    text-align: center;
+    font-size: 13px;
+    color: $muted;
+  }
+
+  &__plot {
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: 1fr;
+    gap: 10px;
+    align-items: end;
+  }
+
+  &__col {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    min-width: 0;
+  }
+
+  /* Fixed-height rail so every column's baseline lines up whatever its bar
+     does, and a month with nothing still holds its place. */
+  &__bar-wrap {
+    display: flex;
+    align-items: flex-end;
+    height: 132px;
+    width: 100%;
+  }
+
+  &__bar {
+    display: block;
+    width: 100%;
+    max-width: 44px;
+    margin: 0 auto;
+    border-radius: 3px 3px 0 0;
+    background: var(--wp-admin-theme-color, #3858e9);
+    transition: opacity 0.12s;
+
+    &.is-empty {
+      height: 2px;
+      background: #e0e0e0;
+      border-radius: 2px;
+    }
+  }
+
+  &__col:hover &__bar {
+    opacity: 0.85;
+  }
+
+  &__value {
+    font-size: 11px;
+    color: $ink;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
+  }
+
+  &__month {
+    font-size: 11px;
+    color: $muted;
+  }
+
+  &__col:has(.subscrpt-chart__bar.is-empty) &__value {
+    color: #c3c4c7;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   Stat tiles
+   -------------------------------------------------------------------------- */
+
+.subscrpt-tiles {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 12px;
+}
+
+.subscrpt-tile {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 16px;
+  border: 1px solid $border;
+  border-radius: 8px;
+  background: #f6f7f7;
+  text-decoration: none;
+  color: inherit;
+  transition:
+    background 0.12s,
+    border-color 0.12s;
+
+  &:hover {
+    background: #fff;
+    border-color: #c3c4c7;
+    color: inherit;
+  }
+
+  &:focus {
+    box-shadow: 0 0 0 2px var(--wp-admin-theme-color, #3858e9);
+    outline: 2px solid transparent;
+    color: inherit;
+  }
+
+  &__icon {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    color: #a7aaad;
+    line-height: 0;
+  }
+
+  &__value {
+    font-size: 30px;
+    font-weight: 400;
+    line-height: 1.15;
+    font-variant-numeric: tabular-nums;
+    color: var(--wp-admin-theme-color, #3858e9);
+  }
+
+  &__label {
+    font-size: 12px;
+    color: $muted;
+    line-height: 1.4;
+    padding-right: 20px;
+  }
+
+  /* Tone only ever marks a figure that is not zero, so a quiet store stays
+     quiet instead of glowing amber at nothing. */
+  &.is-warning .subscrpt-tile__value {
+    color: #bd8600;
+  }
+
+  &.is-error .subscrpt-tile__value {
+    color: #cc1818;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   Health banner
+   -------------------------------------------------------------------------- */
+
+.subscrpt-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  flex-wrap: wrap;
+  padding: 16px 18px;
+  border: 1px solid $border;
+  border-radius: 8px;
+  background: #fff;
+
+  &.is-clear {
+    border-color: #b8e6c1;
+    background: linear-gradient(90deg, #f2fcf5 0%, #fbfefc 60%);
+  }
+
+  &.is-attention {
+    border-color: #f3d799;
+    background: linear-gradient(90deg, #fffaf0 0%, #fffdf8 60%);
+  }
+
+  &__badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    flex-shrink: 0;
+    border-radius: 50%;
+    background: #fff;
+    border: 1px solid $border;
+  }
+
+  &.is-clear &__badge {
+    color: #007017;
+    border-color: #b8e6c1;
+  }
+
+  &.is-attention &__badge {
+    color: #bd8600;
+    border-color: #f3d799;
+  }
+
+  &__body {
+    flex: 1;
+    min-width: 0;
+  }
+
+  &__title {
+    font-size: 15px;
+    font-weight: 600;
+    margin: 0;
+    line-height: 1.4;
+  }
+
+  &.is-clear &__title {
+    color: #007017;
+  }
+
+  &.is-attention &__title {
+    color: #8a6116;
+  }
+
+  &__text {
+    font-size: 13px;
+    color: $muted;
+    margin: 2px 0 0;
+    line-height: 1.5;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   Setup checklist
+   -------------------------------------------------------------------------- */
+
+.subscrpt-setup {
+  &__count {
+    font-size: 12px;
+    color: $muted;
+    white-space: nowrap;
+  }
+}
+
+.subscrpt-progress {
+  height: 4px;
+  border-radius: 2px;
+  background: #f0f0f1;
+  overflow: hidden;
+  margin-bottom: 4px;
+
+  &__bar {
+    display: block;
+    height: 100%;
+    border-radius: 2px;
+    background: var(--wp-admin-theme-color, #3858e9);
+    transition: width 0.2s;
+  }
+}
+
+.subscrpt-steps {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.subscrpt-step {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 0;
+  margin: 0;
+  border-bottom: 1px solid #f0f0f1;
+
+  &:last-child {
+    border-bottom: 0;
+    padding-bottom: 0;
+  }
+
+  &__mark {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0;
+    border-radius: 50%;
+    border: 1px solid #c3c4c7;
+    color: transparent;
+  }
+
+  &__label {
+    flex: 1;
+    font-size: 13px;
+    color: $ink;
+    line-height: 1.4;
+  }
+
+  &__state {
+    font-size: 12px;
+    color: $muted;
+  }
+
+  &.is-done &__mark {
+    background: #007017;
+    border-color: #007017;
+    color: #fff;
+  }
+
+  &.is-done &__label {
+    color: $muted;
+    text-decoration: line-through;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   Build cards
+   -------------------------------------------------------------------------- */
+
+.subscrpt-build {
+  padding: 20px;
+  border: 1px solid $border;
+  border-radius: 8px;
+  background: #fff;
+
+  &__grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 12px;
+    margin-top: 16px;
+  }
+
+  &__card {
+    display: flex;
+    flex-direction: column;
+    padding: 18px;
+    border: 1px solid $border;
+    border-radius: 8px;
+    text-decoration: none;
+    color: inherit;
+    background: #fff;
+    transition:
+      border-color 0.12s,
+      box-shadow 0.12s;
+
+    &:hover {
+      border-color: #c3c4c7;
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+      color: inherit;
+    }
+
+    &:focus {
+      box-shadow: 0 0 0 2px var(--wp-admin-theme-color, #3858e9);
+      outline: 2px solid transparent;
+      color: inherit;
+    }
+  }
+
+  &__icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    margin-bottom: 14px;
+    background: #f0f0f1;
+    color: #50575e;
+  }
+
+  &__eyebrow {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: $muted;
+  }
+
+  &__title {
+    font-size: 15px;
+    font-weight: 600;
+    color: $ink;
+    margin-top: 2px;
+    line-height: 1.4;
+  }
+
+  &__text {
+    font-size: 13px;
+    color: $muted;
+    line-height: 1.5;
+    margin-top: 6px;
+  }
+
+  &__link {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 13px;
+    font-weight: 500;
+    margin-top: 14px;
+    color: var(--wp-admin-theme-color, #3858e9);
+  }
+
+  /* One accent per card, so the three read as different doors rather than
+     three copies of the same one. */
+  &__card.is-setup &__icon {
+    background: #edfaef;
+    color: #007017;
+  }
+
+  &__card.is-setup &__link {
+    color: #007017;
+  }
+
+  &__card.is-extend &__icon {
+    background: #f3eefc;
+    color: #6c2eb9;
+  }
+
+  &__card.is-extend &__link {
+    color: #6c2eb9;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   Footer links
+   -------------------------------------------------------------------------- */
+
+.subscrpt-footer {
+  text-align: center;
+  font-size: 13px;
+  margin: 4px 0 0;
+  color: $muted;
+
+  a {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    text-decoration: none;
+  }
+
+  &__sep {
+    margin: 0 10px;
+    color: #c3c4c7;
+  }
+}
+
+@media screen and (max-width: 782px) {
+  .subscrpt-banner {
+    flex-wrap: wrap;
+  }
+}

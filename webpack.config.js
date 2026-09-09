@@ -12,6 +12,9 @@ module.exports = {
   ...defaultConfig,
   entry: {
     index: path.resolve(process.cwd(), "src", "index.js"),
+    // The admin dashboard screen. Separate entry so the Blocks bundle that
+    // ships to the storefront does not carry an admin-only React app.
+    dashboard: path.resolve(process.cwd(), "src", "dashboard", "index.js"),
     // 'test_wc-checkout-newsletter-subscription-block': path.resolve(
     // 	process.cwd(),
     // 	'src',
