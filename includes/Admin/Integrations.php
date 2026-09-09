@@ -619,7 +619,8 @@ class Integrations {
 			$is_installed = $integration['is_installed'] ?? false;
 			$is_active    = $integration['is_active'] ?? false;
 
-			$cleaned_actions = [];
+			$cleaned_actions   = [];
+			$shown_install_url = null;
 
 			foreach ( $integration['actions'] as $integration_action ) {
 				$action_tag = $integration_action['action'] ?? null;
@@ -627,6 +628,7 @@ class Integrations {
 				if ( 'install' === $action_tag ) {
 					if ( ! $is_installed ) {
 						$cleaned_actions[] = $integration_action;
+						$shown_install_url = $integration_action['url'] ?? null;
 					}
 					continue;
 				}
@@ -649,7 +651,12 @@ class Integrations {
 					continue;
 				}
 
-				// Default.
+				// Default. Skip a "More Details"-style link that just repeats the
+				// install/"Get X" link already shown (e.g. Paddle), so the card
+				// does not carry the same URL twice.
+				if ( null !== $shown_install_url && ( $integration_action['url'] ?? null ) === $shown_install_url ) {
+					continue;
+				}
 				$cleaned_actions[] = $integration_action;
 			}
 
