@@ -27,7 +27,7 @@
   color: var(--wpsubs-text-muted, #6b7280);
   text-decoration: none;
   cursor: pointer;
-  border-bottom: 2px solid transparent;
+  border-bottom: 2px solid var(--wpsubs-border-strong, #d1d5db);
   margin-bottom: -1px;
   transition:
     color 0.12s,
@@ -43,6 +43,7 @@
 
 .wpsubs-tabs__tab:hover {
   color: var(--wpsubs-text, #374151);
+  border-bottom-color: var(--wpsubs-text-subtle, #9ca3af);
 }
 
 .wpsubs-tabs__tab[aria-selected="true"] {
