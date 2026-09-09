@@ -496,7 +496,7 @@ class Plans {
 							<div style="flex:1 1 auto;min-width:0;display:flex;align-items:center;gap:8px;">
 								<strong style="font-size:13.5px;color:var(--wpsubs-text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"><?php echo esc_html( $group['title'] ); ?></strong>
 								<span class="wpsubs-badge wpsubs-badge--active" style="font-weight:500;"><?php esc_html_e( 'Connected', 'subscription' ); ?></span>
-								<a href="<?php echo esc_url( admin_url( 'admin.php?page=wp-subscription-plans&view=detail&plan=' . (int) $subscrpt_gid ) ); ?>" target="_blank" rel="noopener" title="<?php esc_attr_e( 'Manage this plan group', 'subscription' ); ?>" aria-label="<?php esc_attr_e( 'Manage this plan group', 'subscription' ); ?>" style="flex:0 0 auto;display:inline-flex;align-items:center;color:var(--wpsubs-text-subtle);text-decoration:none;">
+								<a href="<?php echo esc_url( admin_url( 'admin.php?page=wp-subscription-plans&view=detail&plan=' . (int) $subscrpt_gid ) ); ?>" target="_blank" rel="noopener" title="<?php esc_attr_e( 'Manage this plan', 'subscription' ); ?>" aria-label="<?php esc_attr_e( 'Manage this plan', 'subscription' ); ?>" style="flex:0 0 auto;display:inline-flex;align-items:center;color:var(--wpsubs-text-subtle);text-decoration:none;">
 									<span class="dashicons dashicons-external" style="font-size:15px;width:15px;height:15px;line-height:1;"></span>
 								</a>
 							</div>
@@ -550,12 +550,12 @@ class Plans {
 						<span class="dashicons dashicons-admin-links"></span>
 					</span>
 					<div style="flex:1 1 auto;min-width:140px;">
-						<div style="font-size:13.5px;font-weight:600;color:var(--wpsubs-text);line-height:1.3;"><?php esc_html_e( 'No plan groups yet', 'subscription' ); ?></div>
-						<div style="font-size:12px;color:var(--wpsubs-text-muted);line-height:1.4;"><?php esc_html_e( 'Create a plan group and its first plan, then connect this product to it.', 'subscription' ); ?></div>
+						<div style="font-size:13.5px;font-weight:600;color:var(--wpsubs-text);line-height:1.3;"><?php esc_html_e( 'No plans yet', 'subscription' ); ?></div>
+						<div style="font-size:12px;color:var(--wpsubs-text-muted);line-height:1.4;"><?php esc_html_e( 'Create a plan and its first duration, then connect this product to it.', 'subscription' ); ?></div>
 					</div>
 					<button type="button" class="wpsubs-btn wpsubs-btn--primary" data-wpsubs-modal-open="subscrpt-create-plan">
 						<span class="dashicons dashicons-plus-alt2" style="font-size:16px;width:16px;height:16px;line-height:1;"></span>
-						<?php esc_html_e( 'New plan group', 'subscription' ); ?>
+						<?php esc_html_e( 'New plan', 'subscription' ); ?>
 					</button>
 				</div>
 			<?php else : ?>
@@ -572,7 +572,7 @@ class Plans {
 					</span>
 					<div style="flex:1 1 auto;min-width:140px;">
 						<div style="font-size:13.5px;font-weight:600;color:var(--wpsubs-text);line-height:1.3;"><?php esc_html_e( 'Connect to a plan', 'subscription' ); ?></div>
-						<div style="font-size:12px;color:var(--wpsubs-text-muted);line-height:1.4;"><?php esc_html_e( 'Pick a plan group, then set the prices for each of its plans.', 'subscription' ); ?></div>
+						<div style="font-size:12px;color:var(--wpsubs-text-muted);line-height:1.4;"><?php esc_html_e( 'Pick a plan, then set the prices for each of its durations.', 'subscription' ); ?></div>
 					</div>
 					<div style="flex:0 0 auto;display:flex;align-items:center;gap:8px;">
 						<?php
@@ -586,7 +586,7 @@ class Plans {
 						wpsubs_render_adv_select(
 							array(
 								'name'        => 'subscrpt_connect_group',
-								'placeholder' => __( 'Select a plan group…', 'subscription' ),
+								'placeholder' => __( 'Select a plan…', 'subscription' ),
 								'options'     => $options,
 								'attrs'       => array( 'data-subscrpt-connect-group' => '1' ),
 								'align'       => 'right',
@@ -594,7 +594,7 @@ class Plans {
 						);
 						?>
 						<?php if ( $pro_active ) : ?>
-							<button type="button" class="wpsubs-btn wpsubs-btn--outline wpsubs-btn--sm" data-wpsubs-modal-open="subscrpt-create-plan" title="<?php esc_attr_e( 'Create a new plan group', 'subscription' ); ?>">
+							<button type="button" class="wpsubs-btn wpsubs-btn--outline wpsubs-btn--sm" data-wpsubs-modal-open="subscrpt-create-plan" title="<?php esc_attr_e( 'Create a new plan', 'subscription' ); ?>">
 								<span class="dashicons dashicons-plus-alt2" style="font-size:15px;width:15px;height:15px;line-height:1;"></span>
 								<?php esc_html_e( 'New', 'subscription' ); ?>
 							</button>
@@ -611,7 +611,7 @@ class Plans {
 						<?php if ( empty( $subscrpt_group_terms ) ) : ?>
 							<div style="display:flex;flex-direction:column;align-items:center;gap:12px;padding:20px 16px;text-align:center;">
 								<p style="margin:0;color:var(--wpsubs-text-subtle);font-size:13px;">
-									<?php esc_html_e( 'This plan group has no plans yet. Add a plan before connecting this product.', 'subscription' ); ?>
+									<?php esc_html_e( 'This plan has no durations yet. Add a duration before connecting this product.', 'subscription' ); ?>
 								</p>
 								<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:center;">
 									<?php if ( $pro_active ) : ?>

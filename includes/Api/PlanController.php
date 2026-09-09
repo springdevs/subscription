@@ -260,7 +260,7 @@ class PlanController {
 		$id = PlanRepository::insert_group( $params );
 
 		if ( ! $id ) {
-			return new WP_Error( 'subscrpt_plan_create_failed', __( 'Could not create the plan group.', 'subscription' ), array( 'status' => 500 ) );
+			return new WP_Error( 'subscrpt_plan_create_failed', __( 'Could not create the plan.', 'subscription' ), array( 'status' => 500 ) );
 		}
 
 		// Seed a default monthly duration (draft) so a new plan opens with a
