@@ -108,6 +108,28 @@
   font-size: 12px;
 }
 
+/* Muted: a secondary action that should not compete with the row's content.
+   Outline's shape, with the label dropped back to the muted text tone. */
+.wpsubs-btn--muted {
+  background: var(--wpsubs-surface);
+  border-color: var(--wpsubs-border);
+  color: var(--wpsubs-text-muted);
+}
+
+.wpsubs-btn--muted:hover {
+  border-color: var(--wpsubs-border-strong);
+  background: var(--wpsubs-surface-muted);
+  color: var(--wpsubs-text);
+  text-decoration: none;
+}
+
+.wpsubs-btn--muted .dashicons {
+  font-size: 15px;
+  width: 15px;
+  height: 15px;
+  line-height: 1;
+}
+
 .wpsubs-btn--danger {
   background: var(--wpsubs-surface);
   border-color: #fca5a5;

@@ -274,8 +274,15 @@ $has_terms = ! empty( $plan['terms'] );
 						</button>
 						<div style="display:flex;align-items:center;gap:8px;padding:0 12px 0 4px;">
 							<?php if ( ! empty( $product['edit_url'] ) ) : ?>
-								<a href="<?php echo esc_url( $product['edit_url'] ); ?>" class="wpsubs-btn wpsubs-btn--outline wpsubs-btn--sm" target="_blank" rel="noopener">
-									<?php esc_html_e( 'Edit product', 'subscription' ); ?>
+								<a href="<?php echo esc_url( $product['edit_url'] ); ?>" class="wpsubs-btn wpsubs-btn--muted wpsubs-btn--sm" target="_blank" rel="noopener">
+									<span class="dashicons dashicons-external" aria-hidden="true"></span>
+									<?php esc_html_e( 'Edit on WooCommerce', 'subscription' ); ?>
+								</a>
+							<?php endif; ?>
+							<?php if ( ! empty( $product['view_url'] ) ) : ?>
+								<a href="<?php echo esc_url( $product['view_url'] ); ?>" class="wpsubs-btn wpsubs-btn--muted wpsubs-btn--sm" target="_blank" rel="noopener">
+									<span class="dashicons dashicons-visibility" aria-hidden="true"></span>
+									<?php esc_html_e( 'Preview product', 'subscription' ); ?>
 								</a>
 							<?php endif; ?>
 							<?php if ( $pro_active ) : ?>
