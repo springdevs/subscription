@@ -62,13 +62,27 @@ class Menu {
 			SUBSCRPT_VERSION,
 			true
 		);
+		$subscrpt_wizard_has_products = (bool) wc_get_products(
+			array(
+				'status' => array( 'publish', 'draft', 'pending', 'private' ),
+				'limit'  => 1,
+				'return' => 'ids',
+			)
+		);
+
 		wp_localize_script(
 			'subscrpt-onboarding-wizard',
 			'subscrpt_wizard',
 			array(
 				'ajax_url'          => admin_url( 'admin-ajax.php' ),
 				'subscriptions_url' => admin_url( 'admin.php?page=wp-subscription' ),
+				'products_url'      => admin_url( 'edit.php?post_type=product' ),
+				'plans_url'         => admin_url( 'admin.php?page=wp-subscription-plans' ),
+				'rest_url'          => rest_url( 'wpsubscription/v1/plans' ),
+				'rest_nonce'        => wp_create_nonce( 'wp_rest' ),
 				'currency_symbol'   => get_woocommerce_currency_symbol(),
+				'is_pro'            => subscrpt_pro_activated(),
+				'has_products'      => $subscrpt_wizard_has_products,
 			)
 		);
 
@@ -782,15 +796,12 @@ class Menu {
 	 * Initial load always shows page 1 (JS handles transitions from there)
 	 */
 	public function render_onboarding_wizard() {
-		// Start session if not already started
+		// Start session if not already started (used by the wizard reset handler).
 		if ( ! session_id() && ! headers_sent() ) {
 			session_start();
 		}
 
-		// Always start at page 1 on direct load (SPA behavior — JS drives page transitions)
-		$GLOBALS['wizard_page'] = 1;
-
-		$this->render_admin_header( __( 'Setup Wizard', 'subscription' ), __( 'Create your first subscription product', 'subscription' ) );
+		$this->render_admin_header( __( 'Setup Wizard', 'subscription' ), __( 'Create your first subscription plan', 'subscription' ) );
 		include __DIR__ . '/views/onboarding-wizard.php';
 		$this->render_admin_footer();
 	}

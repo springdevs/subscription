@@ -1,146 +1,294 @@
 /**
- * Onboarding Wizard — SPA-style
- * All pages rendered at once; JS controls section visibility
- * PHP values passed via localized script data (see Menu::enqueue_admin_assets)
+ * Onboarding Wizard — SPA-style.
+ *
+ * Flow:
+ *   1. Create Plan   — pick a plan type + name (name auto-fills from the type).
+ *   2. Set Frequency — billing duration (frequency, interval, trial, fee).
+ *   3. Connect       — attach the plan to a new or existing product.
+ *   4. Finish        — summary.
+ *
+ * The plan (group), duration (term) and product relation are created through
+ * the Plans REST API (wpsubscription/v1/plans) once both the plan details and
+ * the frequency are known (leaving page 2). Creating a brand-new product uses
+ * an admin-ajax handler. All PHP values arrive via `subscrpt_wizard`.
  */
 (function ($) {
   "use strict";
 
+  var INTERVAL_TO_INT = { day: 1, week: 2, month: 3, year: 4 };
+
   var Wizard = {
-    currentPage: 1,
-    ajaxUrl: "",
-    subscriptionsUrl: "",
+    cfg: {},
+    autoName: "",
+    // Created leaving page 2, used on page 3.
+    groupId: 0,
+    termId: 0,
+    planTitle: "",
+    billingText: "",
 
     init: function () {
-      this.ajaxUrl = subscrpt_wizard.ajax_url;
-      this.subscriptionsUrl = subscrpt_wizard.subscriptions_url;
+      this.cfg = window.subscrpt_wizard || {};
+      this.hasProducts = $("#subscrpt-has-products").val() === "1";
+      this.autoName = $.trim($("#subscrpt_plan_title").val());
       this.bindEvents();
-      this.showRelevantProductSection();
-      this.initPageIndicator();
       this.initLivePreview();
-      this.initStepperState();
+      this.updatePlanSummary();
+      $("#subscrpt-link-plans").attr("href", this.cfg.plans_url || "#");
+      $("#subscrpt-link-products").attr("href", this.cfg.products_url || "#");
     },
 
-    initPageIndicator: function () {
-      this.currentPage = parseInt($("#subscrpt-current-page").text(), 10) || 1;
-    },
+    // ----- REST helper -----
 
-    initStepperState: function () {
-      var page = parseInt($("#subscrpt-wizard-page").val(), 10) || 1;
-      if (page > 1) {
-        $("#subscrpt-stepper").show();
-        $(".wpsubs-wizard-stepper__step").removeClass("active done");
-        $(".wpsubs-wizard-stepper__step").each(function () {
-          var step = parseInt($(this).data("step"), 10);
-          if (step < page) {
-            $(this).addClass("done");
-          } else if (step === page) {
-            $(this).addClass("active");
+    api: function (method, path, body) {
+      return fetch(this.cfg.rest_url + path, {
+        method: method,
+        credentials: "same-origin",
+        headers: {
+          "Content-Type": "application/json",
+          "X-WP-Nonce": this.cfg.rest_nonce || "",
+        },
+        body: body ? JSON.stringify(body) : undefined,
+      }).then(function (res) {
+        return res.json().then(function (data) {
+          if (!res.ok) {
+            throw new Error((data && data.message) || "Request failed.");
           }
+          return data;
         });
-      }
+      });
     },
+
+    // ----- Events -----
 
     bindEvents: function () {
-      // Page 1
-      $(document).on("click", "#subscrpt-btn-start", $.proxy(this.goToPage2, this));
+      // Page 1 (plan).
+      $(document).on("click", ".wpsubs-plan-type-card", $.proxy(this.selectPlanType, this));
       $(document).on("click", "#subscrpt-btn-skip", $.proxy(this.skip, this));
+      $(document).on("click", "#subscrpt-btn-next-1", $.proxy(this.nextFromPlan, this));
 
-      // Page 2: product toggle
-      $(document).on("click", "#subscrpt-btn-create-new", $.proxy(this.showNewProduct, this));
-      $(document).on("click", "#subscrpt-btn-use-existing", $.proxy(this.showExistingProduct, this));
+      // Page 2 (frequency).
+      $(document).on("click", "#subscrpt-btn-back-1", $.proxy(this.goToPage, this, 1));
+      $(document).on("click", "#subscrpt-btn-create-plan", $.proxy(this.createPlan, this));
 
-      // Page 2: product search
-      $(document).on("focus", "#subscrpt-product-search-input", $.proxy(this.openProductSearch, this));
-      $(document).on("input", "#subscrpt-product-search-input", $.proxy(this.filterProducts, this));
-      $(document).on("click", ".wpsubs-p2-product-search__item", $.proxy(this.onProductItemClick, this));
+      // Page 3 (product).
+      $(document).on("click", "#subscrpt-btn-back-2", $.proxy(this.goToPage, this, 2));
+      $(document).on("click", ".wpsubs-connect-mode-card", $.proxy(this.selectConnectMode, this));
+      $(document).on("click", "#subscrpt-btn-connect", $.proxy(this.connect, this));
+      $(document).on("focus", "#subscrpt-product-search-input", this.openProductSearch);
+      $(document).on("input", "#subscrpt-product-search-input", this.filterProducts);
+      $(document).on("click", ".wpsubs-p2-product-search__item", $.proxy(this.onProductPick, this));
+      $(document).on("click", "#subscrpt-btn-clear-product", $.proxy(this.clearProduct, this));
       $(document).on("click", function (e) {
         if (!$(e.target).closest(".wpsubs-p2-product-search").length) {
           $("#subscrpt-product-search-dropdown").hide();
         }
       });
-      $(document).on("click", "#subscrpt-btn-clear-product", $.proxy(this.clearProductSelection, this));
-      $(document).on("click", ".wpsubs-p2-variation-item", $.proxy(this.onVariationSelect, this));
 
-      // Page 2: navigation
-      $(document).on("click", "#subscrpt-btn-back", $.proxy(this.goToPage1, this));
-      $(document).on("click", "#subscrpt-btn-save", $.proxy(this.savePage2, this));
-
-      // Page 3
+      // Page 4 (finish).
       $(document).on("click", "#subscrpt-btn-add-another", $.proxy(this.restart, this));
-      $(document).on("click", "#subscrpt-btn-start-over", $.proxy(this.restart, this));
     },
 
-    // ----- Page transitions -----
+    // ----- Navigation -----
 
-    goToPage1: function () {
-      this.switchSection(1);
-    },
-
-    goToPage2: function () {
-      this.switchSection(2);
-    },
-
-    goToPage3: function (productId) {
-      $("#subscrpt-product-id").val(productId || 0);
-      this.switchSection(3);
+    goToPage: function (pageNum, e) {
+      if (e && e.preventDefault) {
+        e.preventDefault();
+      }
+      this.switchSection(pageNum);
     },
 
     switchSection: function (pageNum) {
-      this.currentPage = pageNum;
-
       $("#subscrpt-wizard-page").val(pageNum);
 
-      if (pageNum === 1) {
-        $("#subscrpt-stepper").hide();
-      } else {
-        $("#subscrpt-stepper").show();
-        $(".wpsubs-wizard-stepper__step").removeClass("active done");
-        $(".wpsubs-wizard-stepper__step").each(function () {
-          var step = parseInt($(this).data("step"), 10);
-          if (step < pageNum) {
-            $(this).addClass("done");
-          }
-        });
-        $('.wpsubs-wizard-stepper__step[data-step="' + pageNum + '"]').addClass("active");
-      }
+      $(".wpsubs-wizard-stepper__step").removeClass("active done");
+      $(".wpsubs-wizard-stepper__step").each(function () {
+        var step = parseInt($(this).data("step"), 10);
+        if (step < pageNum) {
+          $(this).addClass("done");
+        } else if (step === pageNum) {
+          $(this).addClass("active");
+        }
+      });
 
       $(".wpsubs-wizard-section").removeClass("active");
       $("#subscrpt-section-" + pageNum).addClass("active");
+      $("html, body").animate({ scrollTop: 0 }, 150);
     },
-
-    // ----- Page 1 actions -----
 
     skip: function (e) {
       e.preventDefault();
-      window.location.href = this.subscriptionsUrl;
+      window.location.href = this.cfg.subscriptions_url;
     },
 
-    // ----- Page 2 actions -----
+    // ----- Page 1: plan type + name -----
 
-    showNewProduct: function (e) {
-      e.preventDefault();
-      $(".wpsubs-p2-option-card, .product-toggle-btn").removeClass("active");
-      $(e.currentTarget).addClass("active");
-      $("#subscrpt-existing-product-fields").hide();
-      // Restore name field editability
-      $("#subscrpt_product_name").prop("readonly", false).val("");
-      $("#subscrpt_product_price").val("");
-      $("#subscrpt-btn-save").html("Create product &rsaquo;");
-      this.updatePreview();
-    },
+    selectPlanType: function (e) {
+      var card = $(e.currentTarget);
+      $(".wpsubs-plan-type-card").removeClass("active");
+      card.addClass("active");
+      $("#subscrpt-plan-type").val(card.data("type"));
 
-    showExistingProduct: function (e) {
-      e.preventDefault();
-      $(".wpsubs-p2-option-card, .product-toggle-btn").removeClass("active");
-      $(e.currentTarget).addClass("active");
-      $("#subscrpt-existing-product-fields").show();
-      $("#subscrpt-btn-save").html("Update product &rsaquo;");
-      // If already has a selection, re-show chip
-      var selectedVal = $("#subscrpt_existing_product").val();
-      if (selectedVal) {
-        this.showProductChip($("#subscrpt_existing_product option:selected"));
+      // Auto-fill the name, but never clobber a name the user has edited.
+      var suggested = card.data("name") ? String(card.data("name")) : "";
+      var current = $.trim($("#subscrpt_plan_title").val());
+      if (!current || current === this.autoName) {
+        $("#subscrpt_plan_title").val(suggested);
       }
+      this.autoName = suggested;
+
+      $("#p1-summary-type").text(card.data("label") ? String(card.data("label")) : "");
+      this.updatePlanSummary();
+    },
+
+    updatePlanSummary: function () {
+      $("#p1-summary-name").text($.trim($("#subscrpt_plan_title").val()) || "Your plan");
+    },
+
+    nextFromPlan: function (e) {
+      e.preventDefault();
+      if (!$.trim($("#subscrpt_plan_title").val())) {
+        window.alert("Please enter a plan name.");
+        return;
+      }
+      this.switchSection(2);
+    },
+
+    // ----- Page 2: live preview + create plan -----
+
+    initLivePreview: function () {
+      var self = this;
+      $(document).on("input", "#subscrpt_billing_frequency, #subscrpt_free_trial", function () {
+        self.updatePlanPreview();
+      });
+      $(document).on("input", "#subscrpt_plan_title", function () {
+        self.updatePlanPreview();
+        self.updatePlanSummary();
+      });
+      $(document).on(
+        "wpsubs:select",
+        "#subscrpt-billing-interval-select, #subscrpt-trial-interval-select",
+        function () {
+          self.updatePlanPreview();
+        },
+      );
+    },
+
+    unitLabel: function (unit, count) {
+      var n = parseInt(count, 10) || 1;
+      return n > 1 ? n + " " + unit + "s" : unit;
+    },
+
+    updatePlanPreview: function () {
+      var title = $("#subscrpt_plan_title").val() || "Your plan";
+      var freq = $("#subscrpt_billing_frequency").val() || "1";
+      var interval = $("input[name='subscrpt_billing_interval']").val() || "month";
+      var trial = $("#subscrpt_free_trial").val();
+      var trialInterval = $("input[name='subscrpt_trial_interval']").val() || "day";
+
+      $("#p2-preview-plan").text(title);
+      $("#p2-preview-billing").text("every " + this.unitLabel(interval, freq));
+
+      var trialNum = parseInt(trial, 10);
+      if (trialNum > 0) {
+        $("#p2-preview-trial")
+          .text(trialNum + " " + (trialNum > 1 ? trialInterval + "s" : trialInterval) + " free trial")
+          .show();
+      } else {
+        $("#p2-preview-trial").hide();
+      }
+    },
+
+    createPlan: function (e) {
+      e.preventDefault();
+
+      var self = this;
+      var $btn = $("#subscrpt-btn-create-plan");
+      var title = $.trim($("#subscrpt_plan_title").val());
+      var type = $("#subscrpt-plan-type").val() || "recurring";
+
+      if (!title) {
+        window.alert("Please enter a plan name.");
+        return;
+      }
+
+      var freq = parseInt($("#subscrpt_billing_frequency").val(), 10) || 1;
+      var interval = $("input[name='subscrpt_billing_interval']").val() || "month";
+      var trial = $.trim($("#subscrpt_free_trial").val());
+      var trialInterval = $("input[name='subscrpt_trial_interval']").val() || "day";
+      var signupFee = this.cfg.is_pro ? $.trim($("#subscrpt_signup_fee").val()) : "";
+
+      if ($btn.hasClass("is-loading")) {
+        return;
+      }
+      $btn.addClass("is-loading").prop("disabled", true);
+
+      var termBody = {
+        type: type,
+        title: title,
+        billing_frequency: freq,
+        billing_interval: INTERVAL_TO_INT[interval] || 3,
+        billing_length: 0,
+        free_trial: trial || "",
+        signup_fee: { amount: signupFee || "" },
+        status: "active",
+        data: { free_trial_interval: trialInterval },
+      };
+
+      // 1) Create the plan group. 2) Reuse the auto-seeded draft term (or create
+      // one) with the chosen duration.
+      this.api("POST", "/groups", {
+        title: title,
+        type: type,
+        product_type: 1,
+        status: "active",
+      })
+        .then(function (group) {
+          self.groupId = group.id;
+          self.planTitle = title;
+          self.billingText = "every " + self.unitLabel(interval, freq);
+          termBody.plan_group_id = group.id;
+
+          var seeded = group.plans && group.plans.length ? group.plans[0] : null;
+          if (seeded && seeded.id) {
+            return self.api("PUT", "/terms/" + seeded.id, termBody).then(function () {
+              return seeded.id;
+            });
+          }
+          return self.api("POST", "/terms", termBody).then(function (term) {
+            return term.id;
+          });
+        })
+        .then(function (termId) {
+          self.termId = termId;
+          $btn.removeClass("is-loading").prop("disabled", false);
+          self.switchSection(3);
+        })
+        .catch(function (err) {
+          $btn.removeClass("is-loading").prop("disabled", false);
+          window.alert(err.message || "Could not create the plan. Please try again.");
+        });
+    },
+
+    // ----- Page 3: connect to a product -----
+
+    // Which connect mode is active. Without existing products the only option
+    // is creating a new one.
+    currentConnectMode: function () {
+      if (!this.hasProducts) {
+        return "new";
+      }
+      var active = $(".wpsubs-connect-mode-card.active");
+      return active.length ? active.data("mode") : "existing";
+    },
+
+    selectConnectMode: function (e) {
+      var card = $(e.currentTarget);
+      var mode = card.data("mode");
+      $(".wpsubs-connect-mode-card").removeClass("active");
+      card.addClass("active");
+      $("#subscrpt-connect-existing").toggle(mode === "existing");
+      $("#subscrpt-connect-new").toggle(mode === "new");
+      $("#subscrpt-btn-connect").html((mode === "new" ? "Create & connect" : "Connect plan") + " ›");
     },
 
     openProductSearch: function () {
@@ -154,7 +302,7 @@
       $("#subscrpt-product-search-dropdown").show();
       var visible = 0;
       $(".wpsubs-p2-product-search__item").each(function () {
-        var name = $(this).data("name") ? $(this).data("name").toLowerCase() : "";
+        var name = $(this).data("name") ? String($(this).data("name")).toLowerCase() : "";
         var sku = $(this).data("sku") ? String($(this).data("sku")).toLowerCase() : "";
         if (!q || name.indexOf(q) >= 0 || sku.indexOf(q) >= 0) {
           $(this).show();
@@ -166,200 +314,17 @@
       $(".wpsubs-p2-product-search__empty").toggle(visible === 0);
     },
 
-    onProductItemClick: function (e) {
+    onProductPick: function (e) {
       var item = $(e.currentTarget);
-      if (item.hasClass("wpsubs-p2-product-search__item--locked")) {
-        return;
-      }
       var id = String(item.data("id"));
       var name = item.data("name") || "";
       var price = item.data("price") != null ? String(item.data("price")) : "";
       var type = item.data("type") || "";
       var sku = item.data("sku") ? String(item.data("sku")) : "";
-      var productType = item.data("product-type") || "";
 
       $("#subscrpt-existing-product-hidden").val(id);
       $("#subscrpt-product-search-dropdown").hide();
-      this.showProductChip(name, price, type, sku);
-      $("#subscrpt_product_name").val(name);
-      $("#subscrpt_product_price").val(price);
 
-      // Reset variation picker state
-      $("#subscrpt-variation-id-hidden").val("");
-
-      if (productType === "variable") {
-        // Variation picker handles subscription field autofill
-        this.fetchAndShowVariations(id);
-      } else {
-        $("#subscrpt-variation-picker-wrap").hide();
-
-        // Autofill subscription fields from product meta
-        var billingPeriod = item.data("billing-period");
-        var billingPer = item.data("billing-per");
-        var trialPer = item.data("trial-per");
-        var signupFee = item.data("signup-fee");
-
-        if (billingPeriod) {
-          this.setAdvSelectValue("#subscrpt-billing-period-select", String(billingPeriod));
-        }
-        if (billingPer) {
-          $("#subscrpt_billing_per").val(billingPer);
-          $("#subscrpt_billing_per_visible").val(billingPer);
-        }
-        if (trialPer !== undefined && trialPer !== "") {
-          $("#subscrpt_trial_timing_per").val(trialPer);
-        }
-        if (signupFee !== undefined && signupFee !== "") {
-          $("#subscrpt_signup_fee").val(signupFee);
-        }
-      }
-
-      this.updatePreview();
-    },
-
-    fetchAndShowVariations: function (productId) {
-      var self = this;
-      var wrap = $("#subscrpt-variation-picker-wrap");
-      var list = $("#subscrpt-variation-picker-list");
-
-      wrap.show();
-      list.html(
-        '<p class="wpsubs-p2-variation-picker__loading">' +
-          (window.subscrpt_wizard_i18n ? subscrpt_wizard_i18n.loading : "Loading variations…") +
-          "</p>",
-      );
-
-      $.post(
-        this.ajaxUrl,
-        {
-          action: "subscrpt_get_product_variations",
-          nonce: $("#subscrpt_wizard_nonce").val(),
-          product_id: productId,
-        },
-        function (response) {
-          if (response.success && response.data && response.data.length) {
-            self.renderVariationPicker(response.data);
-          } else {
-            wrap.hide();
-          }
-        },
-      ).fail(function () {
-        wrap.hide();
-      });
-    },
-
-    renderVariationPicker: function (variations) {
-      var self = this;
-      var symbol = (window.subscrpt_wizard && subscrpt_wizard.currency_symbol) || "$";
-      var html = '<p class="wpsubs-p2-variation-picker__label">Select a variation</p>';
-      html += '<div class="wpsubs-p2-variation-picker__list">';
-
-      variations.forEach(function (v) {
-        var meta = v.sku ? "SKU " + v.sku : "";
-        var priceDisplay =
-          v.price !== "" && v.price !== null && v.price !== undefined ? symbol + parseFloat(v.price).toFixed(2) : "";
-
-        html +=
-          '<div class="wpsubs-p2-variation-item"' +
-          ' data-id="' +
-          self.escAttr(String(v.id)) +
-          '"' +
-          ' data-label="' +
-          self.escAttr(v.label) +
-          '"' +
-          ' data-price="' +
-          self.escAttr(String(v.price !== null && v.price !== undefined ? v.price : "")) +
-          '"' +
-          ' data-sku="' +
-          self.escAttr(v.sku || "") +
-          '"' +
-          ' data-billing-period="' +
-          self.escAttr(v.billing_period || "") +
-          '"' +
-          ' data-billing-per="' +
-          self.escAttr(String(v.billing_per || "1")) +
-          '"' +
-          ' data-trial-per="' +
-          self.escAttr(String(v.trial_per !== null && v.trial_per !== undefined ? v.trial_per : "")) +
-          '"' +
-          ' data-signup-fee="' +
-          self.escAttr(String(v.signup_fee || "")) +
-          '">' +
-          '<div class="wpsubs-p2-variation-item__check">&#10003;</div>' +
-          '<div class="wpsubs-p2-variation-item__info">' +
-          '<p class="wpsubs-p2-variation-item__name">' +
-          self.escHtml(v.label) +
-          "</p>" +
-          (meta ? '<p class="wpsubs-p2-variation-item__meta">' + self.escHtml(meta) + "</p>" : "") +
-          "</div>" +
-          (priceDisplay
-            ? '<span class="wpsubs-p2-variation-item__price">' + self.escHtml(priceDisplay) + "</span>"
-            : "") +
-          "</div>";
-      });
-
-      html += "</div>";
-      $("#subscrpt-variation-picker-list").html(html);
-      $("#subscrpt-variation-picker-wrap").show();
-    },
-
-    onVariationSelect: function (e) {
-      var item = $(e.currentTarget);
-      $(".wpsubs-p2-variation-item").removeClass("selected");
-      item.addClass("selected");
-
-      $("#subscrpt-variation-id-hidden").val(String(item.data("id")));
-
-      // Autofill subscription fields and price from variation meta
-      var price = item.data("price");
-      var billingPeriod = item.data("billing-period");
-      var billingPer = item.data("billing-per");
-      var trialPer = item.data("trial-per");
-      var signupFee = item.data("signup-fee");
-
-      if (price !== undefined && price !== "") {
-        $("#subscrpt_product_price").val(price);
-      }
-      if (billingPeriod) {
-        this.setAdvSelectValue("#subscrpt-billing-period-select", String(billingPeriod));
-      }
-      if (billingPer) {
-        $("#subscrpt_billing_per").val(billingPer);
-        $("#subscrpt_billing_per_visible").val(billingPer);
-      }
-      if (trialPer !== undefined && trialPer !== "") {
-        $("#subscrpt_trial_timing_per").val(trialPer);
-      }
-      if (signupFee !== undefined && signupFee !== "") {
-        $("#subscrpt_signup_fee").val(signupFee);
-      }
-
-      this.updatePreview();
-    },
-
-    escHtml: function (str) {
-      return String(str).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
-    },
-
-    escAttr: function (str) {
-      return String(str)
-        .replace(/&/g, "&amp;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&#39;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;");
-    },
-
-    setAdvSelectValue: function (selector, value) {
-      var el = $(selector);
-      if (!el.length) return;
-      var menuItem = el.find('.wpsubs-adv-select__item[data-value="' + value + '"]');
-      var label = menuItem.length ? menuItem.find(".wpsubs-adv-select__item-label").text().trim() : value;
-      el.find('input[type="hidden"]').val(value);
-      el.find(".wpsubs-adv-select__label").text(label);
-    },
-
-    showProductChip: function (name, price, type, sku) {
       var initials = name
         .split(" ")
         .filter(Boolean)
@@ -368,206 +333,147 @@
           return w[0].toUpperCase();
         })
         .join("");
+      var meta = [sku ? "SKU " + sku : null, type].filter(Boolean).join(" · ");
 
-      var meta = [sku ? "SKU " + sku : null, type, price ? "$" + parseFloat(price).toFixed(2) : null]
-        .filter(Boolean)
-        .join(" · ");
-
-      $("#p2-chip-avatar").text(initials);
-      $("#p2-chip-name").text(name);
-      $("#p2-chip-meta").text(meta);
+      $("#p3-chip-avatar").text(initials || "?");
+      $("#p3-chip-name").text(name);
+      $("#p3-chip-meta").text(meta);
       $("#subscrpt-product-select-wrap").hide();
       $("#subscrpt-selected-product-chip").show();
+
+      if (price && !$.trim($("#subscrpt_connect_price").val())) {
+        $("#subscrpt_connect_price").val(parseFloat(price).toFixed(2));
+      }
+
+      this.selectedProductName = name;
     },
 
-    clearProductSelection: function () {
+    clearProduct: function () {
       $("#subscrpt-existing-product-hidden").val("");
       $("#subscrpt-product-search-input").val("");
       $(".wpsubs-p2-product-search__item").show();
-      $(".wpsubs-p2-product-search__empty").hide();
-      $("#subscrpt-product-search-dropdown").hide();
       $("#subscrpt-selected-product-chip").hide();
       $("#subscrpt-product-select-wrap").show();
-      $("#subscrpt_product_name").val("");
-      $("#subscrpt_product_price").val("");
-      // Reset variation picker
-      $("#subscrpt-variation-picker-wrap").hide();
-      $("#subscrpt-variation-picker-list").empty();
-      $("#subscrpt-variation-id-hidden").val("");
-      this.updatePreview();
+      this.selectedProductName = "";
     },
 
-    showRelevantProductSection: function () {
-      var activeBtn = $(".product-toggle-btn.active");
-      var mode = activeBtn.length ? activeBtn.data("mode") : "new";
-
-      if (mode === "existing") {
-        $("#subscrpt-existing-product-fields").show();
-        var selectedId = $("#subscrpt-existing-product-hidden").val();
-        if (selectedId) {
-          var item = $(".wpsubs-p2-product-search__item[data-id='" + selectedId + "']");
-          if (item.length) {
-            var name = item.data("name") || "";
-            var price = item.data("price") != null ? String(item.data("price")) : "";
-            var type = item.data("type") || "";
-            var sku = item.data("sku") ? String(item.data("sku")) : "";
-            this.showProductChip(name, price, type, sku);
-          }
-        }
-      } else {
-        $("#subscrpt-existing-product-fields").hide();
-      }
-    },
-
-    // ----- Live preview -----
-
-    initLivePreview: function () {
-      var self = this;
-      $(document).on("input", "#subscrpt_product_name", function () {
-        self.updatePreview();
-      });
-      $(document).on("input", "#subscrpt_product_price", function () {
-        self.updatePreview();
-      });
-      $(document).on("wpsubs:select", "#subscrpt-billing-period-select", function () {
-        self.updatePreview();
-      });
-    },
-
-    updatePreview: function () {
-      var name = $("#subscrpt_product_name").val() || "Your product";
-      var price = $("#subscrpt_product_price").val() || "0.00";
-      var period = $("input[name='subscrpt_billing_period']").val() || "months";
-
-      $("#p2-preview-name").text(name);
-      $("#p2-preview-price").text(parseFloat(price).toFixed(2));
-      $("#p2-preview-period").text(period);
-    },
-
-    // ----- Save & validate -----
-
-    savePage2: function (e) {
+    connect: function (e) {
       e.preventDefault();
 
-      if (!this.validatePage2()) {
-        return;
-      }
-
-      var productMode = $(".product-toggle-btn.active").data("mode") || "new";
-      var confirmMsg =
-        productMode === "new"
-          ? "Create this subscription product?"
-          : "Apply these subscription settings to the selected product?";
-
-      if (!confirm(confirmMsg)) {
-        return;
-      }
-
-      var data = {
-        action: "subscrpt_save_wizard_page2",
-        nonce: $("#subscrpt_wizard_nonce").val(),
-        product_mode: $(".product-toggle-btn.active").data("mode") || "new",
-        product_name: $("#subscrpt_product_name").val(),
-        product_price: $("#subscrpt_product_price").val(),
-        existing_product_id: $("#subscrpt-existing-product-hidden").val(),
-        variation_id: $("#subscrpt-variation-id-hidden").val(),
-        timing_option: $("#subscrpt_timing_option").val(),
-        billing_per: $("#subscrpt_billing_per").val(),
-        billing_period: $("input[name='subscrpt_billing_period']").val(),
-        trial_timing_per: $("#subscrpt_trial_timing_per").val(),
-        signup_fee: $("#subscrpt_signup_fee").val(),
-        // hidden compat fields
-        trial_enabled: 0,
-        trial_timing_option: $("input[name='subscrpt_trial_timing_option']").val() || "days",
-        length_enabled: 0,
-        length_per: "",
-        length_option: "months",
-      };
-
       var self = this;
+      var $btn = $("#subscrpt-btn-connect");
+      var price = $.trim($("#subscrpt_connect_price").val());
 
-      $.post(this.ajaxUrl, data, function (response) {
-        if (response.success) {
-          window.location.reload();
-        } else {
-          alert(response.data.message || "Something went wrong. Please try again.");
+      if (price && (isNaN(parseFloat(price)) || parseFloat(price) < 0)) {
+        window.alert("Please enter a valid price.");
+        return;
+      }
+
+      if ($btn.hasClass("is-loading")) {
+        return;
+      }
+
+      if (this.currentConnectMode() === "existing") {
+        var productId = $("#subscrpt-existing-product-hidden").val();
+        if (!productId) {
+          window.alert("Please select a product.");
+          return;
         }
-      }).fail(function () {
-        alert("Server error. Please try again.");
-      });
-    },
-
-    validatePage2: function () {
-      var isValid = true;
-      var messages = [];
-      var productMode = $(".product-toggle-btn.active").data("mode") || "new";
-      var productName = $("#subscrpt_product_name").val().trim();
-      var price = $("#subscrpt_product_price").val().trim();
-      var existing = $("#subscrpt-existing-product-hidden").val();
-      var billing = $("input[name='subscrpt_billing_period']").val();
-
-      if (productMode === "new") {
-        if (!productName) {
-          messages.push("Product name is required.");
-          isValid = false;
-        }
+        $btn.addClass("is-loading").prop("disabled", true);
+        this.createRelation(productId, this.selectedProductName || "Product", price, $btn);
       } else {
-        if (!existing) {
-          messages.push("Please select an existing product.");
-          isValid = false;
+        var name = $.trim($("#subscrpt_new_product_name").val());
+        if (!name) {
+          window.alert("Please enter a product name.");
+          return;
         }
-        if (
-          existing &&
-          $("#subscrpt-variation-picker-wrap").is(":visible") &&
-          !$("#subscrpt-variation-id-hidden").val()
-        ) {
-          messages.push("Please select a variation.");
-          isValid = false;
-        }
+        $btn.addClass("is-loading").prop("disabled", true);
+        // Create the product first, then connect the plan to it.
+        $.post(
+          this.cfg.ajax_url,
+          {
+            action: "subscrpt_create_wizard_product",
+            nonce: $("#subscrpt_wizard_nonce").val(),
+            product_name: name,
+            product_price: price,
+          },
+          function (response) {
+            if (response && response.success) {
+              self.createRelation(response.data.product_id, name, price, $btn);
+            } else {
+              $btn.removeClass("is-loading").prop("disabled", false);
+              window.alert((response && response.data && response.data.message) || "Could not create the product.");
+            }
+          },
+        ).fail(function () {
+          $btn.removeClass("is-loading").prop("disabled", false);
+          window.alert("Server error. Please try again.");
+        });
       }
-
-      if (!price || isNaN(parseFloat(price)) || parseFloat(price) < 0) {
-        messages.push("Please enter a valid price.");
-        isValid = false;
-      }
-
-      if (!billing) {
-        messages.push("Please select a billing period.");
-        isValid = false;
-      }
-
-      if (!isValid) {
-        alert(messages.join("\n"));
-      }
-
-      return isValid;
     },
 
-    // ----- Page 3 actions -----
+    createRelation: function (productId, productName, price, $btn) {
+      var self = this;
+      this.api("POST", "/relations", {
+        plan_id: this.termId,
+        oid: parseInt(productId, 10),
+        vid: 0,
+        type: 1,
+        status: "active",
+        exclude: false,
+        data: { regular_price: price, sale_price: "", discount_value: 0 },
+      })
+        .then(function () {
+          $btn.removeClass("is-loading").prop("disabled", false);
+          self.showDone(productName, price);
+        })
+        .catch(function (err) {
+          $btn.removeClass("is-loading").prop("disabled", false);
+          window.alert(err.message || "Could not connect the plan. Please try again.");
+        });
+    },
+
+    // ----- Page 4: finish -----
+
+    showDone: function (productName, price) {
+      var symbol = this.cfg.currency_symbol || "$";
+      var planInitials = (this.planTitle || "Plan")
+        .split(" ")
+        .filter(Boolean)
+        .slice(0, 2)
+        .map(function (w) {
+          return w[0].toUpperCase();
+        })
+        .join("");
+
+      $("#p4-plan-avatar").text(planInitials || "P");
+      $("#p4-plan-name").text(this.planTitle || "Plan");
+      $("#p4-plan-billing").text(this.billingText || "");
+      $("#p4-product-name").text(productName);
+      $("#p4-price").text(price ? symbol + parseFloat(price).toFixed(2) : "—");
+
+      this.switchSection(4);
+    },
 
     restart: function (e) {
       e.preventDefault();
       var self = this;
       $.post(
-        this.ajaxUrl,
+        this.cfg.ajax_url,
         {
           action: "subscrpt_reset_wizard",
           nonce: $("#subscrpt_wizard_nonce").val(),
         },
         function () {
+          self.groupId = 0;
+          self.termId = 0;
+          self.planTitle = "";
+          self.billingText = "";
+          $("#subscrpt_free_trial, #subscrpt_signup_fee, #subscrpt_connect_price").val("");
+          $("#subscrpt_billing_frequency").val("1");
+          $("#subscrpt_new_product_name").val("");
+          self.clearProduct();
           self.switchSection(1);
-          $("#subscrpt-current-page").text("1");
-          $("#subscrpt_product_name").val("");
-          $("#subscrpt_product_price").val("");
-          $("#subscrpt_timing_option").val("never");
-          $("#subscrpt_billing_per").val("1");
-          $("input[name='subscrpt_billing_period']").val("months");
-          $("#subscrpt_trial_timing_per").val("0");
-          $("#subscrpt_signup_fee").val("");
-          // Reset chip
-          $("#subscrpt-selected-product-chip").hide();
-          $("#subscrpt-product-select-wrap").show();
-          $("#subscrpt_existing_product").val("");
         },
       );
     },
