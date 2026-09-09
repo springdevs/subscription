@@ -77,7 +77,7 @@ $types = array(
 							<span style="display:block;font-weight:600;color:var(--wpsubs-text);">
 								<?php echo esc_html( $type_def['label'] ); ?>
 								<?php if ( ! empty( $type_def['badge'] ) ) : ?>
-									<span class="wpsubs-badge wpsubs-badge--brand" style="margin-left:2px;"><?php echo esc_html( $type_def['badge'] ); ?></span>
+									<span class="wpsubs-badge wpsubs-badge--muted" style="margin-left:2px;"><?php echo esc_html( $type_def['badge'] ); ?></span>
 								<?php endif; ?>
 								<?php if ( $locked ) : ?>
 									<span class="wpsubs-badge wpsubs-badge--pro"><?php esc_html_e( 'Pro', 'subscription' ); ?></span>

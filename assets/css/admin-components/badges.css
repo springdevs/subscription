@@ -35,6 +35,15 @@
   border-color: #ffc4ab;
 }
 
+/* Grey tag for cards that already carry brand colour elsewhere (border, icon,
+   tint). Deeper than --neutral, which washes out against the selected card's
+   peach background. */
+.wpsubs-badge--muted {
+  background: #eceef1;
+  color: var(--wpsubs-text-muted);
+  border-color: #dcdfe4;
+}
+
 .wpsubs-badge--active {
   background: #dcfce7;
   color: #15803d;
