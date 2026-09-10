@@ -108,7 +108,7 @@ $subscrpt_icon_plan = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor
 
 	<!-- Step indicator -->
 	<div class="wpsubs-wizard-stepper" id="subscrpt-stepper">
-		<div class="wpsubs-wizard-stepper__step active" data-step="1">
+		<div class="wpsubs-wizard-stepper__step" data-step="1">
 			<div class="wpsubs-wizard-stepper__num">1</div>
 			<div class="wpsubs-wizard-stepper__label"><?php esc_html_e( 'Plan', 'subscription' ); ?></div>
 		</div>
@@ -130,7 +130,7 @@ $subscrpt_icon_plan = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor
 	</div>
 
 	<!-- Hidden state -->
-	<input type="hidden" id="subscrpt-wizard-page" value="1">
+	<input type="hidden" id="subscrpt-wizard-page" value="0">
 	<input type="hidden" id="subscrpt-has-products" value="<?php echo $has_products ? '1' : '0'; ?>">
 	<input type="hidden" id="subscrpt-plan-type" value="recurring">
 	<?php wp_nonce_field( 'subscrpt_onboarding_wizard', 'subscrpt_wizard_nonce' ); ?>
@@ -140,8 +140,30 @@ $subscrpt_icon_plan = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor
 		<!-- ======================= Steps (left) ======================= -->
 		<div class="wpsubs-wizard-steps">
 
+			<!-- PAGE 0: Welcome (no preview / no footer — button lives in the card) -->
+			<div class="wpsubs-wizard-section active" data-page="0" id="subscrpt-section-0">
+				<div class="wpsubs-wizard-card wpsubs-welcome">
+					<img class="wpsubs-welcome__logo" src="<?php echo esc_url( SUBSCRPT_ASSETS . '/images/logo.png' ); ?>" width="64" height="64" alt="<?php esc_attr_e( 'WPSubscription', 'subscription' ); ?>">
+					<h1 class="wpsubs-welcome__title"><?php esc_html_e( 'Thank you for installing WPSubscription!', 'subscription' ); ?></h1>
+					<p class="wpsubs-welcome__lead"><?php esc_html_e( "Let's set up your first subscription plan. A plan decides how customers are billed and connects to a product they can subscribe to.", 'subscription' ); ?></p>
+					<ul class="wpsubs-welcome__steps">
+						<li><span class="wpsubs-welcome__num">1</span><?php esc_html_e( 'Create a plan and choose how customers are billed', 'subscription' ); ?></li>
+						<li><span class="wpsubs-welcome__num">2</span><?php esc_html_e( 'Add one or more billing durations', 'subscription' ); ?></li>
+						<li><span class="wpsubs-welcome__num">3</span><?php esc_html_e( 'Connect it to a product', 'subscription' ); ?></li>
+					</ul>
+					<div class="wpsubs-welcome__actions">
+						<button type="button" id="subscrpt-btn-start" class="wpsubs-btn wpsubs-btn--primary wpsubs-btn--lg">
+							<?php esc_html_e( 'Get started', 'subscription' ); ?> &rsaquo;
+						</button>
+						<button type="button" id="subscrpt-btn-skip" class="wpsubs-welcome__skip">
+							<?php esc_html_e( 'Skip setup', 'subscription' ); ?>
+						</button>
+					</div>
+				</div>
+			</div>
+
 			<!-- PAGE 1: Create Plan (type + name) -->
-			<div class="wpsubs-wizard-section active" data-page="1" id="subscrpt-section-1">
+			<div class="wpsubs-wizard-section" data-page="1" id="subscrpt-section-1">
 				<div class="wpsubs-wizard-card">
 					<h1 class="wpsubs-p2-page-title"><?php esc_html_e( 'Create a plan', 'subscription' ); ?></h1>
 					<p class="wpsubs-p2-page-subtitle"><?php esc_html_e( 'Choose how customers are billed, then name your plan.', 'subscription' ); ?></p>
@@ -518,9 +540,9 @@ $subscrpt_icon_plan = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor
 
 		<!-- ======================= Footer nav (under the left column) ======================= -->
 		<div class="wpsubs-wizard-footer">
-			<div class="wpsubs-wizard-nav" data-nav="1">
-				<button type="button" id="subscrpt-btn-skip" class="wpsubs-p2-nav-back">
-					<?php esc_html_e( 'Skip setup', 'subscription' ); ?>
+			<div class="wpsubs-wizard-nav" data-nav="1" hidden>
+				<button type="button" id="subscrpt-btn-back-0" class="wpsubs-p2-nav-back">
+					&#8249; <?php esc_html_e( 'Back', 'subscription' ); ?>
 				</button>
 				<button type="button" id="subscrpt-btn-next-1" class="wpsubs-btn wpsubs-btn--primary">
 					<?php esc_html_e( 'Continue', 'subscription' ); ?> &rsaquo;

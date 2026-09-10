@@ -46,9 +46,10 @@
       this.initLivePreview();
       this.initFocusZoom();
       this.initDurations();
-      this.updatePreview();
       $("#subscrpt-link-plans").attr("href", this.cfg.plans_url || "#");
       $("#subscrpt-link-products").attr("href", this.cfg.products_url || "#");
+      // Start on the welcome page (normalises stepper, footer nav and preview).
+      this.switchSection(0);
     },
 
     // ----- REST helper -----
@@ -75,9 +76,13 @@
     // ----- Events -----
 
     bindEvents: function () {
+      // Page 0 (welcome).
+      $(document).on("click", "#subscrpt-btn-start", $.proxy(this.goToPage, this, 1));
+      $(document).on("click", "#subscrpt-btn-skip", $.proxy(this.skip, this));
+
       // Page 1 (plan).
       $(document).on("click", ".wpsubs-plan-type-card", $.proxy(this.selectPlanType, this));
-      $(document).on("click", "#subscrpt-btn-skip", $.proxy(this.skip, this));
+      $(document).on("click", "#subscrpt-btn-back-0", $.proxy(this.goToPage, this, 0));
       $(document).on("click", "#subscrpt-btn-next-1", $.proxy(this.nextFromPlan, this));
 
       // Page 2 (durations).
@@ -129,6 +134,11 @@
         this.reachedDurations = true;
       }
 
+      // The welcome page (0) has no stepper, no live preview and no footer nav —
+      // it's a standalone intro with its own button.
+      $("#subscrpt-stepper").toggle(pageNum !== 0);
+      $(".wpsubs-wizard-layout").toggleClass("is-welcome", pageNum === 0);
+
       $(".wpsubs-wizard-stepper__step").removeClass("active done");
       $(".wpsubs-wizard-stepper__step").each(function () {
         var step = parseInt($(this).data("step"), 10);
@@ -152,7 +162,7 @@
       $('.wpsubs-wizard-nav[data-nav="' + pageNum + '"]').removeAttr("hidden");
 
       // Light up the part of the preview this step fills in.
-      var groups = { 1: "plan", 2: "dur", 3: "prod", 4: "done" };
+      var groups = { 0: "plan", 1: "plan", 2: "dur", 3: "prod", 4: "done" };
       $("#subscrpt-preview-graph").attr("data-active", groups[pageNum] || "plan");
       this.updatePreview();
 

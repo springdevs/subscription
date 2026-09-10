@@ -169,6 +169,109 @@
   padding: 0;
   margin-bottom: 16px;
 }
+
+/* Welcome page (step 0): standalone intro — no preview, no footer nav. */
+.wpsubs-wizard-layout.is-welcome {
+  grid-template-columns: 1fr;
+  grid-template-areas: "steps";
+}
+.wpsubs-wizard-layout.is-welcome .wpsubs-wizard-aside,
+.wpsubs-wizard-layout.is-welcome .wpsubs-wizard-footer {
+  display: none;
+}
+/* Center the intro in the available height so it doesn't sit at the top. */
+.wpsubs-wizard-layout.is-welcome .wpsubs-wizard-steps {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 480px;
+}
+.wpsubs-welcome {
+  max-width: 440px;
+  margin: 0 auto;
+  padding: 8px 0;
+  text-align: center;
+}
+.wpsubs-welcome__logo {
+  display: block;
+  width: 64px;
+  height: 64px;
+  margin: 0 auto 20px;
+  background: transparent;
+  /* drop-shadow follows the icon's transparent shape (box-shadow would frame
+     the square box and show through the transparent corners). */
+  filter: drop-shadow(0 8px 16px rgba(255, 77, 0, 0.28));
+}
+.wpsubs-welcome__title {
+  font-size: 25px;
+  font-weight: 800;
+  color: var(--wpsubs-text, #374151);
+  margin: 0 0 10px;
+  line-height: 1.25;
+}
+.wpsubs-welcome__lead {
+  font-size: 14px;
+  color: var(--wpsubs-text-muted, #6b7280);
+  line-height: 1.65;
+  margin: 0 auto;
+  max-width: 400px;
+}
+.wpsubs-welcome__steps {
+  list-style: none;
+  margin: 28px auto 0;
+  padding: 0;
+  text-align: left;
+  display: grid;
+  gap: 10px;
+}
+.wpsubs-welcome__steps li {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 13px 15px;
+  font-size: 13.5px;
+  font-weight: 500;
+  color: var(--wpsubs-text, #374151);
+  background: var(--wpsubs-surface-muted, #f9fafb);
+  border: 1px solid var(--wpsubs-border, #e5e7eb);
+  border-radius: var(--wpsubs-radius, 8px);
+}
+.wpsubs-welcome__num {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: var(--wpsubs-brand, #ff4d00);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 700;
+}
+.wpsubs-welcome__actions {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  margin-top: 28px;
+}
+.wpsubs-btn--lg {
+  padding: 10px 22px;
+  font-size: 14px;
+}
+.wpsubs-welcome__skip {
+  background: none;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+  font-size: 13px;
+  color: var(--wpsubs-text-muted, #6b7280);
+}
+.wpsubs-welcome__skip:hover {
+  color: var(--wpsubs-text, #374151);
+  text-decoration: underline;
+}
 /* Form rows (shared) */
 .wpsubs-form-row {
   margin-bottom: 16px;
