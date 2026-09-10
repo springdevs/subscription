@@ -34,8 +34,6 @@ use SpringDevs\Subscription\Admin\Plans;
 		/* translators: %d: number of connected products. */
 		$meta[] = esc_html( sprintf( _n( '%d product', '%d products', $product_count, 'subscription' ), $product_count ) );
 		?>
-		<div data-subscrpt-plan-notice aria-live="polite"></div>
-
 		<?php
 		/*
 		 * Two columns: the title block on the left, the tab-scoped actions on

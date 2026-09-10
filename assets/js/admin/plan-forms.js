@@ -26,72 +26,11 @@
   var INTERVAL_TO_INT = { day: 1, week: 2, month: 3, year: 4 };
   var INT_TO_INTERVAL = { 1: "day", 2: "week", 3: "month", 4: "year" };
 
-  /**
-   * Call a plan REST endpoint.
-   *
-   * @param {string} method HTTP verb.
-   * @param {string} path   Path under the /plans base, e.g. "/groups".
-   * @param {Object} [body] JSON body for write requests.
-   * @return {Promise<Object>} Parsed JSON (rejects on non-2xx).
-   */
-  function api(method, path, body) {
-    return fetch(cfg.restUrl + path, {
-      method: method,
-      credentials: "same-origin",
-      headers: {
-        "Content-Type": "application/json",
-        "X-WP-Nonce": cfg.nonce || "",
-      },
-      body: body ? JSON.stringify(body) : undefined,
-    }).then(function (res) {
-      return res.json().then(function (data) {
-        if (!res.ok) {
-          throw new Error((data && data.message) || i18n.genericError);
-        }
-        return data;
-      });
-    });
-  }
-
-  /**
-   * Mark a button busy while its request is in flight, and lock the controls
-   * beside it so the same write cannot be fired twice or abandoned midway.
-   * The `is-loading` class draws the spinner (admin-components/buttons.css).
-   *
-   * @param {HTMLElement} btn     Button.
-   * @param {boolean}     loading Loading state.
-   */
-  function setLoading(btn, loading) {
-    if (!btn) {
-      return;
-    }
-    btn.disabled = loading;
-    btn.classList.toggle("is-loading", loading);
-
-    // The row the button sits in: a modal footer, or the inline edit form.
-    var row = btn.closest(".wpsubs-modal__footer") || btn.parentNode;
-    if (row && row.querySelectorAll) {
-      row.querySelectorAll("button, input, select, textarea").forEach(function (el) {
-        if (el !== btn) {
-          el.disabled = loading;
-        }
-      });
-    }
-
-    // Inside a modal, the dismiss affordances go with it. Escape is left
-    // working on purpose, as the way out of a request that never returns.
-    var modal = btn.closest(".wpsubs-modal");
-    if (modal) {
-      var close = modal.querySelector(".wpsubs-modal__close");
-      if (close) {
-        close.disabled = loading;
-      }
-      var backdrop = modal.querySelector(".wpsubs-modal__backdrop");
-      if (backdrop) {
-        backdrop.style.pointerEvents = loading ? "none" : "";
-      }
-    }
-  }
+  // REST calls, the button-busy lock and every message here come from the
+  // shared component (admin-components/save.js).
+  var save = window.WPSubsSave.bind({ restUrl: cfg.restUrl, nonce: cfg.nonce, i18n: i18n });
+  var api = save.api;
+  var setLoading = save.busy;
 
   /**
    * Open a modal by id via the shared helper.
@@ -433,7 +372,7 @@
     var name = nameInput ? nameInput.value.trim() : "";
 
     if (!name) {
-      window.alert(i18n.nameRequired);
+      save.notify(i18n.nameRequired, "error");
       return;
     }
 
@@ -472,7 +411,7 @@
       })
       .catch(function (err) {
         setLoading(btn, false);
-        window.alert(err.message || i18n.genericError);
+        save.notify(err.message || i18n.genericError, "error");
       });
   });
 
@@ -517,7 +456,7 @@
         openModal("subscrpt-term-modal");
       })
       .catch(function (err) {
-        window.alert(err.message || i18n.genericError);
+        save.notify(err.message || i18n.genericError, "error");
       });
   });
 
@@ -535,7 +474,7 @@
     var payload = termPayload(collectFields(modal), groupId, groupType);
 
     if (!payload.title) {
-      window.alert(i18n.nameRequired);
+      save.notify(i18n.nameRequired, "error");
       return;
     }
 
@@ -561,7 +500,7 @@
       })
       .catch(function (err) {
         setLoading(btn, false);
-        window.alert(err.message || i18n.genericError);
+        save.notify(err.message || i18n.genericError, "error");
       });
   });
 

@@ -16,72 +16,11 @@
   var cfg = window.subscrptPlans || {};
   var i18n = cfg.i18n || {};
 
-  /**
-   * Call a plan REST endpoint.
-   *
-   * @param {string} method HTTP verb.
-   * @param {string} path   Path under the /plans base, e.g. "/groups".
-   * @param {Object} [body] JSON body for write requests.
-   * @return {Promise<Object>} Parsed JSON (rejects on non-2xx).
-   */
-  function api(method, path, body) {
-    return fetch(cfg.restUrl + path, {
-      method: method,
-      credentials: "same-origin",
-      headers: {
-        "Content-Type": "application/json",
-        "X-WP-Nonce": cfg.nonce || "",
-      },
-      body: body ? JSON.stringify(body) : undefined,
-    }).then(function (res) {
-      return res.json().then(function (data) {
-        if (!res.ok) {
-          throw new Error((data && data.message) || i18n.genericError);
-        }
-        return data;
-      });
-    });
-  }
-
-  /**
-   * Mark a button busy while its request is in flight, and lock the controls
-   * beside it so the same write cannot be fired twice or abandoned midway.
-   * The `is-loading` class draws the spinner (admin-components/buttons.css).
-   *
-   * @param {HTMLElement} btn     Button.
-   * @param {boolean}     loading Loading state.
-   */
-  function setLoading(btn, loading) {
-    if (!btn) {
-      return;
-    }
-    btn.disabled = loading;
-    btn.classList.toggle("is-loading", loading);
-
-    // The row the button sits in: a modal footer, or the inline edit form.
-    var row = btn.closest(".wpsubs-modal__footer") || btn.parentNode;
-    if (row && row.querySelectorAll) {
-      row.querySelectorAll("button, input, select, textarea").forEach(function (el) {
-        if (el !== btn) {
-          el.disabled = loading;
-        }
-      });
-    }
-
-    // Inside a modal, the dismiss affordances go with it. Escape is left
-    // working on purpose, as the way out of a request that never returns.
-    var modal = btn.closest(".wpsubs-modal");
-    if (modal) {
-      var close = modal.querySelector(".wpsubs-modal__close");
-      if (close) {
-        close.disabled = loading;
-      }
-      var backdrop = modal.querySelector(".wpsubs-modal__backdrop");
-      if (backdrop) {
-        backdrop.style.pointerEvents = loading ? "none" : "";
-      }
-    }
-  }
+  // REST calls, the button-busy lock and every message on this screen come
+  // from the shared component (admin-components/save.js).
+  var save = window.WPSubsSave.bind({ restUrl: cfg.restUrl, nonce: cfg.nonce, i18n: i18n });
+  var api = save.api;
+  var setLoading = save.busy;
 
   /* ------------------------------------------------------------------ *
    * Row-actions dropdown (kebab) + client-side list filter.
@@ -175,7 +114,7 @@
         }
       })
       .catch(function (err) {
-        window.alert(err.message || i18n.genericError);
+        save.notify(err.message || i18n.genericError, "error");
       });
   });
 
@@ -208,35 +147,6 @@
   /* ------------------------------------------------------------------ *
    * Plan group: inline rename of the detail page title.
    * ------------------------------------------------------------------ */
-
-  /**
-   * Show a transient WP admin notice above the plan header.
-   *
-   * @param {string} message Notice text.
-   * @param {string} [type]  WP notice type - "success" (default) or "error".
-   */
-  function planNotice(message, type) {
-    var host = document.querySelector("[data-subscrpt-plan-notice]");
-    if (!host) {
-      return;
-    }
-    host.textContent = "";
-
-    var notice = document.createElement("div");
-    notice.className = "notice notice-" + (type || "success");
-    notice.style.margin = "0 0 16px";
-
-    var line = document.createElement("p");
-    line.textContent = message;
-    notice.appendChild(line);
-    host.appendChild(notice);
-
-    window.setTimeout(function () {
-      if (notice.parentNode === host) {
-        host.removeChild(notice);
-      }
-    }, 4000);
-  }
 
   /**
    * The rename widget's parts, or null when not on the detail page.
@@ -315,7 +225,7 @@
     var name = parts.input.value.trim();
 
     if (!name) {
-      window.alert(i18n.nameRequired);
+      save.notify(i18n.nameRequired, "error");
       parts.input.focus();
       return;
     }
@@ -332,10 +242,10 @@
         parts.display.textContent = name;
         renameBreadcrumb(name);
         renameToggle(false);
-        planNotice(i18n.saved);
+        save.notify(i18n.saved);
       })
       .catch(function (err) {
-        window.alert(err.message || i18n.genericError);
+        save.notify(err.message || i18n.genericError, "error");
       })
       .then(function () {
         setLoading(parts.save, false);
@@ -438,7 +348,7 @@
       return cb.value;
     });
     if (!ids.length) {
-      window.alert(i18n.selectPlans || i18n.genericError);
+      save.notify(i18n.selectPlans || i18n.genericError, "error");
       return;
     }
 
@@ -456,7 +366,7 @@
           window.location.reload();
         })
         .catch(function (err) {
-          window.alert(err.message || i18n.genericError);
+          save.notify(err.message || i18n.genericError, "error");
         });
     }
   }
@@ -515,7 +425,7 @@
         }
       })
       .catch(function (err) {
-        window.alert(err.message || i18n.genericError);
+        save.notify(err.message || i18n.genericError, "error");
       });
   });
 
@@ -594,13 +504,13 @@
     api("PUT", "/terms/" + id, { status: status })
       .then(function () {
         applyTermStatus(label, active);
-        planNotice(active ? i18n.termActivated : i18n.termDrafted);
+        save.notify(active ? i18n.termActivated : i18n.termDrafted);
       })
       .catch(function (err) {
         if (cb) {
           cb.checked = !active;
         }
-        planNotice(err.message || i18n.genericError, "error");
+        save.notify(err.message || i18n.genericError, "error");
       })
       .then(function () {
         setTermBusy(label, false);
@@ -1025,11 +935,11 @@
       })
       .then(function () {
         setLoading(btn, false);
-        planNotice(i18n.productsUpdated);
+        save.notify(i18n.productsUpdated);
       })
       .catch(function (err) {
         setLoading(btn, false);
-        planNotice(err.message || i18n.genericError, "error");
+        save.notify(err.message || i18n.genericError, "error");
       });
   });
 
@@ -1069,11 +979,11 @@
       })
       .then(function () {
         setLoading(btn, false);
-        planNotice(i18n.productRemoved);
+        save.notify(i18n.productRemoved);
       })
       .catch(function (err) {
         setLoading(btn, false);
-        planNotice(err.message || i18n.genericError, "error");
+        save.notify(err.message || i18n.genericError, "error");
       });
   });
 
@@ -1114,11 +1024,11 @@
       })
       .then(function () {
         setLoading(btn, false);
-        planNotice(i18n.productRemoved);
+        save.notify(i18n.productRemoved);
       })
       .catch(function (err) {
         setLoading(btn, false);
-        planNotice(err.message || i18n.genericError, "error");
+        save.notify(err.message || i18n.genericError, "error");
       });
   });
 
@@ -1252,11 +1162,11 @@
       })
       .then(function () {
         setLoading(btn, false);
-        planNotice(i18n.pricesSaved);
+        save.notify(i18n.pricesSaved);
       })
       .catch(function (err) {
         setLoading(btn, false);
-        planNotice(err.message || i18n.genericError, "error");
+        save.notify(err.message || i18n.genericError, "error");
       });
   });
 
@@ -1305,11 +1215,11 @@
       })
       .then(function () {
         setLoading(btn, false);
-        planNotice(i18n.pricesSaved);
+        save.notify(i18n.pricesSaved);
       })
       .catch(function (err) {
         setLoading(btn, false);
-        planNotice(err.message || i18n.genericError, "error");
+        save.notify(err.message || i18n.genericError, "error");
       });
   });
 

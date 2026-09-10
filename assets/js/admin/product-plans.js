@@ -20,32 +20,10 @@
   // modal creates a plan against it instead of running the new-group wizard.
   var pendingExistingGroupId = "";
 
-  /**
-   * Call a plan REST endpoint.
-   *
-   * @param {string} method HTTP verb.
-   * @param {string} path   Path under the /plans base.
-   * @param {Object} [body] JSON body.
-   * @return {Promise<Object>}
-   */
-  function api(method, path, body) {
-    return fetch(cfg.restUrl + path, {
-      method: method,
-      headers: {
-        "Content-Type": "application/json",
-        "X-WP-Nonce": cfg.nonce,
-      },
-      credentials: "same-origin",
-      body: body ? JSON.stringify(body) : undefined,
-    }).then(function (res) {
-      if (!res.ok) {
-        return res.json().then(function (data) {
-          throw new Error((data && data.message) || "");
-        });
-      }
-      return res.status === 204 ? {} : res.json();
-    });
-  }
+  // REST calls and every message here come from the shared component
+  // (admin-components/save.js).
+  var save = window.WPSubsSave.bind({ restUrl: cfg.restUrl, nonce: cfg.nonce, i18n: i18n });
+  var api = save.api;
 
   function root() {
     return document.querySelector("[data-subscrpt-product-plans]");
@@ -599,7 +577,7 @@
           });
         })
         .catch(function (err) {
-          window.alert((err && err.message) || i18n.connectError);
+          save.notify((err && err.message) || i18n.connectError, "error");
         });
       return;
     }
@@ -613,7 +591,7 @@
           refreshPlanView(String(gid));
         })
         .catch(function (err) {
-          window.alert((err && err.message) || i18n.connectError);
+          save.notify((err && err.message) || i18n.connectError, "error");
         });
     }
   });
@@ -645,7 +623,7 @@
         }
       })
       .catch(function (err) {
-        window.alert((err && err.message) || i18n.connectError);
+        save.notify((err && err.message) || i18n.connectError, "error");
       });
   }
 
@@ -708,7 +686,7 @@
       })
       .catch(function (err) {
         btn.disabled = false;
-        window.alert(err.message || i18n.connectError);
+        save.notify(err.message || i18n.connectError, "error");
       });
   });
 
@@ -993,7 +971,7 @@
       })
       .catch(function (err) {
         btn.disabled = false;
-        window.alert(err.message || i18n.connectError);
+        save.notify(err.message || i18n.connectError, "error");
       });
   });
 
@@ -1157,7 +1135,7 @@
           }
         })
         .catch(function (err) {
-          window.alert(err.message || i18n.connectError);
+          save.notify(err.message || i18n.connectError, "error");
         });
     });
   })();
