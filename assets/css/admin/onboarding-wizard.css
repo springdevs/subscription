@@ -56,6 +56,11 @@
 .wpsubs-wizard-nav[hidden] {
   display: none;
 }
+/* Grouped secondary links on the finish step (left of the Finish button). */
+.wpsubs-wizard-nav__group {
+  display: flex;
+  gap: 12px;
+}
 .wpsubs-preview__label {
   margin: 0 0 2px;
   font-size: 11px;
@@ -725,6 +730,12 @@
 .wpsubs-p2-billing-group .wpsubs-p2-billing-per-input {
   flex: 1 1 auto;
   min-width: 0;
+}
+/* Locked (no Pro): frequency is fixed at 1 and not editable. */
+.wpsubs-p2-billing-per-input[readonly] {
+  background: var(--wpsubs-surface-muted, #f3f4f6) !important;
+  color: var(--wpsubs-text-muted, #6b7280);
+  cursor: not-allowed;
 }
 #subscrpt-billing-period-select {
   width: 100%;

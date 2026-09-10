@@ -24,6 +24,43 @@ class Menu {
 		add_action( 'admin_menu', array( $this, 'reorder_submenu' ), 999 );
 		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_admin_assets' ) );
 		add_action( 'wp_ajax_subscrpt_bulk_action', array( $this, 'handle_bulk_action_ajax' ) );
+		add_action( 'admin_init', array( $this, 'maybe_onboarding_redirect' ) );
+	}
+
+	/**
+	 * Send a first-time user to the onboarding wizard when they open the
+	 * WPSubscription dashboard with no plan created yet.
+	 *
+	 * This runs on the dashboard visit rather than on activation, so it works
+	 * regardless of when WooCommerce gets installed (the plugin only loads its
+	 * admin once WooCommerce is active). A persistent "seen" flag makes it fire
+	 * at most once, so the user is never trapped away from the dashboard.
+	 *
+	 * @return void
+	 */
+	public function maybe_onboarding_redirect() {
+		// Only on the WPSubscription dashboard page.
+		if ( ! isset( $_GET['page'] ) || 'wp-subscription' !== $_GET['page'] ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- menu navigation, no state change.
+			return;
+		}
+
+		if ( wp_doing_ajax() || is_network_admin() || ! current_user_can( 'manage_options' ) ) {
+			return;
+		}
+
+		// Fire at most once, ever.
+		if ( get_option( 'subscrpt_onboarding_seen' ) ) {
+			return;
+		}
+		update_option( 'subscrpt_onboarding_seen', 1, false );
+
+		// Only first-time users with no plan yet.
+		if ( ! empty( \SpringDevs\Subscription\Illuminate\Plans\PlanRepository::get_groups() ) ) {
+			return;
+		}
+
+		wp_safe_redirect( admin_url( 'admin.php?page=wp-subscription-onboarding' ) );
+		exit;
 	}
 
 	/**

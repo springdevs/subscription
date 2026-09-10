@@ -153,7 +153,7 @@ $subscrpt_icon_plan = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor
 					</ul>
 					<div class="wpsubs-welcome__actions">
 						<button type="button" id="subscrpt-btn-start" class="wpsubs-btn wpsubs-btn--primary wpsubs-btn--lg">
-							<?php esc_html_e( 'Get started', 'subscription' ); ?> &rsaquo;
+							<?php esc_html_e( "Let's go", 'subscription' ); ?> &rsaquo;
 						</button>
 						<button type="button" id="subscrpt-btn-skip" class="wpsubs-welcome__skip">
 							<?php esc_html_e( 'Skip setup', 'subscription' ); ?>
@@ -228,7 +228,8 @@ $subscrpt_icon_plan = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor
 								<div class="wpsubs-form-row">
 									<label><?php esc_html_e( 'Billing every', 'subscription' ); ?></label>
 									<div class="wpsubs-p2-billing-group">
-										<input type="number" class="wpsubs-input wpsubs-p2-billing-per-input" autocomplete="off" min="1" value="1" data-dur-freq>
+										<input type="number" class="wpsubs-input wpsubs-p2-billing-per-input" autocomplete="off" min="1" value="1" data-dur-freq
+											<?php echo $is_pro ? '' : 'readonly max="1" title="' . esc_attr__( 'Upgrade to Pro to bill every few periods.', 'subscription' ) . '"'; ?>>
 <?php
 								wpsubs_render_adv_select(
 									array(
@@ -565,11 +566,16 @@ $subscrpt_icon_plan = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor
 				</button>
 			</div>
 			<div class="wpsubs-wizard-nav" data-nav="4" hidden>
-				<a href="#" id="subscrpt-link-plans" class="wpsubs-btn wpsubs-btn--outline" hidden>
-					<?php esc_html_e( 'Go to Plans', 'subscription' ); ?>
-				</a>
-				<a href="#" id="subscrpt-link-products" class="wpsubs-btn wpsubs-btn--primary" hidden>
-					<?php esc_html_e( 'Go to products', 'subscription' ); ?>
+				<div class="wpsubs-wizard-nav__group">
+					<a href="#" id="subscrpt-link-plans" class="wpsubs-btn wpsubs-btn--outline" hidden>
+						<?php esc_html_e( 'Go to Plans', 'subscription' ); ?>
+					</a>
+					<a href="#" id="subscrpt-link-products" class="wpsubs-btn wpsubs-btn--outline" hidden>
+						<?php esc_html_e( 'Go to products', 'subscription' ); ?>
+					</a>
+				</div>
+				<a href="#" id="subscrpt-btn-finish" class="wpsubs-btn wpsubs-btn--primary" hidden>
+					<?php esc_html_e( 'Finish', 'subscription' ); ?>
 				</a>
 			</div>
 		</div>

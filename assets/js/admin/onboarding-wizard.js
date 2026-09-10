@@ -48,6 +48,7 @@
       this.initDurations();
       $("#subscrpt-link-plans").attr("href", this.cfg.plans_url || "#");
       $("#subscrpt-link-products").attr("href", this.cfg.products_url || "#");
+      $("#subscrpt-btn-finish").attr("href", this.cfg.subscriptions_url || "#");
       // Start on the welcome page (normalises stepper, footer nav and preview).
       this.switchSection(0);
     },
@@ -866,7 +867,7 @@
       }
       $("#subscrpt-finalize-progress, #subscrpt-finalize-error").attr("hidden", "hidden");
       $("#subscrpt-finalize-success").removeAttr("hidden");
-      $("#subscrpt-link-plans, #subscrpt-link-products").removeAttr("hidden");
+      $("#subscrpt-link-plans, #subscrpt-link-products, #subscrpt-btn-finish").removeAttr("hidden");
       $("#subscrpt-preview-graph").attr("data-active", "done");
       this.updatePreview();
     },
@@ -893,7 +894,7 @@
           $("#subscrpt-finalize-success, #subscrpt-finalize-error").attr("hidden", "hidden");
           $("#subscrpt-finalize-progress").removeAttr("hidden");
           $("[data-finalize-step]").removeClass("is-doing is-done");
-          $("#subscrpt-link-plans, #subscrpt-link-products").attr("hidden", "hidden");
+          $("#subscrpt-link-plans, #subscrpt-link-products, #subscrpt-btn-finish").attr("hidden", "hidden");
           $("#subscrpt_new_product_name").val("");
           $("#subscrpt-connect-durations").empty();
           $("#subscrpt-durations").empty();
