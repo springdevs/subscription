@@ -1,15 +1,16 @@
 /**
  * Onboarding Wizard — SPA-style.
  *
- * Flow:
- *   1. Create Plan   — pick a plan type + name (name auto-fills from the type).
- *   2. Set Frequency — billing duration (frequency, interval, trial, fee).
- *   3. Connect       — attach the plan to a new or existing product.
- *   4. Finish        — summary.
+ * Flow (nothing is created until the final step):
+ *   1. Create Plan — pick a plan type + name (name auto-fills from the type).
+ *   2. Durations   — one or more billing durations.
+ *   3. Connect     — choose a new or existing product to attach the plan to.
+ *   4. Finish      — creates everything in order: plan group -> one term per
+ *                    duration -> product (if new) -> a relation per term.
  *
- * The plan (group), duration (term) and product relation are created through
- * the Plans REST API (wpsubscription/v1/plans) once both the plan details and
- * the frequency are known (leaving page 2). Creating a brand-new product uses
+ * Steps 1–3 only collect and validate input; the plan (group), durations
+ * (terms) and product relations are all created together on step 4 through the
+ * Plans REST API (wpsubscription/v1/plans). Creating a brand-new product uses
  * an admin-ajax handler. All PHP values arrive via `subscrpt_wizard`.
  */
 (function ($) {
@@ -24,11 +25,16 @@
     cfg: {},
     MAX_DURATIONS: MAX_DURATIONS,
     autoName: "",
-    // Created leaving page 2 (one term per duration), used on page 3.
+    // Everything below is created on the final step (page 4), not before.
     groupId: 0,
     termIds: [],
     planTitle: "",
     billingText: "",
+    finalProductId: "",
+    finalProductName: "",
+    finalPrice: "",
+    relationsCreated: false,
+    finalizeRunning: false,
     // Durations show as placeholder ghost cards in the preview until the user
     // reaches page 2 and starts editing them.
     reachedDurations: false,
@@ -77,7 +83,7 @@
 
       // Page 2 (durations).
       $(document).on("click", "#subscrpt-btn-back-1", $.proxy(this.goToPage, this, 1));
-      $(document).on("click", "#subscrpt-btn-create-plan", $.proxy(this.createPlan, this));
+      $(document).on("click", "#subscrpt-btn-next-2", $.proxy(this.nextFromDurations, this));
       $(document).on("click", "#subscrpt-btn-add-duration", $.proxy(this.addDuration, this));
       $(document).on("click", "[data-dur-toggle]", $.proxy(this.onDurToggle, this));
       $(document).on("click", "[data-dur-remove]", $.proxy(this.onDurRemove, this));
@@ -88,7 +94,7 @@
       // Page 3 (product).
       $(document).on("click", "#subscrpt-btn-back-2", $.proxy(this.goToPage, this, 2));
       $(document).on("click", ".wpsubs-connect-mode-card", $.proxy(this.selectConnectMode, this));
-      $(document).on("click", "#subscrpt-btn-connect", $.proxy(this.connect, this));
+      $(document).on("click", "#subscrpt-btn-next-3", $.proxy(this.nextFromProduct, this));
       $(document).on("focus", "#subscrpt-product-search-input", this.openProductSearch);
       $(document).on("input", "#subscrpt-product-search-input", this.filterProducts);
       $(document).on("click", ".wpsubs-p2-product-search__item", $.proxy(this.onProductPick, this));
@@ -100,6 +106,7 @@
       });
 
       // Page 4 (finish).
+      $(document).on("click", "#subscrpt-btn-retry-finalize", $.proxy(this.finalize, this));
       $(document).on("click", "#subscrpt-btn-add-another", $.proxy(this.restart, this));
     },
 
@@ -402,83 +409,20 @@
       return out;
     },
 
-    createPlan: function (e) {
+    // Nothing is created here — just validate and move on. The plan, durations
+    // and product are all created together on the final step.
+    nextFromDurations: function (e) {
       e.preventDefault();
-
-      var self = this;
-      var $btn = $("#subscrpt-btn-create-plan");
-      var title = $.trim($("#subscrpt_plan_title").val());
-      var type = $("#subscrpt-plan-type").val() || "recurring";
-
-      if (!title) {
+      if (!$.trim($("#subscrpt_plan_title").val())) {
         window.alert("Please enter a plan name.");
+        this.switchSection(1);
         return;
       }
-
-      var durations = this.collectDurations();
-      if (!durations.length) {
+      if (!this.collectDurations().length) {
         window.alert("Please add at least one duration.");
         return;
       }
-
-      if ($btn.hasClass("is-loading")) {
-        return;
-      }
-      $btn.addClass("is-loading").prop("disabled", true);
-
-      var termBody = function (dur, groupId) {
-        return {
-          plan_group_id: groupId,
-          type: type,
-          title: dur.name,
-          billing_frequency: dur.freq,
-          billing_interval: INTERVAL_TO_INT[dur.interval] || 3,
-          billing_length: 0,
-          free_trial: "",
-          signup_fee: { amount: "" },
-          status: "active",
-          data: { free_trial_interval: "day" },
-        };
-      };
-
-      // 1) Create the plan group. 2) Create one term per duration — reusing the
-      // auto-seeded draft term for the first, creating the rest.
-      this.api("POST", "/groups", { title: title, type: type, product_type: 1, status: "active" })
-        .then(function (group) {
-          self.groupId = group.id;
-          self.planTitle = title;
-          self.billingText = durations[0].name;
-
-          var seeded = group.plans && group.plans.length ? group.plans[0] : null;
-          var termIds = [];
-
-          var chain = durations.reduce(function (promise, dur, idx) {
-            return promise.then(function () {
-              var body = termBody(dur, group.id);
-              if (idx === 0 && seeded && seeded.id) {
-                return self.api("PUT", "/terms/" + seeded.id, body).then(function () {
-                  termIds.push(seeded.id);
-                });
-              }
-              return self.api("POST", "/terms", body).then(function (term) {
-                termIds.push(term.id);
-              });
-            });
-          }, Promise.resolve());
-
-          return chain.then(function () {
-            return termIds;
-          });
-        })
-        .then(function (termIds) {
-          self.termIds = termIds;
-          $btn.removeClass("is-loading").prop("disabled", false);
-          self.switchSection(3);
-        })
-        .catch(function (err) {
-          $btn.removeClass("is-loading").prop("disabled", false);
-          window.alert(err.message || "Could not create the plan. Please try again.");
-        });
+      this.switchSection(3);
     },
 
     // ----- Page 3: connect to a product -----
@@ -500,7 +444,6 @@
       card.addClass("active");
       $("#subscrpt-connect-existing").toggle(mode === "existing");
       $("#subscrpt-connect-new").toggle(mode === "new");
-      $("#subscrpt-btn-connect").html((mode === "new" ? "Create & connect" : "Connect plan") + " ›");
       this.updatePreview();
     },
 
@@ -571,95 +514,218 @@
       this.selectedProductName = "";
     },
 
-    connect: function (e) {
+    // Nothing is created here either — validate the product choice/price and
+    // move to the final step, which does all the work.
+    nextFromProduct: function (e) {
       e.preventDefault();
-
-      var self = this;
-      var $btn = $("#subscrpt-btn-connect");
       var price = $.trim($("#subscrpt_connect_price").val());
-
       if (price && (isNaN(parseFloat(price)) || parseFloat(price) < 0)) {
         window.alert("Please enter a valid price.");
         return;
       }
-
-      if ($btn.hasClass("is-loading")) {
-        return;
-      }
-
       if (this.currentConnectMode() === "existing") {
-        var productId = $("#subscrpt-existing-product-hidden").val();
-        if (!productId) {
+        if (!$("#subscrpt-existing-product-hidden").val()) {
           window.alert("Please select a product.");
           return;
         }
-        $btn.addClass("is-loading").prop("disabled", true);
-        this.createRelation(productId, this.selectedProductName || "Product", price, $btn);
-      } else {
-        var name = $.trim($("#subscrpt_new_product_name").val());
-        if (!name) {
-          window.alert("Please enter a product name.");
-          return;
-        }
-        $btn.addClass("is-loading").prop("disabled", true);
-        // Create the product first, then connect the plan to it.
+      } else if (!$.trim($("#subscrpt_new_product_name").val())) {
+        window.alert("Please enter a product name.");
+        return;
+      }
+      this.switchSection(4);
+      this.finalize();
+    },
+
+    // ----- Page 4: create everything sequentially -----
+
+    // Mark a progress step's state ("is-doing" / "is-done").
+    finalizeStep: function (key, state) {
+      $('[data-finalize-step="' + key + '"]')
+        .removeClass("is-doing is-done")
+        .addClass(state);
+    },
+
+    // Run the whole creation flow in order: plan -> durations -> product +
+    // relations. Each sub-step is skipped if a retry already completed it.
+    finalize: function (e) {
+      if (e && e.preventDefault) {
+        e.preventDefault();
+      }
+      if (this.finalizeRunning) {
+        return;
+      }
+      this.finalizeRunning = true;
+
+      var self = this;
+      $("#subscrpt-finalize-error, #subscrpt-finalize-success").attr("hidden", "hidden");
+      $("#subscrpt-finalize-progress").removeAttr("hidden");
+      $("#subscrpt-link-plans, #subscrpt-link-products").attr("hidden", "hidden");
+      $("[data-finalize-step]").removeClass("is-doing is-done");
+
+      this.ensurePlan()
+        .then(function () {
+          return self.ensureProductAndConnect();
+        })
+        .then(function () {
+          self.finalizeRunning = false;
+          self.showDone(self.finalProductName);
+        })
+        .catch(function (err) {
+          self.finalizeRunning = false;
+          $("#subscrpt-finalize-progress").attr("hidden", "hidden");
+          $("#subscrpt-finalize-error-msg").text(err && err.message ? err.message : "Please try again.");
+          $("#subscrpt-finalize-error").removeAttr("hidden");
+        });
+    },
+
+    termBody: function (dur, groupId, type) {
+      return {
+        plan_group_id: groupId,
+        type: type,
+        title: dur.name,
+        billing_frequency: dur.freq,
+        billing_interval: INTERVAL_TO_INT[dur.interval] || 3,
+        billing_length: 0,
+        free_trial: "",
+        signup_fee: { amount: "" },
+        status: "active",
+        data: { free_trial_interval: "day" },
+      };
+    },
+
+    // Create the plan group + one term per duration (reusing the auto-seeded
+    // draft term for the first). No-op if a retry already created them.
+    ensurePlan: function () {
+      var self = this;
+      if (this.groupId && this.termIds && this.termIds.length) {
+        this.finalizeStep("plan", "is-done");
+        this.finalizeStep("durations", "is-done");
+        return Promise.resolve();
+      }
+
+      var title = $.trim($("#subscrpt_plan_title").val());
+      var type = $("#subscrpt-plan-type").val() || "recurring";
+      var durations = this.collectDurations();
+
+      this.finalizeStep("plan", "is-doing");
+      return this.api("POST", "/groups", { title: title, type: type, product_type: 1, status: "active" }).then(
+        function (group) {
+          self.groupId = group.id;
+          self.planTitle = title;
+          self.billingText = durations[0].name;
+          self.finalizeStep("plan", "is-done");
+          self.finalizeStep("durations", "is-doing");
+
+          var seeded = group.plans && group.plans.length ? group.plans[0] : null;
+          var termIds = [];
+          var chain = durations.reduce(function (promise, dur, idx) {
+            return promise.then(function () {
+              var body = self.termBody(dur, group.id, type);
+              if (idx === 0 && seeded && seeded.id) {
+                return self.api("PUT", "/terms/" + seeded.id, body).then(function () {
+                  termIds.push(seeded.id);
+                });
+              }
+              return self.api("POST", "/terms", body).then(function (term) {
+                termIds.push(term.id);
+              });
+            });
+          }, Promise.resolve());
+
+          return chain.then(function () {
+            self.termIds = termIds;
+            self.finalizeStep("durations", "is-done");
+          });
+        },
+      );
+    },
+
+    // Create the product (if new) and connect the plan to it. No-op if a retry
+    // already connected it.
+    ensureProductAndConnect: function () {
+      var self = this;
+      if (this.relationsCreated) {
+        this.finalizeStep("product", "is-done");
+        return Promise.resolve();
+      }
+      this.finalizeStep("product", "is-doing");
+      return this.ensureProduct()
+        .then(function () {
+          return self.createRelations();
+        })
+        .then(function () {
+          self.relationsCreated = true;
+          self.finalizeStep("product", "is-done");
+        });
+    },
+
+    // Resolve the product id — an existing selection, or a newly created one.
+    ensureProduct: function () {
+      var self = this;
+      this.finalPrice = $.trim($("#subscrpt_connect_price").val());
+      if (this.finalProductId) {
+        return Promise.resolve();
+      }
+
+      if (this.currentConnectMode() === "existing") {
+        this.finalProductId = $("#subscrpt-existing-product-hidden").val();
+        this.finalProductName = this.selectedProductName || "Product";
+        return Promise.resolve();
+      }
+
+      var name = $.trim($("#subscrpt_new_product_name").val());
+      this.finalProductName = name;
+      return new Promise(function (resolve, reject) {
         $.post(
-          this.cfg.ajax_url,
+          self.cfg.ajax_url,
           {
             action: "subscrpt_create_wizard_product",
             nonce: $("#subscrpt_wizard_nonce").val(),
             product_name: name,
-            product_price: price,
+            product_price: self.finalPrice,
           },
           function (response) {
             if (response && response.success) {
-              self.createRelation(response.data.product_id, name, price, $btn);
+              self.finalProductId = response.data.product_id;
+              resolve();
             } else {
-              $btn.removeClass("is-loading").prop("disabled", false);
-              window.alert((response && response.data && response.data.message) || "Could not create the product.");
+              reject(
+                new Error((response && response.data && response.data.message) || "Could not create the product."),
+              );
             }
           },
         ).fail(function () {
-          $btn.removeClass("is-loading").prop("disabled", false);
-          window.alert("Server error. Please try again.");
+          reject(new Error("Server error. Please try again."));
         });
-      }
+      });
     },
 
-    createRelation: function (productId, productName, price, $btn) {
+    // Connect the product to every duration so customers can pick any of them.
+    createRelations: function () {
       var self = this;
-      // Connect the product to every duration so customers can pick any of them.
       var calls = (this.termIds || []).map(function (tid) {
         return self.api("POST", "/relations", {
           plan_id: tid,
-          oid: parseInt(productId, 10),
+          oid: parseInt(self.finalProductId, 10),
           vid: 0,
           type: 1,
           status: "active",
           exclude: false,
-          data: { regular_price: price, sale_price: "", discount_value: 0 },
+          data: { regular_price: self.finalPrice || "", sale_price: "", discount_value: 0 },
         });
       });
-
-      Promise.all(calls)
-        .then(function () {
-          $btn.removeClass("is-loading").prop("disabled", false);
-          self.showDone(productName);
-        })
-        .catch(function (err) {
-          $btn.removeClass("is-loading").prop("disabled", false);
-          window.alert(err.message || "Could not connect the plan. Please try again.");
-        });
+      return Promise.all(calls);
     },
 
-    // ----- Page 4: finish -----
-
     showDone: function (productName) {
-      // The finished flow is shown by the persistent preview graph.
       if (productName) {
         $("#subscrpt-preview-prod").text(productName);
       }
-      this.switchSection(4);
+      $("#subscrpt-finalize-progress, #subscrpt-finalize-error").attr("hidden", "hidden");
+      $("#subscrpt-finalize-success").removeAttr("hidden");
+      $("#subscrpt-link-plans, #subscrpt-link-products").removeAttr("hidden");
+      $("#subscrpt-preview-graph").attr("data-active", "done");
+      this.updatePreview();
     },
 
     restart: function (e) {
@@ -676,6 +742,16 @@
           self.termIds = [];
           self.planTitle = "";
           self.billingText = "";
+          self.finalProductId = "";
+          self.finalProductName = "";
+          self.finalPrice = "";
+          self.relationsCreated = false;
+          self.finalizeRunning = false;
+          // Reset the final step back to its progress state for a fresh run.
+          $("#subscrpt-finalize-success, #subscrpt-finalize-error").attr("hidden", "hidden");
+          $("#subscrpt-finalize-progress").removeAttr("hidden");
+          $("[data-finalize-step]").removeClass("is-doing is-done");
+          $("#subscrpt-link-plans, #subscrpt-link-products").attr("hidden", "hidden");
           $("#subscrpt_connect_price, #subscrpt_new_product_name").val("");
           $("#subscrpt-durations").empty();
           self.initDurations();

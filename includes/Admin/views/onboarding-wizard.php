@@ -354,39 +354,65 @@ $subscrpt_icon_plan = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor
 				</div>
 			</div>
 
-			<!-- PAGE 4: Finish -->
+			<!-- PAGE 4: Finish — everything is created here, sequentially. -->
 			<div class="wpsubs-wizard-section" data-page="4" id="subscrpt-section-4">
 				<div class="wpsubs-wizard-card wpsubs-p3-card">
-					<div class="wpsubs-p3-success-icon">
-						<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-							<polyline points="20 6 9 17 4 12"></polyline>
-						</svg>
+
+					<!-- Working state: shown while the plan, durations and product are created. -->
+					<div id="subscrpt-finalize-progress" class="wpsubs-finalize-progress">
+						<div class="wpsubs-finalize-spinner" aria-hidden="true"></div>
+						<h1 class="wpsubs-p3-heading"><?php esc_html_e( 'Setting things up…', 'subscription' ); ?></h1>
+						<p class="wpsubs-p3-subtext"><?php esc_html_e( 'Creating your plan, its durations and connecting the product. This only takes a moment.', 'subscription' ); ?></p>
+						<ul class="wpsubs-finalize-steps">
+							<li data-finalize-step="plan"><span class="wpsubs-finalize-steps__dot"></span><?php esc_html_e( 'Create the plan', 'subscription' ); ?></li>
+							<li data-finalize-step="durations"><span class="wpsubs-finalize-steps__dot"></span><?php esc_html_e( 'Add billing durations', 'subscription' ); ?></li>
+							<li data-finalize-step="product"><span class="wpsubs-finalize-steps__dot"></span><?php esc_html_e( 'Connect the product', 'subscription' ); ?></li>
+						</ul>
 					</div>
 
-					<h1 class="wpsubs-p3-heading"><?php esc_html_e( 'Your plan is live.', 'subscription' ); ?></h1>
-					<p class="wpsubs-p3-subtext"><?php esc_html_e( 'The plan is connected and the product is now subscribable. When a customer buys it, a subscription is created automatically — you\'ll see those in the Subscriptions list.', 'subscription' ); ?></p>
-
-					<p class="wpsubs-p3-what-now-label"><?php esc_html_e( 'WHAT NOW?', 'subscription' ); ?></p>
-
-					<div class="wpsubs-p3-action-rows">
-						<button type="button" id="subscrpt-btn-add-another" class="wpsubs-p3-action-row">
-							<div class="wpsubs-p3-action-row__icon">
-								<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-							</div>
-							<div class="wpsubs-p3-action-row__content">
-								<p class="wpsubs-p3-action-row__title"><?php esc_html_e( 'Create another plan', 'subscription' ); ?></p>
-								<p class="wpsubs-p3-action-row__desc"><?php esc_html_e( 'Set up another subscription plan now.', 'subscription' ); ?></p>
-							</div>
-							<svg class="wpsubs-p3-action-row__chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 18 15 12 9 6"></polyline></svg>
-						</button>
+					<!-- Error state: shown if any step fails; the user can retry. -->
+					<div id="subscrpt-finalize-error" class="wpsubs-finalize-error" hidden>
+						<div class="wpsubs-finalize-error__icon" aria-hidden="true">
+							<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+						</div>
+						<h1 class="wpsubs-p3-heading"><?php esc_html_e( "Something didn't go through.", 'subscription' ); ?></h1>
+						<p class="wpsubs-p3-subtext" id="subscrpt-finalize-error-msg"></p>
+						<button type="button" id="subscrpt-btn-retry-finalize" class="wpsubs-btn wpsubs-btn--primary"><?php esc_html_e( 'Try again', 'subscription' ); ?></button>
 					</div>
 
-					<p class="wpsubs-p3-help-text">
-						<?php esc_html_e( 'Need help? Check the', 'subscription' ); ?>
-						<a href="https://docs.wpsubscription.co/en?utm_source=plugin&utm_medium=admin&utm_campaign=docs" target="_blank" rel="noopener" class="wpsubs-p3-help-link"><?php esc_html_e( 'setup guide', 'subscription' ); ?></a>
-						<?php esc_html_e( 'or', 'subscription' ); ?>
-						<a href="https://wordpress.org/support/plugin/subscription/" target="_blank" rel="noopener" class="wpsubs-p3-help-link"><?php esc_html_e( 'contact support', 'subscription' ); ?></a>.
-					</p>
+					<!-- Success state: shown once everything is created. -->
+					<div id="subscrpt-finalize-success" hidden>
+						<div class="wpsubs-p3-success-icon">
+							<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+								<polyline points="20 6 9 17 4 12"></polyline>
+							</svg>
+						</div>
+
+						<h1 class="wpsubs-p3-heading"><?php esc_html_e( 'Your plan is live.', 'subscription' ); ?></h1>
+						<p class="wpsubs-p3-subtext"><?php esc_html_e( 'The plan is connected and the product is now subscribable. When a customer buys it, a subscription is created automatically — you\'ll see those in the Subscriptions list.', 'subscription' ); ?></p>
+
+						<p class="wpsubs-p3-what-now-label"><?php esc_html_e( 'WHAT NOW?', 'subscription' ); ?></p>
+
+						<div class="wpsubs-p3-action-rows">
+							<button type="button" id="subscrpt-btn-add-another" class="wpsubs-p3-action-row">
+								<div class="wpsubs-p3-action-row__icon">
+									<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+								</div>
+								<div class="wpsubs-p3-action-row__content">
+									<p class="wpsubs-p3-action-row__title"><?php esc_html_e( 'Create another plan', 'subscription' ); ?></p>
+									<p class="wpsubs-p3-action-row__desc"><?php esc_html_e( 'Set up another subscription plan now.', 'subscription' ); ?></p>
+								</div>
+								<svg class="wpsubs-p3-action-row__chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 18 15 12 9 6"></polyline></svg>
+							</button>
+						</div>
+
+						<p class="wpsubs-p3-help-text">
+							<?php esc_html_e( 'Need help? Check the', 'subscription' ); ?>
+							<a href="https://docs.wpsubscription.co/en?utm_source=plugin&utm_medium=admin&utm_campaign=docs" target="_blank" rel="noopener" class="wpsubs-p3-help-link"><?php esc_html_e( 'setup guide', 'subscription' ); ?></a>
+							<?php esc_html_e( 'or', 'subscription' ); ?>
+							<a href="https://wordpress.org/support/plugin/subscription/" target="_blank" rel="noopener" class="wpsubs-p3-help-link"><?php esc_html_e( 'contact support', 'subscription' ); ?></a>.
+						</p>
+					</div>
 				</div>
 			</div>
 
@@ -398,18 +424,18 @@ $subscrpt_icon_plan = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor
 				<p class="wpsubs-preview__label"><?php esc_html_e( 'Live preview', 'subscription' ); ?></p>
 				<div class="wpsubs-p1-graph" id="subscrpt-preview-graph" data-active="plan" aria-hidden="true">
 					<svg class="wpsubs-p1-graph__lines" viewBox="0 0 300 420" preserveAspectRatio="none">
-						<!-- Plan -> durations (left→right offsets +0.5, +2, 0: right highest,
+						<!-- Plan -> durations (left→right offsets +1.5, +3, +1: right highest,
 							left slightly lower, middle lowest). data-line-dur maps each line
 							to the duration it feeds, so it colours in when filled. -->
-						<path class="wpsubs-p1-flow" data-line-dur="1" d="M150,50 C150,78 51,78 51,105" />
-						<path class="wpsubs-p1-flow" data-line-dur="0" d="M150,50 L150,143" />
-						<path class="wpsubs-p1-flow" data-line-dur="2" d="M150,50 C150,72 249,72 249,92" />
+						<path class="wpsubs-p1-flow" data-line-dur="1" d="M150,50 C150,80 51,80 51,130" />
+						<path class="wpsubs-p1-flow" data-line-dur="0" d="M150,50 L150,168" />
+						<path class="wpsubs-p1-flow" data-line-dur="2" d="M150,50 C150,74 249,74 249,118" />
 						<!-- Durations -> products (start at each card's bottom). data-line-to="prod"
 							keeps these muted until a product is added, too. -->
-						<path class="wpsubs-p1-flow" data-line-dur="1" data-line-to="prod" d="M51,143 C51,225 75,225 75,300" />
-						<path class="wpsubs-p1-flow" data-line-dur="0" data-line-to="prod" d="M150,181 C150,245 75,245 75,300" />
-						<path class="wpsubs-p1-flow" data-line-dur="0" data-line-to="prod" d="M150,181 C150,255 225,255 225,330" />
-						<path class="wpsubs-p1-flow" data-line-dur="2" data-line-to="prod" d="M249,130 C249,230 225,230 225,330" />
+						<path class="wpsubs-p1-flow" data-line-dur="1" data-line-to="prod" d="M51,168 C51,235 75,235 75,300" />
+						<path class="wpsubs-p1-flow" data-line-dur="0" data-line-to="prod" d="M150,206 C150,255 75,255 75,300" />
+						<path class="wpsubs-p1-flow" data-line-dur="0" data-line-to="prod" d="M150,206 C150,262 225,262 225,330" />
+						<path class="wpsubs-p1-flow" data-line-dur="2" data-line-to="prod" d="M249,156 C249,240 225,240 225,330" />
 					</svg>
 
 					<div class="wpsubs-p1-node wpsubs-p1-node--plan" data-group="plan" style="left:21%;top:2.9%;">
@@ -420,21 +446,21 @@ $subscrpt_icon_plan = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor
 						</span>
 					</div>
 
-					<div class="wpsubs-p1-node wpsubs-p1-node--dur wpsubs-p1-node--ghost" data-group="dur" data-preview-dur="1" style="left:2%;top:25%;">
+					<div class="wpsubs-p1-node wpsubs-p1-node--dur wpsubs-p1-node--ghost" data-group="dur" data-preview-dur="1" style="left:2%;top:31%;">
 						<span class="wpsubs-p1-node__icon"><?php echo $subscrpt_icon_cal; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- trusted static SVG. ?></span>
 						<span class="wpsubs-p1-node__text">
 							<span class="wpsubs-p1-node__title"><?php esc_html_e( 'Duration', 'subscription' ); ?></span>
 							<span class="wpsubs-p1-node__sub"><?php esc_html_e( 'Add more', 'subscription' ); ?></span>
 						</span>
 					</div>
-					<div class="wpsubs-p1-node wpsubs-p1-node--dur wpsubs-p1-node--ghost" data-group="dur" data-preview-dur="0" style="left:35%;top:34%;">
+					<div class="wpsubs-p1-node wpsubs-p1-node--dur wpsubs-p1-node--ghost" data-group="dur" data-preview-dur="0" style="left:35%;top:40%;">
 						<span class="wpsubs-p1-node__icon"><?php echo $subscrpt_icon_cal; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- trusted static SVG. ?></span>
 						<span class="wpsubs-p1-node__text">
 							<span class="wpsubs-p1-node__title"><?php esc_html_e( 'Duration', 'subscription' ); ?></span>
 							<span class="wpsubs-p1-node__sub"><?php esc_html_e( 'Add more', 'subscription' ); ?></span>
 						</span>
 					</div>
-					<div class="wpsubs-p1-node wpsubs-p1-node--dur wpsubs-p1-node--ghost" data-group="dur" data-preview-dur="2" style="left:68%;top:22%;">
+					<div class="wpsubs-p1-node wpsubs-p1-node--dur wpsubs-p1-node--ghost" data-group="dur" data-preview-dur="2" style="left:68%;top:28%;">
 						<span class="wpsubs-p1-node__icon"><?php echo $subscrpt_icon_cal; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- trusted static SVG. ?></span>
 						<span class="wpsubs-p1-node__text">
 							<span class="wpsubs-p1-node__title"><?php esc_html_e( 'Duration', 'subscription' ); ?></span>
@@ -475,23 +501,23 @@ $subscrpt_icon_plan = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor
 				<button type="button" id="subscrpt-btn-back-1" class="wpsubs-p2-nav-back">
 					&#8249; <?php esc_html_e( 'Back', 'subscription' ); ?>
 				</button>
-				<button type="button" id="subscrpt-btn-create-plan" class="wpsubs-btn wpsubs-btn--primary">
-					<?php esc_html_e( 'Create plan', 'subscription' ); ?> &rsaquo;
+				<button type="button" id="subscrpt-btn-next-2" class="wpsubs-btn wpsubs-btn--primary">
+					<?php esc_html_e( 'Continue', 'subscription' ); ?> &rsaquo;
 				</button>
 			</div>
 			<div class="wpsubs-wizard-nav" data-nav="3" hidden>
 				<button type="button" id="subscrpt-btn-back-2" class="wpsubs-p2-nav-back">
 					&#8249; <?php esc_html_e( 'Back', 'subscription' ); ?>
 				</button>
-				<button type="button" id="subscrpt-btn-connect" class="wpsubs-btn wpsubs-btn--primary">
-					<?php echo $has_products ? esc_html__( 'Connect plan', 'subscription' ) : esc_html__( 'Create & connect', 'subscription' ); ?> &rsaquo;
+				<button type="button" id="subscrpt-btn-next-3" class="wpsubs-btn wpsubs-btn--primary">
+					<?php esc_html_e( 'Continue', 'subscription' ); ?> &rsaquo;
 				</button>
 			</div>
 			<div class="wpsubs-wizard-nav" data-nav="4" hidden>
-				<a href="#" id="subscrpt-link-plans" class="wpsubs-btn wpsubs-btn--outline">
+				<a href="#" id="subscrpt-link-plans" class="wpsubs-btn wpsubs-btn--outline" hidden>
 					<?php esc_html_e( 'Go to Plans', 'subscription' ); ?>
 				</a>
-				<a href="#" id="subscrpt-link-products" class="wpsubs-btn wpsubs-btn--primary">
+				<a href="#" id="subscrpt-link-products" class="wpsubs-btn wpsubs-btn--primary" hidden>
 					<?php esc_html_e( 'Go to products', 'subscription' ); ?>
 				</a>
 			</div>

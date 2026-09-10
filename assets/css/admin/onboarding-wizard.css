@@ -647,6 +647,85 @@
   text-align: center;
   padding: 40px 40px 32px;
 }
+
+/* Final step: working / error states -------------------------------------- */
+.wpsubs-finalize-progress,
+.wpsubs-finalize-error {
+  text-align: center;
+}
+.wpsubs-finalize-spinner {
+  width: 44px;
+  height: 44px;
+  margin: 0 auto 20px;
+  border-radius: 50%;
+  border: 3px solid var(--wpsubs-brand-light, #fff1eb);
+  border-top-color: var(--wpsubs-brand, #ff4d00);
+  animation: wpsubs-finalize-spin 0.7s linear infinite;
+}
+@keyframes wpsubs-finalize-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+.wpsubs-finalize-steps {
+  list-style: none;
+  margin: 4px auto 0;
+  padding: 0;
+  max-width: 260px;
+  text-align: left;
+}
+.wpsubs-finalize-steps li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 7px 0;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--wpsubs-text-muted, #6b7280);
+}
+.wpsubs-finalize-steps__dot {
+  flex-shrink: 0;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 2px solid var(--wpsubs-border-strong, #cbd5e1);
+  background: var(--wpsubs-surface, #fff);
+  transition:
+    border-color 0.2s,
+    background 0.2s;
+}
+.wpsubs-finalize-steps li.is-doing {
+  color: var(--wpsubs-text, #374151);
+}
+.wpsubs-finalize-steps li.is-doing .wpsubs-finalize-steps__dot {
+  border-color: var(--wpsubs-brand, #ff4d00);
+  border-top-color: transparent;
+  animation: wpsubs-finalize-spin 0.7s linear infinite;
+}
+.wpsubs-finalize-steps li.is-done {
+  color: var(--wpsubs-text, #374151);
+}
+.wpsubs-finalize-steps li.is-done .wpsubs-finalize-steps__dot {
+  border-color: var(--wpsubs-brand, #ff4d00);
+  background: var(--wpsubs-brand, #ff4d00)
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M3 8.5L6.5 12L13 5' stroke='%23fff' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round' fill='none'/%3E%3C/svg%3E")
+    center / 11px no-repeat;
+}
+.wpsubs-finalize-error__icon {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 20px;
+  background: #fee2e2;
+  color: #dc2626;
+}
+.wpsubs-finalize-error .wpsubs-btn {
+  margin-top: 4px;
+}
+
 .wpsubs-p3-success-icon {
   width: 52px;
   height: 52px;
