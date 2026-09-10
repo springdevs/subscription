@@ -1,0 +1,101 @@
+/* --------------------------------------------------------------------------
+   Toast  (wpsubs-toast)
+
+   Transient confirmation, bottom-right. Use for something that already
+   happened and needs no decision — a save, a delete. Anything the merchant
+   must act on belongs in the page, not here: a toast leaves on its own and
+   takes its message with it.
+
+   JS: WPSubsToast.show(message, type) — see admin-components/toast.js.
+   -------------------------------------------------------------------------- */
+.wpsubs-toast-host {
+  position: fixed;
+  right: 24px;
+  bottom: 24px;
+  z-index: 100001; /* Above the modal layer, so a save behind one still shows. */
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+  pointer-events: none;
+}
+
+.wpsubs-toast {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  max-width: min(380px, calc(100vw - 48px));
+  padding: 11px 14px;
+  border: 1px solid var(--wpsubs-border, #e5e7eb);
+  border-radius: 6px;
+  background: var(--wpsubs-surface, #fff);
+  box-shadow:
+    0 4px 16px rgba(0, 0, 0, 0.1),
+    0 1px 4px rgba(0, 0, 0, 0.06);
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--wpsubs-text, #374151);
+  pointer-events: auto;
+
+  /* The entry animates the slide only — never opacity. Animation is not
+     guaranteed to run (a throttled background tab, a starved renderer), and a
+     save confirmation that is stuck at opacity 0 is worse than one that never
+     moved. Frozen, this is simply a toast sitting 6px low. */
+  animation: wpsubs-toast-in 0.18s ease-out;
+}
+
+@keyframes wpsubs-toast-in {
+  from {
+    transform: translateY(6px);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+/* Leaving is the reverse, and safe to miss: the element is removed on a timer
+   whether or not this runs. */
+.wpsubs-toast.is-out {
+  opacity: 0;
+  transform: translateY(6px);
+  transition:
+    opacity 0.18s ease,
+    transform 0.18s ease;
+}
+
+.wpsubs-toast__icon {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  color: #fff;
+  background: #16a34a;
+}
+
+.wpsubs-toast__icon svg {
+  width: 11px;
+  height: 11px;
+  display: block;
+}
+
+.wpsubs-toast--error .wpsubs-toast__icon {
+  background: #dc2626;
+}
+
+.wpsubs-toast__text {
+  min-width: 0;
+}
+
+/* A toast that slides is decoration; one that appears is information. */
+@media (prefers-reduced-motion: reduce) {
+  .wpsubs-toast {
+    animation: none;
+  }
+
+  .wpsubs-toast.is-out {
+    transition: none;
+  }
+}

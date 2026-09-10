@@ -5,13 +5,26 @@
    Field   — two-column row: fixed-width label on left, control on right.
    -------------------------------------------------------------------------- */
 
-/* Heading: spans full width of the card by pulling out of card padding (20px 24px) */
+/* Heading: spans full width of the card by pulling out of card padding (20px 24px).
+   Its own padding matches the card's, so the first line of a panel starts at the
+   same height whether that panel opens with a heading or straight into a field —
+   which is what lets the section rail beside it line up with either. */
 .wpsubs-settings-heading {
   background: var(--wpsubs-surface-muted);
   border-bottom: 1px solid var(--wpsubs-border);
   border-radius: calc(var(--wpsubs-radius) - 1px) calc(var(--wpsubs-radius) - 1px) 0 0;
   margin: -20px -24px 20px;
-  padding: 13px 24px;
+  padding: 20px 24px;
+}
+
+/* A heading that is not the panel's first band separates two groups rather
+   than capping the card. It keeps the full-bleed width but sits below the
+   field above it, squared off and ruled on both edges — without this the
+   -20px top margin drags it over that field's description. */
+.wpsubs-settings-heading:not(:first-child) {
+  margin-top: 20px;
+  border-top: 1px solid var(--wpsubs-border);
+  border-radius: 0;
 }
 
 .wpsubs-settings-heading__title {

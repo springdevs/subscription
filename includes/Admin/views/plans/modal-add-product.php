@@ -16,8 +16,14 @@ if ( ! defined( 'ABSPATH' ) ) {
 <div class="wpsubs-modal" id="subscrpt-add-product" hidden data-subscrpt-add-product data-group-id="<?php echo esc_attr( $plan['id'] ); ?>">
 	<div class="wpsubs-modal__backdrop" data-wpsubs-modal-close></div>
 	<div class="wpsubs-modal__dialog" style="width:min(720px, calc(100vw - 40px));">
-		<div class="wpsubs-modal__head">
-			<h2 class="wpsubs-modal__title"><?php esc_html_e( 'Manage Products', 'subscription' ); ?></h2>
+		<div class="wpsubs-modal__head" style="align-items:flex-start;">
+			<div>
+				<h2 class="wpsubs-modal__title"><?php esc_html_e( 'Manage Products', 'subscription' ); ?></h2>
+				<?php // The picker is the plan's product list, not an add queue — say so, because unticking removes. ?>
+				<p style="margin:5px 0 0;color:var(--wpsubs-text-muted);font-size:13px;line-height:1.5;font-weight:400;">
+					<?php esc_html_e( 'Ticked products are sold on this plan, at every duration. Untick one to take it off the plan.', 'subscription' ); ?>
+				</p>
+			</div>
 			<button type="button" class="wpsubs-modal__close" data-wpsubs-modal-close aria-label="<?php esc_attr_e( 'Close', 'subscription' ); ?>">&times;</button>
 		</div>
 		<div class="wpsubs-modal__body">
@@ -30,8 +36,10 @@ if ( ! defined( 'ABSPATH' ) ) {
 			</ul>
 		</div>
 		<div class="wpsubs-modal__footer">
+			<?php // Running tally, so the effect of a tick is visible before saving. ?>
+			<span data-subscrpt-picker-count style="margin-right:auto;font-size:13px;color:var(--wpsubs-text-muted);"></span>
 			<button type="button" class="wpsubs-btn wpsubs-btn--outline" data-wpsubs-modal-close><?php esc_html_e( 'Cancel', 'subscription' ); ?></button>
-			<button type="button" class="wpsubs-btn wpsubs-btn--primary" data-subscrpt-add-product-submit><?php esc_html_e( 'Connect Product', 'subscription' ); ?></button>
+			<button type="button" class="wpsubs-btn wpsubs-btn--primary" data-subscrpt-add-product-submit><?php esc_html_e( 'Save products', 'subscription' ); ?></button>
 		</div>
 	</div>
 </div>

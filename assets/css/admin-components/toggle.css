@@ -59,3 +59,10 @@
   background: #e5e7eb;
   cursor: not-allowed;
 }
+
+/* A toggle whose write is in flight. It shows the state it is moving to,
+   dimmed and inert, until the server confirms. */
+.wpsubs-toggle-busy {
+  opacity: 0.55;
+  pointer-events: none;
+}

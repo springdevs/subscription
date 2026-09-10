@@ -84,7 +84,7 @@ class CancellationFlow {
 	 */
 	public function position_submenu( $order ) {
 		if ( is_array( $order ) ) {
-			$order[ self::SLUG ] = 35;
+			$order[ self::SLUG ] = 70;
 		}
 		return $order;
 	}

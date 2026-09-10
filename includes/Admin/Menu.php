@@ -119,12 +119,12 @@ class Menu {
 			array( $this, 'render_onboarding_wizard' )
 		);
 
-		// Dashboard. WordPress makes the first submenu entry share the parent
+		// Overview. WordPress makes the first submenu entry share the parent
 		// slug, so this is the page the top-level item opens.
 		add_submenu_page(
 			$parent_slug,
-			__( 'Dashboard', 'subscription' ),
-			__( 'Dashboard', 'subscription' ),
+			__( 'Overview', 'subscription' ),
+			__( 'Overview', 'subscription' ),
 			'manage_options',
 			$parent_slug,
 			array( $this, 'render_dashboard_page' )
@@ -233,24 +233,22 @@ class Menu {
 		}
 
 		// slug => position. Use gaps of 10 so extensions can insert between items.
+		//
+		// The order is the same whether or not pro is active: a locked page
+		// carries a pro badge but keeps its place, so the menu does not
+		// rearrange itself the moment a licence is activated. Plans and
+		// Cancellation Flow position themselves through the filter below.
 		$default_order = [
-			'wp-subscription'              => 5,  // Dashboard
-			'wp-subscription-list'         => 10, // Subscriptions
-			'wp-subscription-stats'        => 20, // Reports
-			'wp-subscription-delivery'     => 30, // Delivery (pro)
-			'wp-subscription-health'       => 50, // Health
-			'wp-subscription-integrations' => 60, // Integrations
-			'wp-subscription-support'      => 70, // Help & Resources
+			'wp-subscription'              => 5,   // Overview
+			'wp-subscription-delivery'     => 20,  // Delivery (pro)
+			'wp-subscription-list'         => 30,  // Subscriptions
+			'wp-subscription-stats'        => 40,  // Reports
+			'wp-subscription-health'       => 50,  // Health
+			'wp-subscription-integrations' => 60,  // Integrations
 			'wp-subscription-settings'     => 998, // Settings
 			'wp-subscription-license'      => 999, // License (pro)
+			'wp-subscription-support'      => 1000, // Help & Resources
 		];
-
-		// Place pro pages at the bottom if pro is not active.
-		if ( ! subscrpt_pro_activated() ) {
-			$default_order['wp-subscription-stats']    = 200;
-			$default_order['wp-subscription-delivery'] = 210;
-			$default_order['wp-subscription-health']   = 220;
-		}
 
 		/**
 		 * Filter the WPSubscription submenu slug order.
@@ -259,9 +257,9 @@ class Menu {
 		 * first. Use gaps of 10 between built-in positions so extensions can
 		 * insert their own slugs between existing items without renumbering.
 		 *
-		 * Example (pro plugin adding Delivery at position 35):
+		 * Example (an add-on placing its page between Reports and Health):
 		 *   add_filter( 'subscrpt_submenu_order', function( $order ) {
-		 *       $order['wp-subscription-delivery'] = 35;
+		 *       $order['wp-subscription-my-addon'] = 45;
 		 *       return $order;
 		 *   } );
 		 *

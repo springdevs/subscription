@@ -22,6 +22,12 @@ class Assets {
 		} else {
 			add_action( 'wp_enqueue_scripts', array( $this, 'register' ), 5 );
 		}
+
+		// Development only: see version_asset_src().
+		if ( false !== strpos( SUBSCRPT_VERSION, '#WPSUBS' ) ) {
+			add_filter( 'script_loader_src', array( $this, 'version_asset_src' ) );
+			add_filter( 'style_loader_src', array( $this, 'version_asset_src' ) );
+		}
 	}
 
 	/**
@@ -32,6 +38,42 @@ class Assets {
 	public function register() {
 		$this->register_scripts( $this->get_scripts() );
 		$this->register_styles( $this->get_styles() );
+	}
+
+	/**
+	 * Give this plugin's assets a version that actually changes in development.
+	 *
+	 * `SUBSCRPT_VERSION` is a build-time placeholder in a git checkout —
+	 * release.sh substitutes the real number when packaging — so every asset is
+	 * served under the same, never-changing version string and the browser
+	 * keeps its cached copy through edit after edit. That has cost real
+	 * debugging time: a fix already on disk and already being served, appearing
+	 * not to work.
+	 *
+	 * Filtering the loader rather than each registration catches the enqueues
+	 * that call wp_enqueue_script() directly with a version of their own, which
+	 * is most of the admin screens. On a release build the placeholder is gone
+	 * and this returns the src untouched.
+	 *
+	 * @param string $src Asset URL, with or without a `ver` argument.
+	 * @return string
+	 */
+	public function version_asset_src( $src ) {
+		if ( false === strpos( SUBSCRPT_VERSION, '#WPSUBS' ) ) {
+			return $src;
+		}
+
+		if ( ! is_string( $src ) || 0 !== strpos( $src, SUBSCRPT_ASSETS ) ) {
+			return $src;
+		}
+
+		$path = SUBSCRPT_PATH . '/assets' . strtok( substr( $src, strlen( SUBSCRPT_ASSETS ) ), '?' );
+
+		if ( ! file_exists( $path ) ) {
+			return $src;
+		}
+
+		return add_query_arg( 'ver', (string) filemtime( $path ), $src );
 	}
 
 	/**
@@ -91,7 +133,7 @@ class Assets {
 		// Each attaches its API to `window` and auto-inits; they are registered as
 		// individual scripts and bundled behind the `subscrpt_admin_components` handle.
 		$components      = array();
-		$component_files = array( 'adv-select', 'tag-select', 'editlist', 'modal', 'tabs', 'accordion', 'pagination' );
+		$component_files = array( 'adv-select', 'tag-select', 'editlist', 'modal', 'tabs', 'accordion', 'pagination', 'toast', 'save' );
 		foreach ( $component_files as $component_file ) {
 			$handle                = 'subscrpt_component_' . str_replace( '-', '_', $component_file );
 			$components[ $handle ] = array(
@@ -167,6 +209,7 @@ class Assets {
 			'vnav',
 			'accordion',
 			'tooltip',
+			'toast',
 		);
 		foreach ( $component_files as $component_file ) {
 			$handle                      = 'subscrpt_style_' . str_replace( '-', '_', $component_file );

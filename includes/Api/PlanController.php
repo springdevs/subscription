@@ -15,6 +15,7 @@
 
 namespace SpringDevs\Subscription\Api;
 
+use SpringDevs\Subscription\Admin\PlanPresenter;
 use SpringDevs\Subscription\Illuminate\Plans\PlanRepository;
 use WP_REST_Server;
 use WP_REST_Request;
@@ -171,6 +172,25 @@ class PlanController {
 
 		register_rest_route(
 			self::NS,
+			'/plans/group-products/(?P<id>\d+)',
+			array(
+				array(
+					'methods'             => WP_REST_Server::READABLE,
+					'callback'            => array( $this, 'group_products_view' ),
+					'permission_callback' => $perm,
+					'args'                => array(
+						'id' => array(
+							'validate_callback' => function ( $value ) {
+								return is_numeric( $value );
+							},
+						),
+					),
+				),
+			)
+		);
+
+		register_rest_route(
+			self::NS,
 			'/plans/product-view/(?P<id>\d+)',
 			array(
 				array(
@@ -260,7 +280,7 @@ class PlanController {
 		$id = PlanRepository::insert_group( $params );
 
 		if ( ! $id ) {
-			return new WP_Error( 'subscrpt_plan_create_failed', __( 'Could not create the plan group.', 'subscription' ), array( 'status' => 500 ) );
+			return new WP_Error( 'subscrpt_plan_create_failed', __( 'Could not create the plan.', 'subscription' ), array( 'status' => 500 ) );
 		}
 
 		// Seed a default monthly duration (draft) so a new plan opens with a
@@ -655,6 +675,33 @@ class PlanController {
 
 		ob_start();
 		\SpringDevs\Subscription\Admin\Product\Plans::render_plan_view( $product );
+		$html = ob_get_clean();
+
+		return rest_ensure_response( array( 'html' => $html ) );
+	}
+
+	/**
+	 * GET /plans/group-products/{id} - re-render a plan's Products tab.
+	 *
+	 * The same fragment the detail page includes, so attaching, detaching or
+	 * repricing can refresh it in place instead of reloading the page. The
+	 * alternative is rebuilding PlanPresenter's shape — and WooCommerce's price
+	 * formatting — in JavaScript, which would drift from the template the first
+	 * time either changed.
+	 *
+	 * @param WP_REST_Request $request Request.
+	 *
+	 * @return \WP_REST_Response|WP_Error
+	 */
+	public function group_products_view( WP_REST_Request $request ) {
+		$plan = PlanPresenter::group( (int) $request->get_param( 'id' ) );
+
+		if ( empty( $plan ) ) {
+			return $this->not_found();
+		}
+
+		ob_start();
+		require SUBSCRPT_INCLUDES . '/Admin/views/plans/tab-products.php';
 		$html = ob_get_clean();
 
 		return rest_ensure_response( array( 'html' => $html ) );

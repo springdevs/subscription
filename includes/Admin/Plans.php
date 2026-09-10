@@ -62,7 +62,7 @@ class Plans {
 	 */
 	public function position_submenu( $order ) {
 		if ( is_array( $order ) ) {
-			$order[ self::SLUG ] = 25;
+			$order[ self::SLUG ] = 10;
 		}
 		return $order;
 	}
@@ -120,6 +120,17 @@ class Plans {
 					'nameRequired'           => __( 'Please enter a name.', 'subscription' ),
 					'addTerm'                => __( 'Add Duration', 'subscription' ),
 					'editTerm'               => __( 'Edit Duration', 'subscription' ),
+					'draft'                  => __( 'Draft', 'subscription' ),
+					'setDraft'               => __( 'Set as Draft', 'subscription' ),
+					'setActive'              => __( 'Set as Active', 'subscription' ),
+					'termActivated'          => __( 'Duration activated.', 'subscription' ),
+					'pricesSaved'            => __( 'Prices saved.', 'subscription' ),
+					/* translators: %d: number of products ticked in the picker. */
+					'picked'                 => __( '%d product(s) on this plan', 'subscription' ),
+					'pickedNone'             => __( 'No products on this plan', 'subscription' ),
+					'productsUpdated'        => __( 'Products updated.', 'subscription' ),
+					'productRemoved'         => __( 'Product removed from this plan.', 'subscription' ),
+					'termDrafted'            => __( 'Duration set to draft.', 'subscription' ),
 					/* translators: %1$s: first item number, %2$s: last item number, %3$s: total. */
 					'showingRange'           => __( 'Showing %1-%2 of %3', 'subscription' ),
 				),

@@ -105,7 +105,7 @@ class Product {
 					'pickPlan'       => __( 'Please select a plan.', 'subscription' ),
 					'confirmDetach'  => __( 'Detach this product from the plan?', 'subscription' ),
 					'loading'        => __( 'Loading plans…', 'subscription' ),
-					'step1'          => __( 'Step 1 of 2 · Plan group', 'subscription' ),
+					'step1'          => __( 'Step 1 of 2 · Plan', 'subscription' ),
 					'step2'          => __( 'Step 2 of 2 · Plan', 'subscription' ),
 					'wizardNext'     => __( 'Continue', 'subscription' ),
 					'wizardBack'     => __( 'Back', 'subscription' ),

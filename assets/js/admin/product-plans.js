@@ -20,35 +20,85 @@
   // modal creates a plan against it instead of running the new-group wizard.
   var pendingExistingGroupId = "";
 
-  /**
-   * Call a plan REST endpoint.
-   *
-   * @param {string} method HTTP verb.
-   * @param {string} path   Path under the /plans base.
-   * @param {Object} [body] JSON body.
-   * @return {Promise<Object>}
-   */
-  function api(method, path, body) {
-    return fetch(cfg.restUrl + path, {
-      method: method,
-      headers: {
-        "Content-Type": "application/json",
-        "X-WP-Nonce": cfg.nonce,
-      },
-      credentials: "same-origin",
-      body: body ? JSON.stringify(body) : undefined,
-    }).then(function (res) {
-      if (!res.ok) {
-        return res.json().then(function (data) {
-          throw new Error((data && data.message) || "");
-        });
-      }
-      return res.status === 204 ? {} : res.json();
-    });
-  }
+  // REST calls and every message here come from the shared component
+  // (admin-components/save.js).
+  var save = window.WPSubsSave.bind({ restUrl: cfg.restUrl, nonce: cfg.nonce, i18n: i18n });
+  var api = save.api;
 
   function root() {
     return document.querySelector("[data-subscrpt-product-plans]");
+  }
+
+  /* ------------------------------------------------------------------ *
+   * "Enable subscription" gates the rest of the tab.
+   * ------------------------------------------------------------------ */
+
+  /**
+   * Everything the toggle governs: each region beside the toolbar on the way
+   * up to the panel. Walking rather than naming selectors means whatever Pro
+   * adds to this panel is gated too, without it having to know about this.
+   *
+   * @param {HTMLElement} toggle The "Enable subscription" checkbox.
+   * @return {HTMLElement[]} Regions to switch off.
+   */
+  function gatedRegions(toggle) {
+    var toolbar = toggle.closest("[data-subscrpt-plan-toolbar]");
+    var panel = toggle.closest(".woocommerce_options_panel") || toggle.closest("#sdevs_subscription_options");
+    if (!toolbar || !panel) {
+      return [];
+    }
+
+    var regions = [];
+    var node = toolbar;
+    while (node && node !== panel && node.parentNode) {
+      var sibling = node.parentNode.firstElementChild;
+      while (sibling) {
+        if (sibling !== node) {
+          regions.push(sibling);
+        }
+        sibling = sibling.nextElementSibling;
+      }
+      node = node.parentNode;
+    }
+    return regions;
+  }
+
+  /**
+   * Match the settings to the toggle.
+   *
+   * `inert` rather than `disabled`: these are product meta fields that post
+   * with the product form, and a disabled field posts nothing — the stored
+   * values would be wiped on the next save of a product whose subscription is
+   * merely switched off.
+   */
+  function syncSubscriptionGate() {
+    var toggle = document.getElementById("subscrpt_enable");
+    if (!toggle) {
+      // Variable products enable per variation; there is no product-level
+      // toggle to gate on.
+      return;
+    }
+    var off = !toggle.checked;
+    gatedRegions(toggle).forEach(function (el) {
+      el.classList.toggle("subscrpt-gated", off);
+      if ("inert" in el) {
+        el.inert = off;
+      }
+    });
+  }
+
+  document.addEventListener("change", function (e) {
+    if (e.target && "subscrpt_enable" === e.target.id) {
+      syncSubscriptionGate();
+    }
+  });
+
+  // WooCommerce builds the product data panels before this runs on a normal
+  // load, but the tab is also rendered into an already-open page.
+  if ("loading" === document.readyState) {
+    document.addEventListener("DOMContentLoaded", syncSubscriptionGate);
+  } else {
+    syncSubscriptionGate();
   }
 
   /**
@@ -599,7 +649,7 @@
           });
         })
         .catch(function (err) {
-          window.alert((err && err.message) || i18n.connectError);
+          save.notify((err && err.message) || i18n.connectError, "error");
         });
       return;
     }
@@ -613,7 +663,7 @@
           refreshPlanView(String(gid));
         })
         .catch(function (err) {
-          window.alert((err && err.message) || i18n.connectError);
+          save.notify((err && err.message) || i18n.connectError, "error");
         });
     }
   });
@@ -640,12 +690,13 @@
         if (window.WPSubsAdvSelect && window.WPSubsAdvSelect.init) {
           window.WPSubsAdvSelect.init(view);
         }
+        syncSubscriptionGate();
         if (selectGroupId) {
           selectConnectGroup(view, selectGroupId);
         }
       })
       .catch(function (err) {
-        window.alert((err && err.message) || i18n.connectError);
+        save.notify((err && err.message) || i18n.connectError, "error");
       });
   }
 
@@ -708,7 +759,7 @@
       })
       .catch(function (err) {
         btn.disabled = false;
-        window.alert(err.message || i18n.connectError);
+        save.notify(err.message || i18n.connectError, "error");
       });
   });
 
@@ -943,10 +994,10 @@
     });
 
     // One-time purchase saves with the plan Save/Connect — no separate button.
-    // It is a row in the price table (data-vid on the row): the simple product's
-    // row is vid 0 (saved with the product-level payload), and each variable
-    // product variation's row is its vid (collected into a variations map).
-    var otRows = card.querySelectorAll("[data-subscrpt-onetime-row]");
+    // It is a block below the price table (data-vid on the block): the simple
+    // product's is vid 0 (saved with the product-level payload), and each
+    // variable product variation's is its vid (collected into a variations map).
+    var otRows = card.querySelectorAll("[data-subscrpt-onetime]");
     if (otRows.length) {
       var variations = {};
       var simpleOt = null;
@@ -993,7 +1044,7 @@
       })
       .catch(function (err) {
         btn.disabled = false;
-        window.alert(err.message || i18n.connectError);
+        save.notify(err.message || i18n.connectError, "error");
       });
   });
 
@@ -1039,7 +1090,7 @@
     if (!planView || "none" === planView.style.display) {
       return;
     }
-    planView.querySelectorAll("[data-subscrpt-onetime-row]").forEach(function (row) {
+    planView.querySelectorAll("[data-subscrpt-onetime]").forEach(function (row) {
       var vid = parseInt(row.getAttribute("data-vid"), 10) || 0;
       var priceEl = row.querySelector('[data-ot-field="price"]');
       var offerEl = row.querySelector('[data-ot-field="offer"]');
@@ -1157,7 +1208,7 @@
           }
         })
         .catch(function (err) {
-          window.alert(err.message || i18n.connectError);
+          save.notify(err.message || i18n.connectError, "error");
         });
     });
   })();

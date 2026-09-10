@@ -152,3 +152,18 @@
 .wpsubs-search .wpsubs-input-wrap {
   width: 100%;
 }
+
+/* --------------------------------------------------------------------------
+   Gated region  (subscrpt-gated)
+
+   A block of settings switched off by a toggle elsewhere on the screen. Dimmed
+   and non-interactive, but still rendered and still submitted: these are meta
+   fields on the product form, and disabling them would post nothing and wipe
+   the stored values on the next save. The JS pairs this with `inert`, which
+   takes them out of the tab order without taking them out of the form.
+   -------------------------------------------------------------------------- */
+.subscrpt-gated {
+  opacity: 0.45;
+  pointer-events: none;
+  user-select: none;
+}

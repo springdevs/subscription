@@ -34,10 +34,10 @@ use SpringDevs\Subscription\Admin\Plans;
 
 		<div class="wpsubs-empty">
 			<div class="wpsubs-empty__icon">🗂️</div>
-			<h3 class="wpsubs-empty__title"><?php esc_html_e( 'No plan groups yet', 'subscription' ); ?></h3>
+			<h3 class="wpsubs-empty__title"><?php esc_html_e( 'No plans yet', 'subscription' ); ?></h3>
 			<p class="wpsubs-empty__desc"><?php esc_html_e( 'Set up a plan and connect it to your products. Manage billing from one place.', 'subscription' ); ?></p>
 			<button type="button" class="wpsubs-btn wpsubs-btn--primary" style="margin-top:20px;" data-wpsubs-modal-open="subscrpt-create-plan">
-				<?php esc_html_e( 'Create your first plan group', 'subscription' ); ?>
+				<?php esc_html_e( 'Create your first plan', 'subscription' ); ?>
 			</button>
 		</div>
 
@@ -50,7 +50,7 @@ use SpringDevs\Subscription\Admin\Plans;
 				<div class="wpsubs-search">
 					<div class="wpsubs-input-wrap wpsubs-input-wrap--icon-l">
 						<svg class="wpsubs-input-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z"/></svg>
-						<input type="search" class="wpsubs-input" placeholder="<?php esc_attr_e( 'Search plan groups...', 'subscription' ); ?>" data-subscrpt-browse-search />
+						<input type="search" class="wpsubs-input" placeholder="<?php esc_attr_e( 'Search plans...', 'subscription' ); ?>" data-subscrpt-browse-search />
 					</div>
 				</div>
 				<span style="flex:1 1 auto;"></span>
@@ -83,7 +83,7 @@ use SpringDevs\Subscription\Admin\Plans;
 				<table class="wpsubs-table">
 					<thead>
 						<tr>
-							<th class="wpsubs-col--check"><input type="checkbox" class="wpsubs-checkbox" data-subscrpt-select-all aria-label="<?php esc_attr_e( 'Select all plan groups', 'subscription' ); ?>" /></th>
+							<th class="wpsubs-col--check"><input type="checkbox" class="wpsubs-checkbox" data-subscrpt-select-all aria-label="<?php esc_attr_e( 'Select all plans', 'subscription' ); ?>" /></th>
 							<th><?php esc_html_e( 'Plan', 'subscription' ); ?></th>
 							<th><?php esc_html_e( 'Type', 'subscription' ); ?></th>
 							<th><?php esc_html_e( 'Durations', 'subscription' ); ?></th>
@@ -107,7 +107,7 @@ use SpringDevs\Subscription\Admin\Plans;
 							?>
 							<tr class="wpsubs-plan-row" data-subscrpt-browse-item data-name="<?php echo esc_attr( strtolower( $plan['name'] ) ); ?>" data-plan-id="<?php echo esc_attr( $plan['id'] ); ?>" data-href="<?php echo esc_url( $detail_url ); ?>" style="cursor:pointer;">
 							<td class="wpsubs-col--check">
-								<input type="checkbox" class="wpsubs-checkbox wpsubs-row-check" value="<?php echo esc_attr( $plan['id'] ); ?>" aria-label="<?php echo esc_attr( sprintf( /* translators: %s: plan group name. */ __( 'Select %s', 'subscription' ), $plan['name'] ) ); ?>" />
+								<input type="checkbox" class="wpsubs-checkbox wpsubs-row-check" value="<?php echo esc_attr( $plan['id'] ); ?>" aria-label="<?php echo esc_attr( sprintf( /* translators: %s: plan name. */ __( 'Select %s', 'subscription' ), $plan['name'] ) ); ?>" />
 							</td>
 							<td>
 								<?php
@@ -158,7 +158,7 @@ use SpringDevs\Subscription\Admin\Plans;
 			</table>
 		</div>
 
-			<p data-subscrpt-browse-empty style="display:none;padding:20px 4px;color:var(--wpsubs-text-subtle);font-size:13px;text-align:center;"><?php esc_html_e( 'No plan groups match your search.', 'subscription' ); ?></p>
+			<p data-subscrpt-browse-empty style="display:none;padding:20px 4px;color:var(--wpsubs-text-subtle);font-size:13px;text-align:center;"><?php esc_html_e( 'No plans match your search.', 'subscription' ); ?></p>
 			<div data-subscrpt-browse-pager style="margin-top:14px;"></div>
 
 		</div>

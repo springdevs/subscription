@@ -24,8 +24,16 @@ if ( ! defined( 'ABSPATH' ) ) {
 		<img src="<?php echo esc_url( SUBSCRPT_ASSETS . '/images/logo.png' ); ?>" alt="woocommerce-logo" />
 	</div>
 	<div class="sdevs-notice-content">
-		<h2><?php esc_html_e( 'Thanks for using Subscription for WooCommerce', 'subscription' ); ?></h2>
-		<p>You must have <a href="https://wordpress.org/plugins/woocommerce/" target="_blank">Woocommerce </a> installed and activated on this website in order to use this plugin.</p>
+		<h2><?php esc_html_e( 'Thanks for installing WPSubscription.', 'subscription' ); ?></h2>
+		<p>
+			<?php
+			printf(
+				/* translators: %s: WooCommerce, linked to its wordpress.org page. */
+				esc_html__( '%s must be installed and activated before WPSubscription can be used.', 'subscription' ),
+				'<a href="https://wordpress.org/plugins/woocommerce/" target="_blank" rel="noopener">' . esc_html__( 'WooCommerce', 'subscription' ) . '</a>'
+			);
+			?>
+		</p>
 	</div>
 	<div class="sdevs-install-notice-button">
 		<a class="button-primary <?php echo esc_attr( $id ); ?>" href="javascript:void(0);"><svg xmlns="http://www.w3.org/2000/svg" class="sdevs-loading-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">

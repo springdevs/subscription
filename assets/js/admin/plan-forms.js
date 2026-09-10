@@ -26,72 +26,64 @@
   var INTERVAL_TO_INT = { day: 1, week: 2, month: 3, year: 4 };
   var INT_TO_INTERVAL = { 1: "day", 2: "week", 3: "month", 4: "year" };
 
+  // REST calls, the button-busy lock and every message here come from the
+  // shared component (admin-components/save.js).
+  var save = window.WPSubsSave.bind({ restUrl: cfg.restUrl, nonce: cfg.nonce, i18n: i18n });
+  var api = save.api;
+  var setLoading = save.busy;
+
+  /* ------------------------------------------------------------------ *
+   * One-time purchase: the prices follow the toggle.
+   * ------------------------------------------------------------------ */
+
   /**
-   * Call a plan REST endpoint.
+   * The block one of these controls belongs to. Three shapes carry it — a
+   * section below the table in the product editor, and on the Plans screen a
+   * table row (variable) or a card (simple) — so they all carry one hook.
    *
-   * @param {string} method HTTP verb.
-   * @param {string} path   Path under the /plans base, e.g. "/groups".
-   * @param {Object} [body] JSON body for write requests.
-   * @return {Promise<Object>} Parsed JSON (rejects on non-2xx).
+   * @param {HTMLElement} el A control inside the block.
+   * @return {HTMLElement|null}
    */
-  function api(method, path, body) {
-    return fetch(cfg.restUrl + path, {
-      method: method,
-      credentials: "same-origin",
-      headers: {
-        "Content-Type": "application/json",
-        "X-WP-Nonce": cfg.nonce || "",
-      },
-      body: body ? JSON.stringify(body) : undefined,
-    }).then(function (res) {
-      return res.json().then(function (data) {
-        if (!res.ok) {
-          throw new Error((data && data.message) || i18n.genericError);
-        }
-        return data;
-      });
-    });
+  function oneTimeScope(el) {
+    return el.closest("[data-subscrpt-onetime]");
   }
 
   /**
-   * Mark a button busy while its request is in flight, and lock the controls
-   * beside it so the same write cannot be fired twice or abandoned midway.
-   * The `is-loading` class draws the spinner (admin-components/buttons.css).
+   * Show the prices only while one-time purchase is switched on.
    *
-   * @param {HTMLElement} btn     Button.
-   * @param {boolean}     loading Loading state.
+   * Off, the price fields read as a second regular price sitting under the
+   * plan's own — the merchant has no way to tell they do not apply. Revealing
+   * them on the toggle says which is which.
+   *
+   * @param {HTMLElement} scope A one-time row or card.
    */
-  function setLoading(btn, loading) {
-    if (!btn) {
+  function syncOneTime(scope) {
+    var toggle = scope.querySelector("[data-subscrpt-onetime-enable]");
+    if (!toggle) {
       return;
     }
-    btn.disabled = loading;
-    btn.classList.toggle("is-loading", loading);
+    var on = toggle.checked;
 
-    // The row the button sits in: a modal footer, or the inline edit form.
-    var row = btn.closest(".wpsubs-modal__footer") || btn.parentNode;
-    if (row && row.querySelectorAll) {
-      row.querySelectorAll("button, input, select, textarea").forEach(function (el) {
-        if (el !== btn) {
-          el.disabled = loading;
-        }
-      });
-    }
+    scope.querySelectorAll("[data-subscrpt-onetime-price]").forEach(function (el) {
+      el.style.display = on ? "" : "none";
+    });
 
-    // Inside a modal, the dismiss affordances go with it. Escape is left
-    // working on purpose, as the way out of a request that never returns.
-    var modal = btn.closest(".wpsubs-modal");
-    if (modal) {
-      var close = modal.querySelector(".wpsubs-modal__close");
-      if (close) {
-        close.disabled = loading;
-      }
-      var backdrop = modal.querySelector(".wpsubs-modal__backdrop");
-      if (backdrop) {
-        backdrop.style.pointerEvents = loading ? "none" : "";
-      }
+    // The card keeps its whole body behind the toggle, prices and all.
+    var body = scope.querySelector("[data-subscrpt-onetime-body]");
+    if (body) {
+      body.style.display = on ? "" : "none";
     }
   }
+
+  // Lives here because both the Plans screen and the product editor load this
+  // module, and both render the block.
+  document.addEventListener("change", function (e) {
+    var toggle = e.target.closest("[data-subscrpt-onetime-enable]");
+    var scope = toggle && oneTimeScope(toggle);
+    if (scope) {
+      syncOneTime(scope);
+    }
+  });
 
   /**
    * Open a modal by id via the shared helper.
@@ -433,7 +425,7 @@
     var name = nameInput ? nameInput.value.trim() : "";
 
     if (!name) {
-      window.alert(i18n.nameRequired);
+      save.notify(i18n.nameRequired, "error");
       return;
     }
 
@@ -472,7 +464,7 @@
       })
       .catch(function (err) {
         setLoading(btn, false);
-        window.alert(err.message || i18n.genericError);
+        save.notify(err.message || i18n.genericError, "error");
       });
   });
 
@@ -517,7 +509,7 @@
         openModal("subscrpt-term-modal");
       })
       .catch(function (err) {
-        window.alert(err.message || i18n.genericError);
+        save.notify(err.message || i18n.genericError, "error");
       });
   });
 
@@ -535,7 +527,7 @@
     var payload = termPayload(collectFields(modal), groupId, groupType);
 
     if (!payload.title) {
-      window.alert(i18n.nameRequired);
+      save.notify(i18n.nameRequired, "error");
       return;
     }
 
@@ -561,7 +553,7 @@
       })
       .catch(function (err) {
         setLoading(btn, false);
-        window.alert(err.message || i18n.genericError);
+        save.notify(err.message || i18n.genericError, "error");
       });
   });
 

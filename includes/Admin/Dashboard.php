@@ -51,7 +51,7 @@ class Dashboard {
 	 */
 	public function render() {
 		$menu = new Menu();
-		$menu->render_admin_header( __( 'Dashboard', 'subscription' ) );
+		$menu->render_admin_header( __( 'Overview', 'subscription' ) );
 		include __DIR__ . '/views/dashboard.php';
 		$menu->render_admin_footer();
 	}

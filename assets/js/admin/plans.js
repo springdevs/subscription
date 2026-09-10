@@ -16,72 +16,11 @@
   var cfg = window.subscrptPlans || {};
   var i18n = cfg.i18n || {};
 
-  /**
-   * Call a plan REST endpoint.
-   *
-   * @param {string} method HTTP verb.
-   * @param {string} path   Path under the /plans base, e.g. "/groups".
-   * @param {Object} [body] JSON body for write requests.
-   * @return {Promise<Object>} Parsed JSON (rejects on non-2xx).
-   */
-  function api(method, path, body) {
-    return fetch(cfg.restUrl + path, {
-      method: method,
-      credentials: "same-origin",
-      headers: {
-        "Content-Type": "application/json",
-        "X-WP-Nonce": cfg.nonce || "",
-      },
-      body: body ? JSON.stringify(body) : undefined,
-    }).then(function (res) {
-      return res.json().then(function (data) {
-        if (!res.ok) {
-          throw new Error((data && data.message) || i18n.genericError);
-        }
-        return data;
-      });
-    });
-  }
-
-  /**
-   * Mark a button busy while its request is in flight, and lock the controls
-   * beside it so the same write cannot be fired twice or abandoned midway.
-   * The `is-loading` class draws the spinner (admin-components/buttons.css).
-   *
-   * @param {HTMLElement} btn     Button.
-   * @param {boolean}     loading Loading state.
-   */
-  function setLoading(btn, loading) {
-    if (!btn) {
-      return;
-    }
-    btn.disabled = loading;
-    btn.classList.toggle("is-loading", loading);
-
-    // The row the button sits in: a modal footer, or the inline edit form.
-    var row = btn.closest(".wpsubs-modal__footer") || btn.parentNode;
-    if (row && row.querySelectorAll) {
-      row.querySelectorAll("button, input, select, textarea").forEach(function (el) {
-        if (el !== btn) {
-          el.disabled = loading;
-        }
-      });
-    }
-
-    // Inside a modal, the dismiss affordances go with it. Escape is left
-    // working on purpose, as the way out of a request that never returns.
-    var modal = btn.closest(".wpsubs-modal");
-    if (modal) {
-      var close = modal.querySelector(".wpsubs-modal__close");
-      if (close) {
-        close.disabled = loading;
-      }
-      var backdrop = modal.querySelector(".wpsubs-modal__backdrop");
-      if (backdrop) {
-        backdrop.style.pointerEvents = loading ? "none" : "";
-      }
-    }
-  }
+  // REST calls, the button-busy lock and every message on this screen come
+  // from the shared component (admin-components/save.js).
+  var save = window.WPSubsSave.bind({ restUrl: cfg.restUrl, nonce: cfg.nonce, i18n: i18n });
+  var api = save.api;
+  var setLoading = save.busy;
 
   /* ------------------------------------------------------------------ *
    * Row-actions dropdown (kebab) + client-side list filter.
@@ -175,7 +114,7 @@
         }
       })
       .catch(function (err) {
-        window.alert(err.message || i18n.genericError);
+        save.notify(err.message || i18n.genericError, "error");
       });
   });
 
@@ -208,35 +147,6 @@
   /* ------------------------------------------------------------------ *
    * Plan group: inline rename of the detail page title.
    * ------------------------------------------------------------------ */
-
-  /**
-   * Show a transient WP admin notice above the plan header.
-   *
-   * @param {string} message Notice text.
-   * @param {string} [type]  WP notice type - "success" (default) or "error".
-   */
-  function planNotice(message, type) {
-    var host = document.querySelector("[data-subscrpt-plan-notice]");
-    if (!host) {
-      return;
-    }
-    host.textContent = "";
-
-    var notice = document.createElement("div");
-    notice.className = "notice notice-" + (type || "success");
-    notice.style.margin = "0 0 16px";
-
-    var line = document.createElement("p");
-    line.textContent = message;
-    notice.appendChild(line);
-    host.appendChild(notice);
-
-    window.setTimeout(function () {
-      if (notice.parentNode === host) {
-        host.removeChild(notice);
-      }
-    }, 4000);
-  }
 
   /**
    * The rename widget's parts, or null when not on the detail page.
@@ -315,7 +225,7 @@
     var name = parts.input.value.trim();
 
     if (!name) {
-      window.alert(i18n.nameRequired);
+      save.notify(i18n.nameRequired, "error");
       parts.input.focus();
       return;
     }
@@ -332,10 +242,10 @@
         parts.display.textContent = name;
         renameBreadcrumb(name);
         renameToggle(false);
-        planNotice(i18n.saved);
+        save.notify(i18n.saved);
       })
       .catch(function (err) {
-        window.alert(err.message || i18n.genericError);
+        save.notify(err.message || i18n.genericError, "error");
       })
       .then(function () {
         setLoading(parts.save, false);
@@ -438,7 +348,7 @@
       return cb.value;
     });
     if (!ids.length) {
-      window.alert(i18n.selectPlans || i18n.genericError);
+      save.notify(i18n.selectPlans || i18n.genericError, "error");
       return;
     }
 
@@ -456,7 +366,7 @@
           window.location.reload();
         })
         .catch(function (err) {
-          window.alert(err.message || i18n.genericError);
+          save.notify(err.message || i18n.genericError, "error");
         });
     }
   }
@@ -515,27 +425,159 @@
         }
       })
       .catch(function (err) {
-        window.alert(err.message || i18n.genericError);
+        save.notify(err.message || i18n.genericError, "error");
       });
   });
 
-  // Set a term active/draft from its actions menu, then refresh.
-  document.addEventListener("click", function (e) {
-    var link = e.target.closest("[data-subscrpt-set-term-status]");
-    if (!link) {
+  /**
+   * Lock a term's toggle while its write is in flight. The switch keeps
+   * showing the state it is moving to, dimmed, so the click reads as accepted
+   * rather than ignored.
+   *
+   * @param {HTMLElement} label The toggle's label.
+   * @param {boolean}     busy  Busy state.
+   */
+  function setTermBusy(label, busy) {
+    label.setAttribute("aria-busy", busy ? "true" : "false");
+    label.classList.toggle("wpsubs-toggle-busy", busy);
+  }
+
+  /**
+   * Reflect a saved status on the row: the action the toggle now offers, its
+   * tooltip, and the Draft badge beside the name.
+   *
+   * @param {HTMLElement} label  The toggle's label.
+   * @param {boolean}     active Whether the term is now active.
+   */
+  function applyTermStatus(label, active) {
+    label.setAttribute("data-subscrpt-set-term-status", active ? "draft" : "active");
+    label.setAttribute("title", active ? i18n.setDraft : i18n.setActive);
+
+    var card = label.closest(".wpsubs-table-card");
+    var badge = card && card.querySelector("[data-subscrpt-term-badge]");
+
+    if (active) {
+      if (badge) {
+        badge.parentNode.removeChild(badge);
+      }
       return;
     }
+    if (badge || !card) {
+      return;
+    }
+    var row = card.querySelector("[data-subscrpt-term-name-row]");
+    if (!row) {
+      return;
+    }
+    badge = document.createElement("span");
+    badge.className = "wpsubs-badge wpsubs-badge--draft";
+    badge.setAttribute("data-subscrpt-term-badge", "");
+    badge.textContent = i18n.draft;
+    row.appendChild(badge);
+  }
+
+  // Set a term active/draft from its row toggle. The row is updated in place
+  // rather than reloaded: a full reload for a one-field write left the switch
+  // sitting on its old state for the whole round trip, which read as a dead
+  // control.
+  document.addEventListener("click", function (e) {
+    var label = e.target.closest("[data-subscrpt-set-term-status]");
+    if (!label) {
+      return;
+    }
+    // The label owns the checkbox, so let it drive the switch itself.
     e.preventDefault();
-    var id = link.getAttribute("data-term-id");
-    var status = link.getAttribute("data-subscrpt-set-term-status");
+    if ("true" === label.getAttribute("aria-busy")) {
+      return;
+    }
+
+    var id = label.getAttribute("data-term-id");
+    var status = label.getAttribute("data-subscrpt-set-term-status");
+    var active = "active" === status;
+    var cb = label.querySelector(".wpsubs-toggle");
+
+    setTermBusy(label, true);
+    if (cb) {
+      cb.checked = active;
+    }
+
     api("PUT", "/terms/" + id, { status: status })
       .then(function () {
-        window.location.reload();
+        applyTermStatus(label, active);
+        save.notify(active ? i18n.termActivated : i18n.termDrafted);
       })
       .catch(function (err) {
-        window.alert(err.message || i18n.genericError);
+        if (cb) {
+          cb.checked = !active;
+        }
+        save.notify(err.message || i18n.genericError, "error");
+      })
+      .then(function () {
+        setTermBusy(label, false);
       });
   });
+
+  /* ------------------------------------------------------------------ *
+   * Products tab: refresh the panel in place.
+   * ------------------------------------------------------------------ */
+
+  /**
+   * Re-render the Products panel from the server, keeping the page where it
+   * was. Attaching, detaching and repricing all change server-formatted values
+   * (money, badges, which products exist), so the fragment is fetched rather
+   * than patched by hand — but a full reload for it threw the whole screen
+   * away, which is what made every one of these actions flash.
+   *
+   * Which products were expanded and the scroll position are restored, so the
+   * panel comes back looking like it never moved.
+   *
+   * @param {string|number} groupId Plan group id.
+   * @return {Promise}
+   */
+  function refreshProducts(groupId) {
+    var panel = document.getElementById("subscrpt-panel-products");
+    if (!panel || !groupId) {
+      return Promise.resolve();
+    }
+
+    var scrollY = window.scrollY;
+    var open = [];
+    panel.querySelectorAll("[data-pid]").forEach(function (item) {
+      var header = item.querySelector(".wpsubs-accordion__header");
+      if (header && "true" === header.getAttribute("aria-expanded")) {
+        open.push(item.getAttribute("data-pid"));
+      }
+    });
+
+    return api("GET", "/group-products/" + groupId).then(function (res) {
+      panel.innerHTML = (res && res.html) || "";
+
+      // Components bind on DOMContentLoaded; new markup needs a nudge.
+      if (window.WPSubsAccordion && window.WPSubsAccordion.init) {
+        window.WPSubsAccordion.init(panel);
+      }
+
+      open.forEach(function (pid) {
+        var item = panel.querySelector('[data-pid="' + pid + '"]');
+        var header = item && item.querySelector(".wpsubs-accordion__header");
+        if (header && "true" !== header.getAttribute("aria-expanded")) {
+          header.click();
+        }
+      });
+
+      window.scrollTo(0, scrollY);
+    });
+  }
+
+  /**
+   * The plan group this detail page is showing.
+   *
+   * @return {string} Group id, or "" off the detail page.
+   */
+  function currentGroupId() {
+    var host = document.querySelector("[data-plan-id]");
+    return host ? host.getAttribute("data-plan-id") || "" : "";
+  }
 
   /* ------------------------------------------------------------------ *
    * Products tab (Pro): bulk-add products to the plan group.
@@ -742,6 +784,7 @@
         if (list.lastElementChild) {
           list.lastElementChild.style.borderBottom = "none";
         }
+        syncPickerCount(modal);
       })
       .catch(function () {
         list.innerHTML =
@@ -750,6 +793,37 @@
           "</li>";
       });
   }
+
+  /**
+   * Update the picker's running tally. Ticking is a two-way control — it
+   * attaches and detaches — so the count is what says how the plan will look
+   * after saving, rather than how many were just clicked.
+   *
+   * @param {HTMLElement} modal The add-product modal.
+   */
+  function syncPickerCount(modal) {
+    var out = modal && modal.querySelector("[data-subscrpt-picker-count]");
+    if (!out) {
+      return;
+    }
+    var boxes = modal.querySelectorAll("[data-subscrpt-product-list] input[data-oid]");
+    var n = 0;
+    Array.prototype.forEach.call(boxes, function (box) {
+      if (box.checked) {
+        n += 1;
+      }
+    });
+    out.textContent = n ? (i18n.picked || "%d on this plan").replace("%d", n) : i18n.pickedNone || "";
+  }
+
+  // Any tick in the picker updates the tally.
+  document.addEventListener("change", function (e) {
+    var box = e.target.closest("[data-subscrpt-product-list] input[type=checkbox]");
+    var modal = box && box.closest("[data-subscrpt-add-product]");
+    if (modal) {
+      syncPickerCount(modal);
+    }
+  });
 
   // Load the picker when the modal opens (pre-checking attached products).
   document.addEventListener("wpsubs:modal:open", function (e) {
@@ -854,11 +928,18 @@
         return Promise.all(calls);
       })
       .then(function () {
-        window.location.reload();
+        if (window.WPSubsModal) {
+          window.WPSubsModal.close(modal);
+        }
+        return refreshProducts(groupId);
+      })
+      .then(function () {
+        setLoading(btn, false);
+        save.notify(i18n.productsUpdated);
       })
       .catch(function (err) {
         setLoading(btn, false);
-        window.alert(err.message || i18n.genericError);
+        save.notify(err.message || i18n.genericError, "error");
       });
   });
 
@@ -894,11 +975,15 @@
         );
       })
       .then(function () {
-        window.location.reload();
+        return refreshProducts(groupId);
+      })
+      .then(function () {
+        setLoading(btn, false);
+        save.notify(i18n.productRemoved);
       })
       .catch(function (err) {
         setLoading(btn, false);
-        window.alert(err.message || i18n.genericError);
+        save.notify(err.message || i18n.genericError, "error");
       });
   });
 
@@ -935,11 +1020,15 @@
         );
       })
       .then(function () {
-        window.location.reload();
+        return refreshProducts(groupId);
+      })
+      .then(function () {
+        setLoading(btn, false);
+        save.notify(i18n.productRemoved);
       })
       .catch(function (err) {
         setLoading(btn, false);
-        window.alert(err.message || i18n.genericError);
+        save.notify(err.message || i18n.genericError, "error");
       });
   });
 
@@ -1069,11 +1158,15 @@
 
     Promise.all(calls)
       .then(function () {
-        window.location.reload();
+        return refreshProducts(currentGroupId());
+      })
+      .then(function () {
+        setLoading(btn, false);
+        save.notify(i18n.pricesSaved);
       })
       .catch(function (err) {
         setLoading(btn, false);
-        window.alert(err.message || i18n.genericError);
+        save.notify(err.message || i18n.genericError, "error");
       });
   });
 
@@ -1082,22 +1175,6 @@
    * Variable products handle one-time per variation via the card Save above;
    * simple products use this standalone card + its own toggle/Save.
    * ------------------------------------------------------------------ */
-
-  // Toggle reveals / hides the one-time price inputs (simple card only).
-  document.addEventListener("change", function (e) {
-    var toggle = e.target.closest("[data-subscrpt-onetime-enable]");
-    if (!toggle) {
-      return;
-    }
-    var card = toggle.closest("[data-subscrpt-onetime-card]");
-    if (!card) {
-      return;
-    }
-    var body = card.querySelector("[data-subscrpt-onetime-body]");
-    if (body) {
-      body.style.display = toggle.checked ? "" : "none";
-    }
-  });
 
   // Save the simple card's one-time (enabled flag + native price).
   document.addEventListener("click", function (e) {
@@ -1118,11 +1195,15 @@
       offer: offer ? offer.value : "",
     })
       .then(function () {
-        window.location.reload();
+        return refreshProducts(currentGroupId());
+      })
+      .then(function () {
+        setLoading(btn, false);
+        save.notify(i18n.pricesSaved);
       })
       .catch(function (err) {
         setLoading(btn, false);
-        window.alert(err.message || i18n.genericError);
+        save.notify(err.message || i18n.genericError, "error");
       });
   });
 
