@@ -75,11 +75,11 @@ $has_terms = ! empty( $plan['terms'] );
 							<td><?php echo esc_html( $row['term'] ); ?></td>
 							<td>
 								<span class="subscrpt-pe-view"><?php echo esc_html( $row['regular'] ); ?></span>
-								<input type="number" min="0" step="0.01" class="wpsubs-input subscrpt-pe-edit" data-field="regular_price" value="<?php echo esc_attr( $row['regular_raw'] ); ?>" placeholder="0.00" style="display:none;max-width:110px;" />
+								<input type="number" min="0" step="0.01" class="wpsubs-input subscrpt-pe-edit" data-field="regular_price" value="<?php echo esc_attr( $row['regular_raw'] ); ?>" placeholder="0.00" style="display:none;width:120px;max-width:100%;" />
 							</td>
 							<td>
 								<span class="subscrpt-pe-view"><?php echo ! empty( $row['has_offer'] ) ? esc_html( $row['offer'] ) : '<span style="color:var(--wpsubs-text-subtle);">&mdash;</span>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Static dash markup / escaped price. ?></span>
-								<input type="number" min="0" step="0.01" class="wpsubs-input subscrpt-pe-edit" data-field="sale_price" value="<?php echo esc_attr( $row['offer_raw'] ); ?>" placeholder="0.00" style="display:none;max-width:110px;" />
+								<input type="number" min="0" step="0.01" class="wpsubs-input subscrpt-pe-edit" data-field="sale_price" value="<?php echo esc_attr( $row['offer_raw'] ); ?>" placeholder="0.00" style="display:none;width:120px;max-width:100%;" />
 							</td>
 							<td>
 								<span class="subscrpt-pe-view">
@@ -105,7 +105,7 @@ $has_terms = ! empty( $plan['terms'] );
 						$subscrpt_ot_rdsp = '' !== $subscrpt_ot_reg ? \SpringDevs\Subscription\Admin\PlanPresenter::money( (float) $subscrpt_ot_reg ) : '-';
 						$subscrpt_ot_odsp = '' !== $subscrpt_ot_off ? \SpringDevs\Subscription\Admin\PlanPresenter::money( (float) $subscrpt_ot_off ) : '-';
 						?>
-						<tr data-subscrpt-onetime-row style="border-top:2px solid var(--wpsubs-border,#e5e7eb);background:var(--wpsubs-surface-muted,#f6f7f7);">
+						<tr data-subscrpt-onetime data-subscrpt-onetime-row style="border-top:2px solid var(--wpsubs-border,#e5e7eb);background:var(--wpsubs-surface-muted,#f6f7f7);">
 							<td>
 								<span style="display:inline-flex;align-items:center;gap:6px;">
 									<span class="dashicons dashicons-cart" style="flex:0 0 auto;font-size:15px;width:15px;height:15px;color:var(--wpsubs-text-subtle);"></span>
@@ -184,7 +184,7 @@ $has_terms = ! empty( $plan['terms'] );
 			$subscrpt_show_body = $subscrpt_on;
 			?>
 			<div style="width:90%;border-top:1px dashed var(--wpsubs-border-strong,#d1d5db);margin:16px auto 0;"></div>
-			<div data-subscrpt-onetime-card data-product-id="<?php echo esc_attr( $product['id'] ); ?>" style="border:1px solid var(--wpsubs-border,#e5e7eb);border-radius:8px;background:var(--wpsubs-surface,#fff);margin-top:14px;">
+			<div data-subscrpt-onetime data-subscrpt-onetime-card data-product-id="<?php echo esc_attr( $product['id'] ); ?>" style="border:1px solid var(--wpsubs-border,#e5e7eb);border-radius:8px;background:var(--wpsubs-surface,#fff);margin-top:14px;">
 				<div style="display:flex;align-items:center;gap:10px;padding:11px 14px;">
 					<span class="dashicons dashicons-cart" style="flex:0 0 auto;font-size:16px;width:16px;height:16px;color:var(--wpsubs-text-subtle);"></span>
 					<strong style="font-size:13px;color:var(--wpsubs-text);"><?php esc_html_e( 'One-time purchase', 'subscription' ); ?></strong>

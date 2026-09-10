@@ -38,15 +38,14 @@
 
   /**
    * The block one of these controls belongs to. Three shapes carry it — a
-   * table row on the Plans screen, a table row in the product editor, and a
-   * card on Plans for simple products — so the scope is whichever wrapper is
-   * nearest.
+   * section below the table in the product editor, and on the Plans screen a
+   * table row (variable) or a card (simple) — so they all carry one hook.
    *
    * @param {HTMLElement} el A control inside the block.
    * @return {HTMLElement|null}
    */
   function oneTimeScope(el) {
-    return el.closest("[data-subscrpt-onetime-row]") || el.closest("[data-subscrpt-onetime-card]");
+    return el.closest("[data-subscrpt-onetime]");
   }
 
   /**

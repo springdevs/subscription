@@ -994,10 +994,10 @@
     });
 
     // One-time purchase saves with the plan Save/Connect — no separate button.
-    // It is a row in the price table (data-vid on the row): the simple product's
-    // row is vid 0 (saved with the product-level payload), and each variable
-    // product variation's row is its vid (collected into a variations map).
-    var otRows = card.querySelectorAll("[data-subscrpt-onetime-row]");
+    // It is a block below the price table (data-vid on the block): the simple
+    // product's is vid 0 (saved with the product-level payload), and each
+    // variable product variation's is its vid (collected into a variations map).
+    var otRows = card.querySelectorAll("[data-subscrpt-onetime]");
     if (otRows.length) {
       var variations = {};
       var simpleOt = null;
@@ -1090,7 +1090,7 @@
     if (!planView || "none" === planView.style.display) {
       return;
     }
-    planView.querySelectorAll("[data-subscrpt-onetime-row]").forEach(function (row) {
+    planView.querySelectorAll("[data-subscrpt-onetime]").forEach(function (row) {
       var vid = parseInt(row.getAttribute("data-vid"), 10) || 0;
       var priceEl = row.querySelector('[data-ot-field="price"]');
       var offerEl = row.querySelector('[data-ot-field="offer"]');

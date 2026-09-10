@@ -715,8 +715,8 @@ class Plans {
 								</div>
 							<?php endif; ?>
 						</td>
-						<td><input type="number" min="0" step="0.01" class="wpsubs-input" data-field="regular_price" value="<?php echo esc_attr( $subscrpt_vals['regular'] ); ?>" placeholder="0.00" style="max-width:110px;" /></td>
-						<td><input type="number" min="0" step="0.01" class="wpsubs-input" data-field="sale_price" value="<?php echo esc_attr( $subscrpt_vals['offer'] ); ?>" placeholder="0.00" style="max-width:110px;" /></td>
+						<td><input type="number" min="0" step="0.01" class="wpsubs-input" data-field="regular_price" value="<?php echo esc_attr( $subscrpt_vals['regular'] ); ?>" placeholder="0.00" style="width:120px;max-width:100%;" /></td>
+						<td><input type="number" min="0" step="0.01" class="wpsubs-input" data-field="sale_price" value="<?php echo esc_attr( $subscrpt_vals['offer'] ); ?>" placeholder="0.00" style="width:120px;max-width:100%;" /></td>
 						<td>
 							<div style="display:inline-flex;align-items:center;gap:8px;">
 								<label class="wpsubs-settings-toggle-label" style="display:inline-flex;align-items:center;" title="<?php esc_attr_e( 'Enable this plan for the product', 'subscription' ); ?>">
@@ -732,44 +732,53 @@ class Plans {
 						</td>
 					</tr>
 				<?php endforeach; ?>
-				<?php if ( is_array( $one_time ) ) : ?>
-					<tr data-subscrpt-onetime-row data-vid="<?php echo esc_attr( $vid ); ?>" style="border-top:2px solid var(--wpsubs-border,#e5e7eb);background:var(--wpsubs-surface-muted,#f6f7f7);">
-						<td>
-							<span style="display:inline-flex;align-items:center;gap:6px;font-size:12.5px;color:var(--wpsubs-text);">
-								<span class="dashicons dashicons-cart" style="flex:0 0 auto;font-size:15px;width:15px;height:15px;color:var(--wpsubs-text-subtle);"></span>
-								<?php esc_html_e( 'One-time purchase', 'subscription' ); ?>
-								<?php echo wp_kses_post( wpsubs_render_hint( __( 'A single, non-recurring purchase at the variation’s regular WooCommerce price.', 'subscription' ) ) ); ?>
-							</span>
-						</td>
-						<?php // Prices follow the toggle: nothing to price until one-time is on. ?>
-						<?php $subscrpt_ot_hidden = empty( $one_time['enabled'] ) ? ' style="display:none;"' : ''; ?>
-						<td>
-							<span data-subscrpt-onetime-price<?php echo $subscrpt_ot_hidden; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- fixed literal. ?>>
-								<input type="number" min="0" step="0.01" class="wpsubs-input" data-ot-field="price" value="<?php echo esc_attr( $one_time['regular'] ); ?>" placeholder="0.00" style="max-width:110px;" />
-							</span>
-						</td>
-						<td>
-							<span data-subscrpt-onetime-price<?php echo $subscrpt_ot_hidden; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- fixed literal. ?>>
-								<input type="number" min="0" step="0.01" class="wpsubs-input" data-ot-field="offer" value="<?php echo esc_attr( $one_time['offer'] ); ?>" placeholder="<?php esc_attr_e( 'No offer', 'subscription' ); ?>" style="max-width:110px;" />
-							</span>
-						</td>
-						<td>
-							<div style="display:inline-flex;align-items:center;gap:8px;">
-								<label class="wpsubs-settings-toggle-label" style="display:inline-flex;align-items:center;" title="<?php esc_attr_e( 'Offer this variation for one-time purchase', 'subscription' ); ?>">
-									<input type="checkbox" class="wpsubs-toggle" data-subscrpt-onetime-enable <?php checked( ! empty( $one_time['enabled'] ) ); ?> />
-									<span class="wpsubs-toggle-ui" aria-hidden="true"></span>
+					</tbody>
+					</table>
+
+					<?php
+					/*
+					 * One-time purchase sits below the table, not in it. It is not a duration:
+					 * it has no billing cycle, and as a row it read as one more line of the
+					 * plan's own pricing. Its own block says it is a separate way to buy.
+					 */
+					if ( is_array( $one_time ) ) :
+						$subscrpt_ot_on = ! empty( $one_time['enabled'] );
+						?>
+					<div data-subscrpt-onetime data-vid="<?php echo esc_attr( $vid ); ?>" style="margin-top:12px;border:1px solid var(--wpsubs-border,#e5e7eb);border-radius:var(--wpsubs-radius,8px);background:var(--wpsubs-surface,#fff);">
+						<div style="display:flex;align-items:center;gap:10px;padding:10px 12px;">
+							<span class="dashicons dashicons-cart" style="flex:0 0 auto;font-size:15px;width:15px;height:15px;color:var(--wpsubs-text-subtle);"></span>
+							<strong style="font-size:12.5px;color:var(--wpsubs-text);"><?php esc_html_e( 'One-time purchase', 'subscription' ); ?></strong>
+							<?php echo wp_kses_post( wpsubs_render_hint( __( 'A single, non-recurring purchase at the product’s regular WooCommerce price.', 'subscription' ) ) ); ?>
+							<span style="flex:1 1 auto;"></span>
+							<label class="wpsubs-settings-toggle-label" style="display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--wpsubs-text-muted);" title="<?php esc_attr_e( 'Offer this product for one-time purchase', 'subscription' ); ?>">
+								<input type="checkbox" class="wpsubs-toggle" data-subscrpt-onetime-enable <?php checked( $subscrpt_ot_on ); ?> />
+								<span class="wpsubs-toggle-ui" aria-hidden="true"></span>
+								<span><?php esc_html_e( 'Allow one-time purchase', 'subscription' ); ?></span>
+							</label>
+							<?php if ( ! $connect && '' !== trim( (string) $one_time['regular'] ) ) : ?>
+								<button type="button" class="wpsubs-icon-action" data-subscrpt-copy-checkout data-plan-id="onetime" data-vid="<?php echo esc_attr( $vid ); ?>" title="<?php esc_attr_e( 'Copy checkout link', 'subscription' ); ?>" aria-label="<?php esc_attr_e( 'Copy checkout link', 'subscription' ); ?>">
+									<span class="dashicons dashicons-admin-links"></span>
+								</button>
+							<?php endif; ?>
+						</div>
+						<?php
+						// The gate clears the inline `display` to reveal, which falls back
+						// to a div's `block` — so the flex row is a child, not this element.
+						?>
+						<div data-subscrpt-onetime-price style="padding:12px;border-top:1px solid var(--wpsubs-border,#e5e7eb);<?php echo $subscrpt_ot_on ? '' : 'display:none;'; ?>">
+							<div style="display:flex;gap:16px;">
+							<label style="display:block;font-size:12px;color:var(--wpsubs-text-muted);">
+								<span style="display:block;margin-bottom:4px;"><?php esc_html_e( 'Regular Price', 'subscription' ); ?></span>
+								<input type="number" min="0" step="0.01" class="wpsubs-input" data-ot-field="price" value="<?php echo esc_attr( $one_time['regular'] ); ?>" placeholder="0.00" style="width:120px;max-width:100%;" />
+							</label>
+							<label style="display:block;font-size:12px;color:var(--wpsubs-text-muted);">
+								<span style="display:block;margin-bottom:4px;"><?php esc_html_e( 'Offer Price', 'subscription' ); ?></span>
+								<input type="number" min="0" step="0.01" class="wpsubs-input" data-ot-field="offer" value="<?php echo esc_attr( $one_time['offer'] ); ?>" placeholder="<?php esc_attr_e( 'No offer', 'subscription' ); ?>" style="width:120px;max-width:100%;" />
 								</label>
-								<?php if ( ! $connect && '' !== trim( (string) $one_time['regular'] ) ) : ?>
-									<button type="button" class="wpsubs-icon-action" data-subscrpt-copy-checkout data-plan-id="onetime" data-vid="<?php echo esc_attr( $vid ); ?>" title="<?php esc_attr_e( 'Copy checkout link', 'subscription' ); ?>" aria-label="<?php esc_attr_e( 'Copy checkout link', 'subscription' ); ?>">
-										<span class="dashicons dashicons-admin-links"></span>
-									</button>
-								<?php endif; ?>
 							</div>
-						</td>
-					</tr>
-				<?php endif; ?>
-			</tbody>
-		</table>
+						</div>
+					</div>
+					<?php endif; ?>
 		<?php
 	}
 
