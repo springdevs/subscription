@@ -64,6 +64,47 @@ class Admin {
 	 */
 	public function dispatch_actions() {
 		add_action( 'save_post_product', array( $this, 'flush_gsc_cache' ) );
+		add_action( 'admin_init', array( $this, 'maybe_redirect_after_activation' ) );
+	}
+
+	/**
+	 * Send the admin to Overview once, just after activating the plugin.
+	 *
+	 * A plugin that activates and leaves you on the plugins list has told you
+	 * nothing about itself. This opens the screen it just added.
+	 *
+	 * Deliberately not onboarding: the wizard's entry points are commented out
+	 * while it is being reworked, so Overview is what actually exists.
+	 *
+	 * The flag is cleared before the redirect rather than after, so a
+	 * redirect that fails for any reason cannot leave the admin bouncing here
+	 * on every request.
+	 *
+	 * @return void
+	 */
+	public function maybe_redirect_after_activation() {
+		if ( ! get_transient( 'subscrpt_activation_redirect' ) ) {
+			return;
+		}
+
+		delete_transient( 'subscrpt_activation_redirect' );
+
+		// Activating several plugins at once ends on the plugins list by
+		// design; jumping away from it would hide the others' notices.
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- reading WordPress's own bulk-activation marker, no state change.
+		if ( isset( $_GET['activate-multi'] ) || wp_doing_ajax() || is_network_admin() ) {
+			return;
+		}
+
+		// The menu this points at is only registered when WooCommerce is
+		// active; without it the page does not exist, and the plugins list is
+		// where the "WooCommerce required" notice is waiting anyway.
+		if ( ! current_user_can( 'manage_options' ) || ! is_plugin_active( 'woocommerce/woocommerce.php' ) ) {
+			return;
+		}
+
+		wp_safe_redirect( admin_url( 'admin.php?page=wp-subscription' ) );
+		exit;
 	}
 
 	/**
