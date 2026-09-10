@@ -29,6 +29,78 @@
     return document.querySelector("[data-subscrpt-product-plans]");
   }
 
+  /* ------------------------------------------------------------------ *
+   * "Enable subscription" gates the rest of the tab.
+   * ------------------------------------------------------------------ */
+
+  /**
+   * Everything the toggle governs: each region beside the toolbar on the way
+   * up to the panel. Walking rather than naming selectors means whatever Pro
+   * adds to this panel is gated too, without it having to know about this.
+   *
+   * @param {HTMLElement} toggle The "Enable subscription" checkbox.
+   * @return {HTMLElement[]} Regions to switch off.
+   */
+  function gatedRegions(toggle) {
+    var toolbar = toggle.closest("[data-subscrpt-plan-toolbar]");
+    var panel = toggle.closest(".woocommerce_options_panel") || toggle.closest("#sdevs_subscription_options");
+    if (!toolbar || !panel) {
+      return [];
+    }
+
+    var regions = [];
+    var node = toolbar;
+    while (node && node !== panel && node.parentNode) {
+      var sibling = node.parentNode.firstElementChild;
+      while (sibling) {
+        if (sibling !== node) {
+          regions.push(sibling);
+        }
+        sibling = sibling.nextElementSibling;
+      }
+      node = node.parentNode;
+    }
+    return regions;
+  }
+
+  /**
+   * Match the settings to the toggle.
+   *
+   * `inert` rather than `disabled`: these are product meta fields that post
+   * with the product form, and a disabled field posts nothing — the stored
+   * values would be wiped on the next save of a product whose subscription is
+   * merely switched off.
+   */
+  function syncSubscriptionGate() {
+    var toggle = document.getElementById("subscrpt_enable");
+    if (!toggle) {
+      // Variable products enable per variation; there is no product-level
+      // toggle to gate on.
+      return;
+    }
+    var off = !toggle.checked;
+    gatedRegions(toggle).forEach(function (el) {
+      el.classList.toggle("subscrpt-gated", off);
+      if ("inert" in el) {
+        el.inert = off;
+      }
+    });
+  }
+
+  document.addEventListener("change", function (e) {
+    if (e.target && "subscrpt_enable" === e.target.id) {
+      syncSubscriptionGate();
+    }
+  });
+
+  // WooCommerce builds the product data panels before this runs on a normal
+  // load, but the tab is also rendered into an already-open page.
+  if ("loading" === document.readyState) {
+    document.addEventListener("DOMContentLoaded", syncSubscriptionGate);
+  } else {
+    syncSubscriptionGate();
+  }
+
   /**
    * The classic-settings pane for a plan-view wrapper. Free renders its own
    * ([data-subscrpt-classic-view]); with Pro active the classic pane is Pro's
@@ -618,6 +690,7 @@
         if (window.WPSubsAdvSelect && window.WPSubsAdvSelect.init) {
           window.WPSubsAdvSelect.init(view);
         }
+        syncSubscriptionGate();
         if (selectGroupId) {
           selectConnectGroup(view, selectGroupId);
         }
