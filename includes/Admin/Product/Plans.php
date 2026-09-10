@@ -439,10 +439,10 @@ class Plans {
 		// Pro adds "create plan group / plan" shortcuts here; free is attach-only.
 		$pro_active = function_exists( 'subscrpt_pro_activated' ) && subscrpt_pro_activated();
 
-		// One-time purchase (Pro, simple products): the product's native WooCommerce
+		// One-time purchase (simple products): the product's native WooCommerce
 		// price + an enabled flag, rendered as a row after the plan rows (matching
 		// the variable-product layout), not a separate card. Null hides the row.
-		$subscrpt_simple_ot = ( $pro_active && ! $product->is_type( 'variable' ) )
+		$subscrpt_simple_ot = ( ! $product->is_type( 'variable' ) )
 			? array(
 				'enabled' => 'yes' === $product->get_meta( '_subscrpt_one_time_enabled' ),
 				'regular' => (string) $product->get_regular_price(),

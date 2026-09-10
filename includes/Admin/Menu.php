@@ -117,7 +117,7 @@ class Menu {
 			__( 'WPSubscription', 'subscription' ),
 			'manage_options',
 			$parent_slug,
-			array( $this, 'render_subscriptions_page' ),
+			array( $this, 'render_dashboard_page' ),
 			$icon_url,
 			40
 		);
@@ -133,13 +133,26 @@ class Menu {
 			array( $this, 'render_onboarding_wizard' )
 		);
 
-		// Subscriptions List
+		// Dashboard. WordPress makes the first submenu entry share the parent
+		// slug, so this is the page the top-level item opens.
+		add_submenu_page(
+			$parent_slug,
+			__( 'Dashboard', 'subscription' ),
+			__( 'Dashboard', 'subscription' ),
+			'manage_options',
+			$parent_slug,
+			array( $this, 'render_dashboard_page' )
+		);
+
+		// Subscriptions List. Moved off the parent slug when the dashboard took
+		// it; render_dashboard_page() redirects here when the request carries
+		// list-only query arguments, so old bookmarks still work.
 		add_submenu_page(
 			$parent_slug,
 			__( 'Subscriptions', 'subscription' ),
 			__( 'Subscriptions', 'subscription' ),
 			'manage_options',
-			$parent_slug,
+			'wp-subscription-list',
 			array( $this, 'render_subscriptions_page' )
 		);
 
@@ -194,14 +207,24 @@ class Menu {
 			array( $this, 'render_support_page' )
 		);
 
-		// Add WPSubscription link under WooCommerce menu
+		/*
+		 * WPSubscription link under the WooCommerce menu.
+		 *
+		 * The callback has to match the one the parent menu registers. WordPress
+		 * derives this entry's hookname from the *slug*, and because
+		 * `wp-subscription` is itself a registered top-level menu that resolves
+		 * to `toplevel_page_wp-subscription` — the same hook the parent uses.
+		 * Two identical callbacks on one hook are deduplicated; two different
+		 * ones both run, which rendered the dashboard and the subscriptions list
+		 * stacked on the same screen.
+		 */
 		add_submenu_page(
 			'woocommerce',
 			__( 'WPSubscription', 'subscription' ),
 			__( 'WPSubscription', 'subscription' ),
 			'manage_options',
 			'wp-subscription',
-			array( $this, 'render_subscriptions_page' )
+			array( $this, 'render_dashboard_page' )
 		);
 	}
 
@@ -225,7 +248,8 @@ class Menu {
 
 		// slug => position. Use gaps of 10 so extensions can insert between items.
 		$default_order = [
-			'wp-subscription'              => 10, // Subscriptions
+			'wp-subscription'              => 5,  // Dashboard
+			'wp-subscription-list'         => 10, // Subscriptions
 			'wp-subscription-stats'        => 20, // Reports
 			'wp-subscription-delivery'     => 30, // Delivery (pro)
 			'wp-subscription-health'       => 50, // Health
@@ -388,24 +412,16 @@ class Menu {
 				 */
 				$license = apply_filters( 'subscrpt_admin_header_license', null );
 
-				if ( is_array( $license ) && isset( $license['active'] ) ) :
+				// Only the "Activate license" badge is shown; the "License active"
+				// badge is intentionally hidden from the header.
+				if ( is_array( $license ) && isset( $license['active'] ) && ! $license['active'] ) :
 					$license_url = isset( $license['url'] ) ? (string) $license['url'] : '';
-
-					if ( $license['active'] ) :
-						?>
-						<span class="wpsubs-badge wpsubs-badge--active wp-subscription-license-badge">
-							<span class="wpsubs-badge__dot"></span>
-							<?php esc_html_e( 'License active', 'subscription' ); ?>
-						</span>
-						<?php
-					else :
-						?>
-						<a href="<?php echo esc_url( $license_url ); ?>" class="wpsubs-badge wpsubs-badge--warning wp-subscription-license-badge">
-							<span class="wpsubs-badge__dot"></span>
-							<?php esc_html_e( 'Activate license', 'subscription' ); ?>
-						</a>
-						<?php
-					endif;
+					?>
+					<a href="<?php echo esc_url( $license_url ); ?>" class="wpsubs-badge wpsubs-badge--warning wp-subscription-license-badge">
+						<span class="wpsubs-badge__dot"></span>
+						<?php esc_html_e( 'Activate license', 'subscription' ); ?>
+					</a>
+					<?php
 				endif;
 				?>
 
@@ -420,6 +436,34 @@ class Menu {
 			</div>
 		</div>
 		<?php
+	}
+
+	/**
+	 * Render the dashboard, or hand off to the list.
+	 *
+	 * The subscriptions list used to live on this slug. Anything still linking
+	 * here with a list-only argument — a saved filter, a bookmarked search, a
+	 * pagination link — means the list, so it is sent there with its arguments
+	 * intact rather than landing on a dashboard that ignores them.
+	 *
+	 * @return void
+	 */
+	public function render_dashboard_page() {
+		// phpcs:disable WordPress.Security.NonceVerification.Recommended
+		$list_args = array( 'post_status', 's', 'paged', 'filter_action', 'orderby', 'order', 'subscrpt_status' );
+
+		foreach ( $list_args as $arg ) {
+			if ( isset( $_GET[ $arg ] ) && '' !== $_GET[ $arg ] ) {
+				$query         = wp_unslash( $_GET );
+				$query['page'] = 'wp-subscription-list';
+
+				wp_safe_redirect( add_query_arg( array_map( 'sanitize_text_field', $query ), admin_url( 'admin.php' ) ) );
+				exit;
+			}
+		}
+		// phpcs:enable WordPress.Security.NonceVerification.Recommended
+
+		( new Dashboard() )->render();
 	}
 
 	/**

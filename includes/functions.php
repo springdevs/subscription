@@ -145,6 +145,96 @@ function subscrpt_is_subscription_enabled( $product_id, $variation_id = 0 ): boo
 }
 
 /**
+ * Discount badge text for a storefront plan selector card.
+ *
+ * The single source both selectors share, so free and Pro word a discount
+ * identically. Returning an empty string from the filter hides the badge.
+ *
+ * @param array       $group   Plan group (id, type, label, terms, discount_percent, …).
+ * @param \WC_Product $product Product or variation being rendered.
+ * @param int         $percent The group's best discount percentage.
+ * @param bool        $varying Whether the group's terms discount by differing
+ *                             amounts, in which case the badge reads "up to".
+ *
+ * @return string
+ */
+function subscrpt_card_badge_text( $group, $product, $percent = 0, $varying = false ) {
+	if ( $percent > 0 ) {
+		$default = $varying
+			/* translators: %d: discount percentage. */
+			? sprintf( __( 'Save up to %d%%', 'subscription' ), $percent )
+			/* translators: %d: discount percentage. */
+			: sprintf( __( 'Save %d%%', 'subscription' ), $percent );
+	} else {
+		$default = __( 'Sale', 'subscription' );
+	}
+
+	/**
+	 * Filters the discount badge text on a storefront plan selector card.
+	 *
+	 * @param string      $text    Badge text (empty string hides the badge).
+	 * @param array       $group   The plan group (id, type, label, terms, discount_percent, …).
+	 * @param \WC_Product $product Product or variation being rendered.
+	 * @param int         $percent Computed discount percentage for the group.
+	 */
+	return (string) apply_filters( 'subscrpt_plan_card_badge', $default, $group, $product, $percent );
+}
+
+/**
+ * Build the storefront One-Time Purchase card for a product or variation.
+ *
+ * Offered only when the merchant opted in on this exact product or variation:
+ * `_subscrpt_one_time_enabled` is stored per variation, so pass the variation
+ * itself, never its parent, whose flag only means "any variation enabled".
+ *
+ * The single source of the one-time price maths. Both selectors call it so the
+ * free and Pro storefronts can never disagree on a price; Pro layers its
+ * discount badge onto the returned group rather than recomputing anything.
+ *
+ * @param \WC_Product $product Product or variation.
+ *
+ * @return array|null Selector group in plan-selector.php shape, or null when
+ *                    one-time purchase is not offered for this product.
+ */
+function subscrpt_one_time_group( $product ) {
+	if ( ! $product instanceof \WC_Product || ! function_exists( 'wc_price' ) ) {
+		return null;
+	}
+
+	if ( 'yes' !== get_post_meta( $product->get_id(), '_subscrpt_one_time_enabled', true ) ) {
+		return null;
+	}
+
+	$regular = (float) $product->get_regular_price();
+	$sale    = $product->get_sale_price();
+	$price   = '' !== $sale ? (float) $sale : $regular;
+
+	// Strike the regular price through only when one-time is genuinely on sale.
+	$old_price = ( '' !== $sale && (float) $sale < $regular ) ? wc_price( $regular ) : '';
+	$percent   = ( '' !== $old_price && $regular > 0 )
+		? (int) round( ( $regular - $price ) / $regular * 100 )
+		: 0;
+
+	$group = array(
+		'id'               => 'one_time',
+		'type'             => 'one_time',
+		'label'            => __( 'One Time Purchase', 'subscription' ),
+		'price'            => wc_price( $price ),
+		'old_price'        => $old_price,
+		'terms'            => array(),
+		'note'             => '',
+		'badge'            => '',
+		'discount_percent' => $percent,
+	);
+
+	if ( $percent > 0 ) {
+		$group['badge'] = subscrpt_card_badge_text( $group, $product, $percent, false );
+	}
+
+	return $group;
+}
+
+/**
  * Truncate a string to a max length, appending an ellipsis when shortened.
  *
  * Multibyte-safe. Returns the text unchanged when it is within the limit, so
@@ -162,12 +252,64 @@ function subscrpt_truncate_text( $text, $length = 30 ) {
 }
 
 /**
+ * Resolve a setting that was renamed without its readers being updated.
+ *
+ * Commit d4719e1 ("changed SUBSCRPT to WP_SUBSCRIPTION") renamed six option ids
+ * inside Admin/Settings.php and touched no reader. Four were caught later; two
+ * were not, so since 2025-05-08 the settings screen has been writing
+ * `wp_subscription_*` while the code kept reading `subscrpt_*` — the saved value
+ * never reached the feature, and the feature's default never reached the screen.
+ *
+ * Reading both names is what makes the two agree again. It is deliberately a
+ * read and not a migration: `subscrpt_is_auto_renew_enabled()` is called from
+ * the Stripe gateway and the renewal actions, and an option write on that path
+ * to fix a display problem is a bad trade. A site that saves its settings once
+ * writes the current name and never consults the legacy one again.
+ *
+ * @param string $option        Current option name.
+ * @param string $legacy_option Name used before the rename.
+ * @param mixed  $default_value Value when neither is set.
+ * @return mixed
+ */
+function subscrpt_get_renamed_option( $option, $legacy_option, $default_value = '' ) {
+	$value = get_option( $option, '' );
+
+	if ( '' !== $value && false !== $value && null !== $value ) {
+		return $value;
+	}
+
+	return get_option( $legacy_option, $default_value );
+}
+
+/**
+ * Get renewal process settings.
+ *
+ * Must be used everywhere the renewal process is read, including the settings
+ * field itself — if the screen resolved the value differently from the code it
+ * would show "Automatic" to a site that is in fact set to manual.
+ *
+ * @return string 'auto' or 'manual'.
+ */
+function subscrpt_get_renewal_process() {
+	return (string) subscrpt_get_renamed_option( 'wp_subscription_renewal_process', 'subscrpt_renewal_process', 'auto' );
+}
+
+/**
+ * Notice shown when a manual renewal puts the product in the cart.
+ *
+ * @return string
+ */
+function subscrpt_get_manual_renew_cart_notice() {
+	return (string) subscrpt_get_renamed_option( 'wp_subscription_manual_renew_cart_notice', 'subscrpt_manual_renew_cart_notice', '' );
+}
+
+/**
  * Get renewal process settings.
  *
  * @return bool
  */
 function subscrpt_is_auto_renew_enabled() {
-	return 'auto' === get_option( 'subscrpt_renewal_process', 'auto' );
+	return 'auto' === subscrpt_get_renewal_process();
 }
 
 /**

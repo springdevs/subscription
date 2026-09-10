@@ -108,6 +108,28 @@
   font-size: 12px;
 }
 
+/* Muted: a secondary action that should not compete with the row's content.
+   Outline's shape, with the label dropped back to the muted text tone. */
+.wpsubs-btn--muted {
+  background: var(--wpsubs-surface);
+  border-color: var(--wpsubs-border);
+  color: var(--wpsubs-text-muted);
+}
+
+.wpsubs-btn--muted:hover {
+  border-color: var(--wpsubs-border-strong);
+  background: var(--wpsubs-surface-muted);
+  color: var(--wpsubs-text);
+  text-decoration: none;
+}
+
+.wpsubs-btn--muted .dashicons {
+  font-size: 15px;
+  width: 15px;
+  height: 15px;
+  line-height: 1;
+}
+
 .wpsubs-btn--danger {
   background: var(--wpsubs-surface);
   border-color: #fca5a5;
@@ -119,4 +141,68 @@
   border-color: #f87171;
   color: #b91c1c;
   text-decoration: none;
+}
+
+/* --------------------------------------------------------------------------
+   Disabled + in-flight states
+
+   setLoading() (plans.js / plan-forms.js) sets `disabled` and toggles
+   `is-loading` on the submit button — and on the controls beside it — for as
+   long as a REST write is in flight. Without these rules the class is inert,
+   so a slow save is indistinguishable from a dead button.
+   -------------------------------------------------------------------------- */
+.wpsubs-btn:disabled,
+.wpsubs-icon-action:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+/* The label is hidden rather than removed so the button keeps its width. */
+.wpsubs-btn.is-loading {
+  position: relative;
+  color: transparent !important;
+}
+
+/* The spinner replaces the label, so the button still reads as itself. */
+.wpsubs-btn.is-loading::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 14px;
+  height: 14px;
+  margin: -7px 0 0 -7px;
+  border: 2px solid var(--wpsubs-border-strong);
+  border-top-color: var(--wpsubs-text);
+  border-radius: 50%;
+  animation: wpsubs-btn-spin 0.6s linear infinite;
+}
+
+/* `color` is transparent while loading, so the ring needs its own colours. */
+.wpsubs-btn--primary.is-loading::after {
+  border-color: rgba(255, 255, 255, 0.45);
+  border-top-color: #ffffff;
+}
+
+.wpsubs-btn--danger.is-loading::after {
+  border-color: #fca5a5;
+  border-top-color: #dc2626;
+}
+
+/* A spinning button is already unmistakably busy — dimming it hides the ring. */
+.wpsubs-btn.is-loading:disabled {
+  opacity: 1;
+}
+
+@keyframes wpsubs-btn-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .wpsubs-btn.is-loading::after {
+    animation-duration: 2s;
+  }
 }

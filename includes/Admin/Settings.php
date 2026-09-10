@@ -80,7 +80,7 @@ class Settings {
 						'auto'   => __( 'Automatic', 'subscription' ),
 						'manual' => __( 'Manual', 'subscription' ),
 					],
-					'selected'    => esc_attr( get_option( 'wp_subscription_renewal_process', 'auto' ) ),
+					'selected'    => esc_attr( subscrpt_get_renewal_process() ),
 				],
 			],
 			[
@@ -91,7 +91,7 @@ class Settings {
 					'id'          => 'wp_subscription_manual_renew_cart_notice',
 					'title'       => __( 'Renewal Cart Notice', 'subscription' ),
 					'description' => __( 'Display Notice when Renewal Subscription product add to cart. Only available for Manual Renewal Process.', 'subscription' ),
-					'value'       => esc_attr( get_option( 'wp_subscription_manual_renew_cart_notice' ) ),
+					'value'       => esc_attr( subscrpt_get_manual_renew_cart_notice() ),
 				],
 			],
 			[
@@ -147,40 +147,6 @@ class Settings {
 					'description' => __( "If a subscriber's subscription is manually cancelled or expires, they will be assigned this role.", 'subscription' ),
 					'options'     => $roles,
 					'selected'    => esc_attr( get_option( 'wp_subscription_unactive_role', 'customer' ) ),
-				],
-			],
-			[
-				'type'       => 'heading',
-				'group'      => 'cancellation',
-				'priority'   => 4,
-				'field_data' => [
-					'title' => __( 'Cancellation', 'subscription' ),
-				],
-			],
-			[
-				'type'       => 'toggle',
-				'group'      => 'cancellation',
-				'priority'   => 2,
-				'field_data' => [
-					'id'          => 'subscrpt_cancellation_feedback_enabled',
-					'title'       => __( 'Cancellation Survey', 'subscription' ),
-					'label'       => __( 'Ask customers why they are cancelling', 'subscription' ),
-					'description' => __( 'Show a short cancellation survey when a customer cancels a subscription, and record the reason for churn tracking.', 'subscription' ),
-					'value'       => '1',
-					'checked'     => '1' === get_option( 'subscrpt_cancellation_feedback_enabled', '1' ),
-				],
-			],
-			[
-				'type'       => 'toggle',
-				'group'      => 'cancellation',
-				'priority'   => 3,
-				'field_data' => [
-					'id'          => 'subscrpt_cancellation_feedback_comment',
-					'title'       => __( 'Survey Comment Box', 'subscription' ),
-					'label'       => __( 'Allow an additional comment', 'subscription' ),
-					'description' => __( 'Show an optional free-text comment field in the cancellation survey.', 'subscription' ),
-					'value'       => '1',
-					'checked'     => '1' === get_option( 'subscrpt_cancellation_feedback_comment', '1' ),
 				],
 			],
 		];
@@ -242,22 +208,6 @@ class Settings {
 		register_setting(
 			'wp_subscription_settings',
 			'wp_subscription_auto_renewal_toggle',
-			array(
-				'type'              => 'string',
-				'sanitize_callback' => 'sanitize_text_field',
-			)
-		);
-		register_setting(
-			'wp_subscription_settings',
-			'subscrpt_cancellation_feedback_enabled',
-			array(
-				'type'              => 'string',
-				'sanitize_callback' => 'sanitize_text_field',
-			)
-		);
-		register_setting(
-			'wp_subscription_settings',
-			'subscrpt_cancellation_feedback_comment',
 			array(
 				'type'              => 'string',
 				'sanitize_callback' => 'sanitize_text_field',

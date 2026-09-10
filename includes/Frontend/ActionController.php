@@ -128,7 +128,12 @@ class ActionController {
 			array( 'renew_subscrpt' => true )
 		);
 
-		wc_add_notice( get_option( 'subscrpt_manual_renew_cart_notice' ), 'success' );
+		// Empty unless the store set one, and wc_add_notice( '' ) renders an empty
+		// green box rather than nothing, so only add it when there is a message.
+		$cart_notice = subscrpt_get_manual_renew_cart_notice();
+		if ( '' !== $cart_notice ) {
+			wc_add_notice( $cart_notice, 'success' );
+		}
 		$this->redirect( wc_get_cart_url() );
 	}
 

@@ -23,8 +23,8 @@ for ( $i = 0; $i < 12; $i++ ) {
 <div class="wp-subscription-admin-content list-page">
 
 	<?php
-		// Getting started card — hidden once a subscription product exists.
-		require __DIR__ . '/subscription-gsc.php';
+		// Getting started ("Welcome to WPSubscription") card hidden for now — re-enable later.
+		// require __DIR__ . '/subscription-gsc.php';
 	?>
 
 	<!-- Page header -->

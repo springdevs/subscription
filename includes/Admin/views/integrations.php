@@ -182,27 +182,9 @@ $subscrpt_tag_labels = [
 		<aside class="subscrpt-int-sidebar">
 		<div class="subscrpt-int-filters" data-subscrpt-integration-filters hidden>
 
-			<div class="subscrpt-int-filters__top">
-
-			<?php
-			/*
-			 * The two summary strings live on the element rather than in the
-			 * script so they stay translatable — a .pot file cannot reach a
-			 * literal inside a .js asset.
-			 */
-			?>
-			<p
-				class="subscrpt-int-filters__summary"
-				data-subscrpt-int-summary
-				aria-live="polite"
-				data-all="<?php /* translators: %s: total number of integrations. */ echo esc_attr__( '%s integrations', 'subscription' ); ?>"
-				data-filtered="<?php /* translators: 1: number shown, 2: total number. */ echo esc_attr__( 'Showing %1$s of %2$s', 'subscription' ); ?>"
-			></p>
-
 			<button type="button" class="wpsubs-btn wpsubs-btn--outline wpsubs-btn--sm" data-subscrpt-int-reset hidden>
-					<?php esc_html_e( 'Reset', 'subscription' ); ?>
-				</button>
-			</div>
+				<?php esc_html_e( 'Reset', 'subscription' ); ?>
+			</button>
 
 			<?php
 			$subscrpt_chip_groups = [
@@ -232,41 +214,39 @@ $subscrpt_tag_labels = [
 				if ( empty( $subscrpt_shown ) ) {
 					continue;
 				}
+				$subscrpt_is_single = in_array( $subscrpt_group['facet'], array( 'category', 'status' ), true );
 				?>
-				<div class="subscrpt-int-filters__row">
-					<span class="subscrpt-int-filters__legend"><?php echo esc_html( $subscrpt_group['legend'] ); ?></span>
-					<div class="subscrpt-int-chips" role="group" aria-label="<?php echo esc_attr( $subscrpt_group['legend'] ); ?>">
-						<?php
-						/*
-						 * Category and status are single-select — a card has
-						 * exactly one of each, so picking two could only ever
-						 * return nothing. Both therefore need an explicit "All"
-						 * to come back to.
-						 */
-						if ( in_array( $subscrpt_group['facet'], array( 'category', 'status' ), true ) ) :
-							?>
-							<button type="button" class="subscrpt-int-chip is-active" data-subscrpt-int-chip data-facet="<?php echo esc_attr( $subscrpt_group['facet'] ); ?>" data-value="">
-								<?php esc_html_e( 'All', 'subscription' ); ?>
-								<span class="subscrpt-int-chip__count"><?php echo esc_html( number_format_i18n( $subscrpt_total ) ); ?></span>
-							</button>
-							<?php
-						endif;
+				<nav class="wpsubs-vnav" aria-label="<?php echo esc_attr( $subscrpt_group['legend'] ); ?>">
+					<p class="wpsubs-vnav__title"><?php echo esc_html( $subscrpt_group['legend'] ); ?></p>
+					<?php
+					/*
+					 * Category and status are single-select — a card has exactly
+					 * one of each, so picking two could only ever return nothing.
+					 * Both therefore need an explicit "All" to come back to.
+					 */
+					if ( $subscrpt_is_single ) :
 						?>
-						<?php foreach ( $subscrpt_shown as $subscrpt_key => $subscrpt_count ) : ?>
-							<button
-								type="button"
-								class="subscrpt-int-chip"
-								data-subscrpt-int-chip
-								data-facet="<?php echo esc_attr( $subscrpt_group['facet'] ); ?>"
-								data-value="<?php echo esc_attr( $subscrpt_key ); ?>"
-								aria-pressed="false"
-							>
-								<?php echo esc_html( $subscrpt_group['labels'][ $subscrpt_key ] ?? $subscrpt_key ); ?>
-								<span class="subscrpt-int-chip__count"><?php echo esc_html( number_format_i18n( $subscrpt_count ) ); ?></span>
-							</button>
-						<?php endforeach; ?>
-					</div>
-				</div>
+						<button type="button" class="wpsubs-vnav__item is-active" data-subscrpt-int-chip data-facet="<?php echo esc_attr( $subscrpt_group['facet'] ); ?>" data-value="">
+							<span class="wpsubs-vnav__label"><?php esc_html_e( 'All', 'subscription' ); ?></span>
+							<span class="subscrpt-int-chip__count"><?php echo esc_html( number_format_i18n( $subscrpt_total ) ); ?></span>
+						</button>
+						<?php
+					endif;
+					?>
+					<?php foreach ( $subscrpt_shown as $subscrpt_key => $subscrpt_count ) : ?>
+						<button
+							type="button"
+							class="wpsubs-vnav__item"
+							data-subscrpt-int-chip
+							data-facet="<?php echo esc_attr( $subscrpt_group['facet'] ); ?>"
+							data-value="<?php echo esc_attr( $subscrpt_key ); ?>"
+							aria-pressed="false"
+						>
+							<span class="wpsubs-vnav__label"><?php echo esc_html( $subscrpt_group['labels'][ $subscrpt_key ] ?? $subscrpt_key ); ?></span>
+							<span class="subscrpt-int-chip__count"><?php echo esc_html( number_format_i18n( $subscrpt_count ) ); ?></span>
+						</button>
+					<?php endforeach; ?>
+				</nav>
 				<?php
 			endforeach;
 			?>
@@ -352,7 +332,7 @@ $subscrpt_tag_labels = [
 								</div>
 								<div style="display:flex;flex-wrap:wrap;gap:4px;">
 									<?php if ( $is_pro ) : ?>
-										<span style="display:inline-flex;align-items:center;font-size:10px;font-weight:600;padding:2px 7px;border-radius:10px;background:#f5f3ff;color:#7c3aed;line-height:1.6;"><?php esc_html_e( 'Pro', 'subscription' ); ?></span>
+										<span style="display:inline-flex;align-items:center;font-size:10px;font-weight:600;padding:2px 7px;border-radius:10px;background:var(--wpsubs-brand-light,#fff1eb);color:var(--wpsubs-brand-dark,#d93f00);line-height:1.6;"><?php esc_html_e( 'Pro', 'subscription' ); ?></span>
 									<?php endif; ?>
 									<?php if ( $is_beta ) : ?>
 										<span style="display:inline-flex;align-items:center;font-size:10px;font-weight:500;padding:2px 7px;border-radius:10px;background:#fff7ed;color:#c2410c;line-height:1.6;"><?php esc_html_e( 'Beta', 'subscription' ); ?></span>
@@ -378,7 +358,7 @@ $subscrpt_tag_labels = [
 						<!-- Actions -->
 						<div style="display:flex;gap:6px;flex-wrap:wrap;">
 							<?php if ( $is_pro && ! defined( 'SUBSCRIPT_PRO_VERSION' ) ) : ?>
-								<div style="width:100%;display:flex;align-items:center;gap:6px;background:#f5f3ff;border-radius:6px;padding:7px 10px;font-size:12px;font-weight:500;color:#7c3aed;line-height:1.4;">
+								<div style="width:100%;display:flex;align-items:center;gap:6px;background:var(--wpsubs-brand-light,#fff1eb);border-radius:6px;padding:7px 10px;font-size:12px;font-weight:500;color:var(--wpsubs-brand-dark,#d93f00);line-height:1.4;">
 									<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex-shrink:0;"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
 									<?php esc_html_e( 'WPSubscription Pro required', 'subscription' ); ?>
 								</div>
@@ -473,7 +453,7 @@ $subscrpt_tag_labels = [
 								<?php if ( $cat['label'] || $is_pro ) : ?>
 									<div style="display:flex;flex-wrap:wrap;gap:4px;">
 										<?php if ( $is_pro ) : ?>
-											<span style="display:inline-flex;align-items:center;font-size:10px;font-weight:600;padding:2px 7px;border-radius:10px;background:#f5f3ff;color:#7c3aed;line-height:1.6;"><?php esc_html_e( 'Pro', 'subscription' ); ?></span>
+											<span style="display:inline-flex;align-items:center;font-size:10px;font-weight:600;padding:2px 7px;border-radius:10px;background:var(--wpsubs-brand-light,#fff1eb);color:var(--wpsubs-brand-dark,#d93f00);line-height:1.6;"><?php esc_html_e( 'Pro', 'subscription' ); ?></span>
 										<?php endif; ?>
 										<?php if ( $cat['label'] ) : ?>
 											<span style="display:inline-flex;align-items:center;font-size:10px;font-weight:500;padding:2px 7px;border-radius:10px;background:<?php echo esc_attr( $cat['bg'] ); ?>;color:<?php echo esc_attr( $cat['color'] ); ?>;line-height:1.6;"><?php echo esc_html( $cat['label'] ); ?></span>
@@ -492,7 +472,7 @@ $subscrpt_tag_labels = [
 						<!-- Actions -->
 						<div style="display:flex;gap:6px;flex-wrap:wrap;">
 							<?php if ( $is_pro && ! defined( 'SUBSCRIPT_PRO_VERSION' ) ) : ?>
-								<div style="width:100%;display:flex;align-items:center;gap:6px;background:#f5f3ff;border-radius:6px;padding:7px 10px;font-size:12px;font-weight:500;color:#7c3aed;line-height:1.4;">
+								<div style="width:100%;display:flex;align-items:center;gap:6px;background:var(--wpsubs-brand-light,#fff1eb);border-radius:6px;padding:7px 10px;font-size:12px;font-weight:500;color:var(--wpsubs-brand-dark,#d93f00);line-height:1.4;">
 									<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex-shrink:0;"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
 									<?php esc_html_e( 'WPSubscription Pro required', 'subscription' ); ?>
 								</div>

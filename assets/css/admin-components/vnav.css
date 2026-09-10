@@ -26,14 +26,23 @@
   align-items: center;
   justify-content: space-between;
   gap: 8px;
+  /* Reset so a <button> can be an item too, not only an <a>. */
+  appearance: none;
+  box-sizing: border-box;
+  width: 100%;
+  background: transparent;
+  border: 0;
   padding: 7px 12px;
   border-left: 2px solid transparent;
   border-radius: var(--wpsubs-radius-sm, 5px);
+  font-family: inherit;
   font-size: 13px;
   font-weight: 500;
   line-height: 1.4;
+  text-align: left;
   color: var(--wpsubs-text, #374151);
   text-decoration: none;
+  cursor: pointer;
   transition:
     color 0.12s ease,
     background-color 0.12s ease,

@@ -225,6 +225,12 @@ class Action {
 		update_comment_meta( $comment_id, '_subscrpt_activity', 'Subscription Pending Cancellation' );
 		update_comment_meta( $comment_id, '_subscrpt_activity_type', 'subs_pe_cancel' );
 
+		// WC_Email classes only exist once the mailer has been built, and they
+		// attach their own listeners from their constructors. Without this, an
+		// email listening for a pending cancellation is simply not registered yet
+		// when the action fires - the same reason cancelled() calls it.
+		WC()->mailer();
+
 		do_action( 'subscrpt_subscription_pending_cancellation', $subscription_id );
 	}
 }
