@@ -741,8 +741,18 @@ class Plans {
 								<?php echo wp_kses_post( wpsubs_render_hint( __( 'A single, non-recurring purchase at the variation’s regular WooCommerce price.', 'subscription' ) ) ); ?>
 							</span>
 						</td>
-						<td><input type="number" min="0" step="0.01" class="wpsubs-input" data-ot-field="price" value="<?php echo esc_attr( $one_time['regular'] ); ?>" placeholder="0.00" style="max-width:110px;" /></td>
-						<td><input type="number" min="0" step="0.01" class="wpsubs-input" data-ot-field="offer" value="<?php echo esc_attr( $one_time['offer'] ); ?>" placeholder="<?php esc_attr_e( 'No offer', 'subscription' ); ?>" style="max-width:110px;" /></td>
+						<?php // Prices follow the toggle: nothing to price until one-time is on. ?>
+						<?php $subscrpt_ot_hidden = empty( $one_time['enabled'] ) ? ' style="display:none;"' : ''; ?>
+						<td>
+							<span data-subscrpt-onetime-price<?php echo $subscrpt_ot_hidden; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- fixed literal. ?>>
+								<input type="number" min="0" step="0.01" class="wpsubs-input" data-ot-field="price" value="<?php echo esc_attr( $one_time['regular'] ); ?>" placeholder="0.00" style="max-width:110px;" />
+							</span>
+						</td>
+						<td>
+							<span data-subscrpt-onetime-price<?php echo $subscrpt_ot_hidden; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- fixed literal. ?>>
+								<input type="number" min="0" step="0.01" class="wpsubs-input" data-ot-field="offer" value="<?php echo esc_attr( $one_time['offer'] ); ?>" placeholder="<?php esc_attr_e( 'No offer', 'subscription' ); ?>" style="max-width:110px;" />
+							</span>
+						</td>
 						<td>
 							<div style="display:inline-flex;align-items:center;gap:8px;">
 								<label class="wpsubs-settings-toggle-label" style="display:inline-flex;align-items:center;" title="<?php esc_attr_e( 'Offer this variation for one-time purchase', 'subscription' ); ?>">

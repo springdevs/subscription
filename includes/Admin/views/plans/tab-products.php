@@ -113,14 +113,28 @@ $has_terms = ! empty( $plan['terms'] );
 									<?php echo wp_kses_post( wpsubs_render_hint( __( 'A single, non-recurring purchase at the product’s regular WooCommerce price.', 'subscription' ) ) ); ?>
 								</span>
 							</td>
-							<td>
-								<span class="subscrpt-pe-view"><?php echo esc_html( $subscrpt_ot_rdsp ); ?></span>
-									<input type="number" min="0" step="0.01" class="wpsubs-input subscrpt-pe-edit" data-ot-field="price" value="<?php echo esc_attr( $subscrpt_ot_reg ); ?>" placeholder="0.00" style="display:none;max-width:110px;" />
-							</td>
-							<td>
-								<span class="subscrpt-pe-view"><?php echo esc_html( $subscrpt_ot_odsp ); ?></span>
-									<input type="number" min="0" step="0.01" class="wpsubs-input subscrpt-pe-edit" data-ot-field="offer" value="<?php echo esc_attr( $subscrpt_ot_off ); ?>" placeholder="<?php esc_attr_e( 'No offer', 'subscription' ); ?>" style="display:none;max-width:110px;" />
-							</td>
+						<?php
+						// Two independent conditions, so two wrappers: the outer is the card's
+						// read/edit cycle, the inner is the toggle. One element carrying both
+						// would have them fight over `display`.
+						$subscrpt_ot_hidden = $subscrpt_ot_on ? '' : ' style="display:none;"';
+						?>
+						<td>
+							<span class="subscrpt-pe-view"><?php echo esc_html( $subscrpt_ot_rdsp ); ?></span>
+							<span class="subscrpt-pe-edit" style="display:none;">
+								<span data-subscrpt-onetime-price<?php echo $subscrpt_ot_hidden; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- fixed literal. ?>>
+									<input type="number" min="0" step="0.01" class="wpsubs-input" data-ot-field="price" value="<?php echo esc_attr( $subscrpt_ot_reg ); ?>" placeholder="0.00" style="max-width:110px;" />
+								</span>
+							</span>
+						</td>
+						<td>
+							<span class="subscrpt-pe-view"><?php echo esc_html( $subscrpt_ot_odsp ); ?></span>
+							<span class="subscrpt-pe-edit" style="display:none;">
+								<span data-subscrpt-onetime-price<?php echo $subscrpt_ot_hidden; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- fixed literal. ?>>
+									<input type="number" min="0" step="0.01" class="wpsubs-input" data-ot-field="offer" value="<?php echo esc_attr( $subscrpt_ot_off ); ?>" placeholder="<?php esc_attr_e( 'No offer', 'subscription' ); ?>" style="max-width:110px;" />
+								</span>
+							</span>
+						</td>
 							<td>
 								<span class="subscrpt-pe-view">
 									<?php if ( $subscrpt_ot_on ) : ?>

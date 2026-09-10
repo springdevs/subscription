@@ -1176,22 +1176,6 @@
    * simple products use this standalone card + its own toggle/Save.
    * ------------------------------------------------------------------ */
 
-  // Toggle reveals / hides the one-time price inputs (simple card only).
-  document.addEventListener("change", function (e) {
-    var toggle = e.target.closest("[data-subscrpt-onetime-enable]");
-    if (!toggle) {
-      return;
-    }
-    var card = toggle.closest("[data-subscrpt-onetime-card]");
-    if (!card) {
-      return;
-    }
-    var body = card.querySelector("[data-subscrpt-onetime-body]");
-    if (body) {
-      body.style.display = toggle.checked ? "" : "none";
-    }
-  });
-
   // Save the simple card's one-time (enabled flag + native price).
   document.addEventListener("click", function (e) {
     var btn = e.target.closest("[data-subscrpt-onetime-save]");

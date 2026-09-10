@@ -32,6 +32,60 @@
   var api = save.api;
   var setLoading = save.busy;
 
+  /* ------------------------------------------------------------------ *
+   * One-time purchase: the prices follow the toggle.
+   * ------------------------------------------------------------------ */
+
+  /**
+   * The block one of these controls belongs to. Three shapes carry it — a
+   * table row on the Plans screen, a table row in the product editor, and a
+   * card on Plans for simple products — so the scope is whichever wrapper is
+   * nearest.
+   *
+   * @param {HTMLElement} el A control inside the block.
+   * @return {HTMLElement|null}
+   */
+  function oneTimeScope(el) {
+    return el.closest("[data-subscrpt-onetime-row]") || el.closest("[data-subscrpt-onetime-card]");
+  }
+
+  /**
+   * Show the prices only while one-time purchase is switched on.
+   *
+   * Off, the price fields read as a second regular price sitting under the
+   * plan's own — the merchant has no way to tell they do not apply. Revealing
+   * them on the toggle says which is which.
+   *
+   * @param {HTMLElement} scope A one-time row or card.
+   */
+  function syncOneTime(scope) {
+    var toggle = scope.querySelector("[data-subscrpt-onetime-enable]");
+    if (!toggle) {
+      return;
+    }
+    var on = toggle.checked;
+
+    scope.querySelectorAll("[data-subscrpt-onetime-price]").forEach(function (el) {
+      el.style.display = on ? "" : "none";
+    });
+
+    // The card keeps its whole body behind the toggle, prices and all.
+    var body = scope.querySelector("[data-subscrpt-onetime-body]");
+    if (body) {
+      body.style.display = on ? "" : "none";
+    }
+  }
+
+  // Lives here because both the Plans screen and the product editor load this
+  // module, and both render the block.
+  document.addEventListener("change", function (e) {
+    var toggle = e.target.closest("[data-subscrpt-onetime-enable]");
+    var scope = toggle && oneTimeScope(toggle);
+    if (scope) {
+      syncOneTime(scope);
+    }
+  });
+
   /**
    * Open a modal by id via the shared helper.
    *
