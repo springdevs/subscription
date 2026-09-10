@@ -1,4 +1,9 @@
 <?php
+/**
+ * Cart handling for subscription products.
+ *
+ * @package SpringDevs\Subscription
+ */
 
 namespace SpringDevs\Subscription\Frontend;
 
@@ -88,7 +93,8 @@ class Cart {
 
 		$error_notice = null;
 		$failed       = false;
-		$enabled      = $product->is_enabled();
+		// A tied plan counts as a subscription even without classic `_subscrpt_enabled`.
+		$enabled = $product->is_enabled() || subscrpt_plan_offered( $product_id );
 
 		foreach ( $cart_items as $key => $cart_item ) {
 			if ( isset( $cart_item['subscription'] ) ) {
@@ -183,6 +189,14 @@ class Cart {
 		$cart_items = WC()->cart->cart_contents;
 		if ( is_array( $cart_items ) ) {
 			foreach ( $cart_items as $key => $value ) {
+				// Plan items were validated against the plan by the resolver at
+				// add-to-cart; their `subscription` snapshot intentionally differs
+				// from the product's classic meta, so skip the classic re-check
+				// (which would otherwise drop them from the cart).
+				if ( ! empty( $value['subscrpt_plan_id'] ) ) {
+					continue;
+				}
+
 				/**
 				 * Product Object.
 				 *
@@ -304,6 +318,11 @@ class Cart {
 						'type'        => array( 'number' ),
 						'readonly'    => true,
 					),
+					'split_total'            => array(
+						'description' => __( 'Total price for a split-payment plan (entered plan price).', 'subscription' ),
+						'type'        => array( 'number', 'null' ),
+						'readonly'    => true,
+					),
 				),
 			),
 		);
@@ -352,7 +371,10 @@ class Cart {
 							'type'                   => $type,
 							'description'            => $description,
 							'can_user_cancel'        => $cart_item['data']->get_meta( '_subscrpt_user_cancel' ),
-							'max_no_payment'         => $cart_item['data']->get_meta( '_subscrpt_max_no_payment' ),
+							'max_no_payment'         => ! empty( $cart_item['subscrpt_max_no_payment'] )
+								? (int) $cart_item['subscrpt_max_no_payment']
+								: $cart_item['data']->get_meta( '_subscrpt_max_no_payment' ),
+							'split_total'            => isset( $cart_item['subscrpt_split_total'] ) ? (float) $cart_item['subscrpt_split_total'] : null,
 						),
 						$cart_item
 					);
@@ -424,6 +446,23 @@ class Cart {
 			$item_data = $cart_item['subscription'];
 			unset( $item_data['per_cost'] );
 			$item_data['cost'] = (float) $cart_item['subscription']['per_cost'] * $cart_item['quantity'];
+
+			// Plan items don't stamp the installment count into the subscription
+			// array (it rides the cart item as subscrpt_max_no_payment); classic
+			// products carry it on the product meta.
+			if ( ! isset( $item_data['max_no_payment'] ) ) {
+				$item_data['max_no_payment'] = ! empty( $cart_item['subscrpt_max_no_payment'] )
+					? (int) $cart_item['subscrpt_max_no_payment']
+					: $cart_item['data']->get_meta( '_subscrpt_max_no_payment' );
+			}
+
+			// Normalise the cadence word to singular/plural by frequency for the
+			// blocks (Store API) cart — plan items store the raw plural interval
+			// (e.g. "months"), which the block would otherwise render as-is.
+			if ( ! empty( $item_data['type'] ) ) {
+				$sub_time          = max( 1, (int) ( $item_data['time'] ?? 1 ) );
+				$item_data['type'] = Helper::get_typos( $sub_time, $item_data['type'] );
+			}
 		}
 		if ( ! subscrpt_pro_activated() ) {
 			$item_data['time']       = null;
@@ -444,6 +483,13 @@ class Cart {
 	public function add_to_cart_item_data( array $cart_item_data, int $product_id ): array {
 		$product = Subscription::get_subs_product( $product_id );
 		if ( ! $product->is_type( 'simple' ) ) {
+			return $cart_item_data;
+		}
+		// Plan products stamp their subscription snapshot in the plan checkout
+		// (Frontend\PlanCheckout / Pro), gated on the chosen plan id — so a One-Time
+		// purchase of a plan product is not wrongly tagged as a subscription here
+		// (which would show a cadence + list it under "Recurring totals").
+		if ( subscrpt_product_has_plan( $product_id ) ) {
 			return $cart_item_data;
 		}
 		if ( $product->is_enabled() ) :
@@ -490,7 +536,10 @@ class Cart {
 			return $price;
 		}
 
-		if ( $product->is_enabled() ) {
+		// A tied plan makes it a subscription even without classic `_subscrpt_enabled`;
+		// get_price_html() already resolves to the plan line (Frontend\Plans), so this
+		// shows the plan cadence on the cart line without doubling.
+		if ( $product->is_enabled() || subscrpt_plan_offered( $product->get_id() ) ) {
 			return $product->get_price_html();
 		}
 
@@ -578,7 +627,7 @@ class Cart {
 										// translators: 1: number of installments, 2: total amount.
 										__( 'This subscription will be billed in %1$s installments, for a total of %2$s.', 'subscription' ),
 										esc_html( $recurr['max_no_payment'] ),
-										wc_price( $recurr['price'] * (int) $recurr['max_no_payment'] )
+										wc_price( isset( $recurr['split_total'] ) && null !== $recurr['split_total'] ? $recurr['split_total'] : $recurr['price'] * (int) $recurr['max_no_payment'] )
 									)
 								);
 								?>

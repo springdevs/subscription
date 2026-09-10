@@ -62,15 +62,15 @@ class Settings {
 		$settings_fields = [
 			[
 				'type'       => 'heading',
-				'group'      => 'main',
+				'group'      => 'renewals',
 				'priority'   => 0,
 				'field_data' => [
-					'title' => __( 'General Settings', 'subscription' ),
+					'title' => __( 'Renewals', 'subscription' ),
 				],
 			],
 			[
 				'type'       => 'select',
-				'group'      => 'main',
+				'group'      => 'renewals',
 				'priority'   => 1,
 				'field_data' => [
 					'id'          => 'wp_subscription_renewal_process',
@@ -80,23 +80,23 @@ class Settings {
 						'auto'   => __( 'Automatic', 'subscription' ),
 						'manual' => __( 'Manual', 'subscription' ),
 					],
-					'selected'    => esc_attr( get_option( 'wp_subscription_renewal_process', 'auto' ) ),
+					'selected'    => esc_attr( subscrpt_get_renewal_process() ),
 				],
 			],
 			[
 				'type'       => 'input',
-				'group'      => 'main',
+				'group'      => 'renewals',
 				'priority'   => 2,
 				'field_data' => [
 					'id'          => 'wp_subscription_manual_renew_cart_notice',
 					'title'       => __( 'Renewal Cart Notice', 'subscription' ),
 					'description' => __( 'Display Notice when Renewal Subscription product add to cart. Only available for Manual Renewal Process.', 'subscription' ),
-					'value'       => esc_attr( get_option( 'wp_subscription_manual_renew_cart_notice' ) ),
+					'value'       => esc_attr( subscrpt_get_manual_renew_cart_notice() ),
 				],
 			],
 			[
 				'type'       => 'toggle',
-				'group'      => 'main',
+				'group'      => 'renewals',
 				'priority'   => 3,
 				'field_data' => [
 					'id'          => 'wp_subscription_stripe_auto_renew',
@@ -114,7 +114,7 @@ class Settings {
 			],
 			[
 				'type'       => 'toggle',
-				'group'      => 'main',
+				'group'      => 'renewals',
 				'priority'   => 4,
 				'field_data' => [
 					'id'          => 'wp_subscription_auto_renewal_toggle',
@@ -127,8 +127,8 @@ class Settings {
 			],
 			[
 				'type'       => 'select',
-				'group'      => 'main',
-				'priority'   => 5,
+				'group'      => 'role_based_settings',
+				'priority'   => 2,
 				'field_data' => [
 					'id'          => 'wp_subscription_active_role',
 					'title'       => __( 'Subscriber Default Role', 'subscription' ),
@@ -139,40 +139,14 @@ class Settings {
 			],
 			[
 				'type'       => 'select',
-				'group'      => 'main',
-				'priority'   => 6,
+				'group'      => 'role_based_settings',
+				'priority'   => 3,
 				'field_data' => [
 					'id'          => 'wp_subscription_unactive_role',
 					'title'       => __( 'Subscriber Inactive Role', 'subscription' ),
 					'description' => __( "If a subscriber's subscription is manually cancelled or expires, they will be assigned this role.", 'subscription' ),
 					'options'     => $roles,
 					'selected'    => esc_attr( get_option( 'wp_subscription_unactive_role', 'customer' ) ),
-				],
-			],
-			[
-				'type'       => 'toggle',
-				'group'      => 'main',
-				'priority'   => 9.5,
-				'field_data' => [
-					'id'          => 'subscrpt_cancellation_feedback_enabled',
-					'title'       => __( 'Cancellation Survey', 'subscription' ),
-					'label'       => __( 'Ask customers why they are cancelling', 'subscription' ),
-					'description' => __( 'Show a short cancellation survey when a customer cancels a subscription, and record the reason for churn tracking.', 'subscription' ),
-					'value'       => '1',
-					'checked'     => '1' === get_option( 'subscrpt_cancellation_feedback_enabled', '1' ),
-				],
-			],
-			[
-				'type'       => 'toggle',
-				'group'      => 'main',
-				'priority'   => 9.6,
-				'field_data' => [
-					'id'          => 'subscrpt_cancellation_feedback_comment',
-					'title'       => __( 'Survey Comment Box', 'subscription' ),
-					'label'       => __( 'Allow an additional comment', 'subscription' ),
-					'description' => __( 'Show an optional free-text comment field in the cancellation survey.', 'subscription' ),
-					'value'       => '1',
-					'checked'     => '1' === get_option( 'subscrpt_cancellation_feedback_comment', '1' ),
 				],
 			],
 		];
@@ -239,22 +213,6 @@ class Settings {
 				'sanitize_callback' => 'sanitize_text_field',
 			)
 		);
-		register_setting(
-			'wp_subscription_settings',
-			'subscrpt_cancellation_feedback_enabled',
-			array(
-				'type'              => 'string',
-				'sanitize_callback' => 'sanitize_text_field',
-			)
-		);
-		register_setting(
-			'wp_subscription_settings',
-			'subscrpt_cancellation_feedback_comment',
-			array(
-				'type'              => 'string',
-				'sanitize_callback' => 'sanitize_text_field',
-			)
-		);
 
 		do_action( 'subscrpt_register_settings', 'subscrpt_settings' );
 	}
@@ -264,6 +222,8 @@ class Settings {
 	 */
 	public function settings_content() {
 		$settings_fields = $this->settings_fields;
+		$category_groups = SettingsHelper::category_groups( $settings_fields );
+		$active_cat      = $this->get_active_category( $category_groups );
 
 		// Header.
 		$menu = new Menu();
@@ -273,6 +233,39 @@ class Settings {
 
 		// Footer.
 		$menu->render_admin_footer();
+	}
+
+	/**
+	 * Which settings section the page opens on.
+	 *
+	 * Read from `?cat=`, and it has to be a query argument rather than a
+	 * fragment: the form posts to `options.php`, which redirects back to
+	 * `_wp_http_referer`, and a fragment never reaches the server. Keeping the
+	 * section in the query string is what returns you to the panel you saved
+	 * from.
+	 *
+	 * Validated against the sections that actually hold groups, so an unknown
+	 * or hostile value — or one naming a section only Pro fills — opens the
+	 * first real section rather than an empty panel.
+	 *
+	 * @param array<string,string[]> $category_groups Section key => group keys.
+	 * @return string Section key, or an empty string when there are no groups.
+	 */
+	private function get_active_category( array $category_groups ) {
+		$cats = array_keys( $category_groups );
+
+		if ( empty( $cats ) ) {
+			return '';
+		}
+
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- read-only section selection, validated against the list above.
+		$requested = isset( $_GET['cat'] ) ? sanitize_key( wp_unslash( $_GET['cat'] ) ) : '';
+
+		if ( in_array( $requested, $cats, true ) ) {
+			return $requested;
+		}
+
+		return $cats[0];
 	}
 
 	/**

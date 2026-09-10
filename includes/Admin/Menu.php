@@ -1,4 +1,9 @@
 <?php
+/**
+ * Admin menu + shared admin header/breadcrumb renderer.
+ *
+ * @package SpringDevs\Subscription\Admin
+ */
 
 namespace SpringDevs\Subscription\Admin;
 
@@ -19,6 +24,43 @@ class Menu {
 		add_action( 'admin_menu', array( $this, 'reorder_submenu' ), 999 );
 		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_admin_assets' ) );
 		add_action( 'wp_ajax_subscrpt_bulk_action', array( $this, 'handle_bulk_action_ajax' ) );
+		add_action( 'admin_init', array( $this, 'maybe_onboarding_redirect' ) );
+	}
+
+	/**
+	 * Send a first-time user to the onboarding wizard when they open the
+	 * WPSubscription dashboard with no plan created yet.
+	 *
+	 * This runs on the dashboard visit rather than on activation, so it works
+	 * regardless of when WooCommerce gets installed (the plugin only loads its
+	 * admin once WooCommerce is active). A persistent "seen" flag makes it fire
+	 * at most once, so the user is never trapped away from the dashboard.
+	 *
+	 * @return void
+	 */
+	public function maybe_onboarding_redirect() {
+		// Only on the WPSubscription dashboard page.
+		if ( ! isset( $_GET['page'] ) || 'wp-subscription' !== $_GET['page'] ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- menu navigation, no state change.
+			return;
+		}
+
+		if ( wp_doing_ajax() || is_network_admin() || ! current_user_can( 'manage_options' ) ) {
+			return;
+		}
+
+		// Fire at most once, ever.
+		if ( get_option( 'subscrpt_onboarding_seen' ) ) {
+			return;
+		}
+		update_option( 'subscrpt_onboarding_seen', 1, false );
+
+		// Only first-time users with no plan yet.
+		if ( ! empty( \SpringDevs\Subscription\Illuminate\Plans\PlanRepository::get_groups() ) ) {
+			return;
+		}
+
+		wp_safe_redirect( admin_url( 'admin.php?page=wp-subscription-onboarding' ) );
+		exit;
 	}
 
 	/**
@@ -49,21 +91,37 @@ class Menu {
 			SUBSCRPT_VERSION
 		);
 
-		// Enqueue onboarding wizard JS (loaded on wizard page)
+		// Enqueue onboarding wizard JS (loaded on wizard page). Depends on the
+		// admin components so the cadence picker (adv-select) is ready.
 		wp_enqueue_script(
 			'subscrpt-onboarding-wizard',
 			SUBSCRPT_ASSETS . '/js/admin/onboarding-wizard.js',
-			array( 'jquery' ),
+			array( 'jquery', 'subscrpt_admin_components' ),
 			SUBSCRPT_VERSION,
 			true
 		);
+		$subscrpt_wizard_has_products = (bool) wc_get_products(
+			array(
+				'status' => array( 'publish', 'draft', 'pending', 'private' ),
+				'limit'  => 1,
+				'return' => 'ids',
+			)
+		);
+
 		wp_localize_script(
 			'subscrpt-onboarding-wizard',
 			'subscrpt_wizard',
 			array(
 				'ajax_url'          => admin_url( 'admin-ajax.php' ),
 				'subscriptions_url' => admin_url( 'admin.php?page=wp-subscription' ),
+				'dashboard_url'     => admin_url( 'admin.php?page=wp-subscription' ),
+				'products_url'      => admin_url( 'edit.php?post_type=product' ),
+				'plans_url'         => admin_url( 'admin.php?page=wp-subscription-plans' ),
+				'rest_url'          => rest_url( 'wpsubscription/v1/plans' ),
+				'rest_nonce'        => wp_create_nonce( 'wp_rest' ),
 				'currency_symbol'   => get_woocommerce_currency_symbol(),
+				'is_pro'            => subscrpt_pro_activated(),
+				'has_products'      => $subscrpt_wizard_has_products,
 			)
 		);
 
@@ -98,7 +156,7 @@ class Menu {
 			__( 'WPSubscription', 'subscription' ),
 			'manage_options',
 			$parent_slug,
-			array( $this, 'render_subscriptions_page' ),
+			array( $this, 'render_dashboard_page' ),
 			$icon_url,
 			40
 		);
@@ -114,13 +172,26 @@ class Menu {
 			array( $this, 'render_onboarding_wizard' )
 		);
 
-		// Subscriptions List
+		// Overview. WordPress makes the first submenu entry share the parent
+		// slug, so this is the page the top-level item opens.
+		add_submenu_page(
+			$parent_slug,
+			__( 'Overview', 'subscription' ),
+			__( 'Overview', 'subscription' ),
+			'manage_options',
+			$parent_slug,
+			array( $this, 'render_dashboard_page' )
+		);
+
+		// Subscriptions List. Moved off the parent slug when the dashboard took
+		// it; render_dashboard_page() redirects here when the request carries
+		// list-only query arguments, so old bookmarks still work.
 		add_submenu_page(
 			$parent_slug,
 			__( 'Subscriptions', 'subscription' ),
 			__( 'Subscriptions', 'subscription' ),
 			'manage_options',
-			$parent_slug,
+			'wp-subscription-list',
 			array( $this, 'render_subscriptions_page' )
 		);
 
@@ -175,14 +246,24 @@ class Menu {
 			array( $this, 'render_support_page' )
 		);
 
-		// Add WPSubscription link under WooCommerce menu
+		/*
+		 * WPSubscription link under the WooCommerce menu.
+		 *
+		 * The callback has to match the one the parent menu registers. WordPress
+		 * derives this entry's hookname from the *slug*, and because
+		 * `wp-subscription` is itself a registered top-level menu that resolves
+		 * to `toplevel_page_wp-subscription` — the same hook the parent uses.
+		 * Two identical callbacks on one hook are deduplicated; two different
+		 * ones both run, which rendered the dashboard and the subscriptions list
+		 * stacked on the same screen.
+		 */
 		add_submenu_page(
 			'woocommerce',
 			__( 'WPSubscription', 'subscription' ),
 			__( 'WPSubscription', 'subscription' ),
 			'manage_options',
 			'wp-subscription',
-			array( $this, 'render_subscriptions_page' )
+			array( $this, 'render_dashboard_page' )
 		);
 	}
 
@@ -205,23 +286,22 @@ class Menu {
 		}
 
 		// slug => position. Use gaps of 10 so extensions can insert between items.
+		//
+		// The order is the same whether or not pro is active: a locked page
+		// carries a pro badge but keeps its place, so the menu does not
+		// rearrange itself the moment a licence is activated. Plans and
+		// Cancellation Flow position themselves through the filter below.
 		$default_order = [
-			'wp-subscription'              => 10, // Subscriptions
-			'wp-subscription-stats'        => 20, // Reports
-			'wp-subscription-delivery'     => 30, // Delivery (pro)
-			'wp-subscription-health'       => 50, // Health
-			'wp-subscription-integrations' => 60, // Integrations
-			'wp-subscription-support'      => 70, // Help & Resources
+			'wp-subscription'              => 5,   // Overview
+			'wp-subscription-delivery'     => 20,  // Delivery (pro)
+			'wp-subscription-list'         => 30,  // Subscriptions
+			'wp-subscription-stats'        => 40,  // Reports
+			'wp-subscription-health'       => 50,  // Health
+			'wp-subscription-integrations' => 60,  // Integrations
 			'wp-subscription-settings'     => 998, // Settings
 			'wp-subscription-license'      => 999, // License (pro)
+			'wp-subscription-support'      => 1000, // Help & Resources
 		];
-
-		// Place pro pages at the bottom if pro is not active.
-		if ( ! subscrpt_pro_activated() ) {
-			$default_order['wp-subscription-stats']    = 200;
-			$default_order['wp-subscription-delivery'] = 210;
-			$default_order['wp-subscription-health']   = 220;
-		}
 
 		/**
 		 * Filter the WPSubscription submenu slug order.
@@ -230,9 +310,9 @@ class Menu {
 		 * first. Use gaps of 10 between built-in positions so extensions can
 		 * insert their own slugs between existing items without renumbering.
 		 *
-		 * Example (pro plugin adding Delivery at position 35):
+		 * Example (an add-on placing its page between Reports and Health):
 		 *   add_filter( 'subscrpt_submenu_order', function( $order ) {
-		 *       $order['wp-subscription-delivery'] = 35;
+		 *       $order['wp-subscription-my-addon'] = 45;
 		 *       return $order;
 		 *   } );
 		 *
@@ -306,21 +386,26 @@ class Menu {
 
 		// Normalize to a single trail. Explicit breadcrumbs win; otherwise the
 		// legacy single $title segment is used.
+		// A long breadcrumb label is truncated for display; the full text is kept
+		// so the renderer can add it as a title attribute.
+		$make_crumb = static function ( $label, $url ) {
+			$label = (string) $label;
+			return [
+				'label' => subscrpt_truncate_text( $label ),
+				'full'  => $label,
+				'url'   => (string) $url,
+			];
+		};
+
 		$trail = [];
 		if ( ! empty( $breadcrumbs ) ) {
 			foreach ( $breadcrumbs as $crumb ) {
 				if ( is_array( $crumb ) && '' !== ( $crumb['label'] ?? '' ) ) {
-					$trail[] = [
-						'label' => (string) $crumb['label'],
-						'url'   => isset( $crumb['url'] ) ? (string) $crumb['url'] : '',
-					];
+					$trail[] = $make_crumb( $crumb['label'], $crumb['url'] ?? '' );
 				}
 			}
 		} elseif ( '' !== $title ) {
-			$trail[] = [
-				'label' => $title,
-				'url'   => '',
-			];
+			$trail[] = $make_crumb( $title, '' );
 		}
 
 		$last_index = count( $trail ) - 1;
@@ -334,15 +419,49 @@ class Menu {
 					</a>
 					<?php foreach ( $trail as $index => $crumb ) : ?>
 						<span class="wp-subscription-breadcrumb-sep" aria-hidden="true">/</span>
+						<?php $crumb_title = $crumb['full'] !== $crumb['label'] ? ' title="' . esc_attr( $crumb['full'] ) . '"' : ''; ?>
 						<?php if ( '' !== $crumb['url'] && $index < $last_index ) : ?>
-							<a href="<?php echo esc_url( $crumb['url'] ); ?>" class="wp-subscription-breadcrumb-link"><?php echo esc_html( $crumb['label'] ); ?></a>
+							<a href="<?php echo esc_url( $crumb['url'] ); ?>" class="wp-subscription-breadcrumb-link"<?php echo $crumb_title; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- attribute pre-escaped. ?>><?php echo esc_html( $crumb['label'] ); ?></a>
 						<?php else : ?>
-							<span class="wp-subscription-breadcrumb-current"><?php echo esc_html( $crumb['label'] ); ?></span>
+							<span class="wp-subscription-breadcrumb-current"<?php echo $crumb_title; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- attribute pre-escaped. ?>><?php echo esc_html( $crumb['label'] ); ?></span>
 						<?php endif; ?>
 					<?php endforeach; ?>
 				</nav>
 			</div>
 			<div class="wp-subscription-admin-header-right">
+				<?php
+				/**
+				 * Filters the pro licence state shown in the admin header.
+				 *
+				 * This plugin cannot ask the pro plugin directly — it runs alone
+				 * on nearly every install, so naming a symbol pro declares would
+				 * fatal there. Pro answers this filter when it is present; when
+				 * it is not, the value stays null and no badge is rendered.
+				 *
+				 * @since 1.11.3
+				 *
+				 * @param array|null $license {
+				 *     Licence state, or null when pro is not installed.
+				 *
+				 *     @type bool   $active Whether the licence is valid.
+				 *     @type string $url    Admin URL of the licence page.
+				 * }
+				 */
+				$license = apply_filters( 'subscrpt_admin_header_license', null );
+
+				// Only the "Activate license" badge is shown; the "License active"
+				// badge is intentionally hidden from the header.
+				if ( is_array( $license ) && isset( $license['active'] ) && ! $license['active'] ) :
+					$license_url = isset( $license['url'] ) ? (string) $license['url'] : '';
+					?>
+					<a href="<?php echo esc_url( $license_url ); ?>" class="wpsubs-badge wpsubs-badge--warning wp-subscription-license-badge">
+						<span class="wpsubs-badge__dot"></span>
+						<?php esc_html_e( 'Activate license', 'subscription' ); ?>
+					</a>
+					<?php
+				endif;
+				?>
+
 				<?php if ( ! class_exists( 'Sdevs_Wc_Subscription_Pro' ) ) : ?>
 					<a target="_blank" href="https://wpsubscription.co/?utm_source=plugin&utm_medium=admin&utm_campaign=upgrade_pro" class="wpsubs-btn wpsubs-btn--primary wpsubs-btn--sm" rel="noreferrer noopener">
 						<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" style="flex-shrink:0;"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M19 19h-14c-.5 0 -.9 -.3 -1 -.8l-2 -10c0 -.4 .1 -.8 .5 -1.1c.4 -.2 .8 -.2 1.1 0l4.1 3.3l3.4 -5.1c.4 -.6 1.3 -.6 1.7 0l3.4 5.1l4.1 -3.3c.3 -.3 .8 -.3 1.1 0c.4 .2 .5 .6 .5 1.1l-2 10c0 .5 -.5 .8 -1 .8z"/></svg>
@@ -354,6 +473,34 @@ class Menu {
 			</div>
 		</div>
 		<?php
+	}
+
+	/**
+	 * Render the dashboard, or hand off to the list.
+	 *
+	 * The subscriptions list used to live on this slug. Anything still linking
+	 * here with a list-only argument — a saved filter, a bookmarked search, a
+	 * pagination link — means the list, so it is sent there with its arguments
+	 * intact rather than landing on a dashboard that ignores them.
+	 *
+	 * @return void
+	 */
+	public function render_dashboard_page() {
+		// phpcs:disable WordPress.Security.NonceVerification.Recommended
+		$list_args = array( 'post_status', 's', 'paged', 'filter_action', 'orderby', 'order', 'subscrpt_status' );
+
+		foreach ( $list_args as $arg ) {
+			if ( isset( $_GET[ $arg ] ) && '' !== $_GET[ $arg ] ) {
+				$query         = wp_unslash( $_GET );
+				$query['page'] = 'wp-subscription-list';
+
+				wp_safe_redirect( add_query_arg( array_map( 'sanitize_text_field', $query ), admin_url( 'admin.php' ) ) );
+				exit;
+			}
+		}
+		// phpcs:enable WordPress.Security.NonceVerification.Recommended
+
+		( new Dashboard() )->render();
 	}
 
 	/**
@@ -627,6 +774,7 @@ class Menu {
 			'pe_cancelled' => array( 'active', 'cancelled' ),
 			'cancelled'    => array( 'active' ),
 			'expired'      => array( 'active', 'cancelled' ),
+			'completed'    => array( 'cancelled' ),
 		);
 
 		$status  = get_post_status( $subscription_id );
@@ -729,15 +877,12 @@ class Menu {
 	 * Initial load always shows page 1 (JS handles transitions from there)
 	 */
 	public function render_onboarding_wizard() {
-		// Start session if not already started
+		// Start session if not already started (used by the wizard reset handler).
 		if ( ! session_id() && ! headers_sent() ) {
 			session_start();
 		}
 
-		// Always start at page 1 on direct load (SPA behavior — JS drives page transitions)
-		$GLOBALS['wizard_page'] = 1;
-
-		$this->render_admin_header( __( 'Setup Wizard', 'subscription' ), __( 'Create your first subscription product', 'subscription' ) );
+		$this->render_admin_header( __( 'Setup Wizard', 'subscription' ), __( 'Create your first subscription plan', 'subscription' ) );
 		include __DIR__ . '/views/onboarding-wizard.php';
 		$this->render_admin_footer();
 	}

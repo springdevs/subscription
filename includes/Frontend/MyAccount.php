@@ -306,7 +306,7 @@ class MyAccount {
 			'posts_per_page' => 10,
 			'paged'          => $current_page,
 			'post_type'      => 'subscrpt_order',
-			'post_status'    => array( 'pending', 'active', 'on_hold', 'cancelled', 'expired', 'pe_cancelled' ),
+			'post_status'    => array( 'pending', 'active', 'on_hold', 'cancelled', 'expired', 'pe_cancelled', 'completed' ),
 		);
 
 		$postslist = new \WP_Query( $args );

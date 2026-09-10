@@ -108,7 +108,7 @@ $issue_badge_map = array(
 );
 ?>
 
-<div class="wp-subscription-admin-content list-page subscrpt-subs-list">
+<div class="wp-subscription-admin-content list-page">
 
 	<!-- Disclaimer banner -->
 	<div style="background:#fffbeb;border:1px solid #fcd34d;border-radius:8px;padding:12px 16px;margin-bottom:20px;display:flex;align-items:flex-start;gap:10px;">

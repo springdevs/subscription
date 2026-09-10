@@ -1,4 +1,9 @@
 <?php
+/**
+ * Subscription helper utilities.
+ *
+ * @package SpringDevs\Subscription\Illuminate
+ */
 
 namespace SpringDevs\Subscription\Illuminate;
 
@@ -69,6 +74,7 @@ class Helper {
 			'active'       => __( 'Active', 'subscription' ),
 			'on-hold'      => __( 'On Hold', 'subscription' ),
 			'expired'      => __( 'Expired', 'subscription' ),
+			'completed'    => __( 'Completed', 'subscription' ),
 			'pe_cancelled' => __( 'Pending Cancellation', 'subscription' ),
 			'cancelled'    => __( 'Cancelled', 'subscription' ),
 			'draft'        => __( 'Draft', 'subscription' ),
@@ -515,7 +521,8 @@ class Helper {
 			)
 		);
 		// Check if this is a split payment subscription
-		$payment_type = $product->get_meta( '_subscrpt_payment_type' ) ?: 'recurring';
+		$payment_type = $product->get_meta( '_subscrpt_payment_type' );
+		$payment_type = $payment_type ? $payment_type : 'recurring';
 		$max_payments = $product->get_meta( '_subscrpt_max_no_payment' );
 
 		$comment_content = '';
@@ -980,8 +987,11 @@ class Helper {
 			$product = $cart_item['data'];
 			if ( $product->is_type( 'simple' ) && isset( $cart_item['subscription'] ) ) {
 				$cart_subscription = $cart_item['subscription'];
-				$type              = ucfirst( $cart_subscription['type'] );
-				$price_data        = self::build_cart_recurring_price_data( $cart_item, $key, $type );
+				// Cadence word must respect the frequency (plan items store the raw
+				// plural interval, e.g. "months"): singular for 1, plural + count above.
+				$sub_time   = max( 1, (int) ( $cart_subscription['time'] ?? 1 ) );
+				$type       = ( 1 === $sub_time ? '' : $sub_time . ' ' ) . ucfirst( self::get_typos( $sub_time, $cart_subscription['type'] ) );
+				$price_data = self::build_cart_recurring_price_data( $cart_item, $key, $type );
 
 				$recurrs[ $key ] = array_merge(
 					$price_data,
@@ -990,7 +1000,12 @@ class Helper {
 						'start_date'      => self::start_date( $cart_subscription['trial'] ),
 						'next_date'       => self::next_date( ( $cart_subscription['time'] ?? 1 ) . ' ' . $cart_subscription['type'], $cart_subscription['trial'] ),
 						'can_user_cancel' => $cart_item['data']->get_meta( '_subscrpt_user_cancel' ),
-						'max_no_payment'  => $cart_item['data']->get_meta( '_subscrpt_max_no_payment' ),
+						'max_no_payment'  => ! empty( $cart_item['subscrpt_max_no_payment'] )
+							? (int) $cart_item['subscrpt_max_no_payment']
+							: $cart_item['data']->get_meta( '_subscrpt_max_no_payment' ),
+						// Exact plan total for split items (the entered price the split is
+						// divided from); null for classic split items which have no plan total.
+						'split_total'     => isset( $cart_item['subscrpt_split_total'] ) ? (float) $cart_item['subscrpt_split_total'] : null,
 						'quantity'        => (int) $cart_item['quantity'],
 					)
 				);
@@ -1365,7 +1380,7 @@ class Helper {
 		$comment_id = wp_insert_comment(
 			array(
 				'comment_author'  => 'Subscription for WooCommerce',
-				'comment_content' => sprintf( 'Subscription Renewal order successfully created.	order is %s', $new_order_id ),
+				'comment_content' => sprintf( 'Subscription Renewal order successfully created. Order #%s', $new_order_id ),
 				'comment_post_ID' => $subscription_id,
 				'comment_type'    => 'order_note',
 			)
@@ -1466,7 +1481,8 @@ class Helper {
 		}
 
 		if (
-			! in_array( strtolower( $status ), array( 'cancelled', 'pending' ), true )
+			! in_array( strtolower( $status ), array( 'cancelled', 'pending', 'completed' ), true )
+			&& ! empty( $next_date )
 			&& $next_datetime - time() <= 0
 			&& (int) $default_grace_period > 0
 		) {

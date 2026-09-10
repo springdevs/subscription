@@ -134,9 +134,28 @@
 }
 
 .wp-subscription-logo {
-  height: 30px;
+  /* Deliberately small. It is a persistent header mark, not the page's
+     subject — the breadcrumb on the left is what identifies the screen. */
+  height: 22px;
   width: auto;
   display: block;
+}
+
+/* The licence badge sits before the logo and must not pick up the underline
+   that admin anchors get, since the inactive state is a link. */
+.wp-subscription-license-badge,
+.wp-subscription-license-badge:hover,
+.wp-subscription-license-badge:focus {
+  text-decoration: none;
+}
+
+a.wp-subscription-license-badge:hover {
+  filter: brightness(0.97);
+}
+
+a.wp-subscription-license-badge:focus {
+  box-shadow: 0 0 0 3px var(--wpsubs-brand-ring, rgba(255, 77, 0, 0.2));
+  outline: none;
 }
 
 .wp-subscription-admin-header-right {
@@ -317,7 +336,7 @@
     gap: 8px;
   }
   .wp-subscription-logo {
-    height: 24px;
+    height: 18px;
   }
 }
 
@@ -476,18 +495,9 @@ body[class*="wpsubscription_page_wp-subscription"] #wpcontent {
 /* Subscriptions List Page Layout */
 .wp-subscription-admin-content.list-page {
   max-width: 1240px;
-  margin: 32px auto 0 auto;
-  background: #fff;
-  padding: 0px 24px;
-  border-radius: 12px;
-}
-
-/* Subscription list: toolbar sits on WP admin gray, table card is the white surface */
-.wp-subscription-admin-content.list-page.subscrpt-subs-list {
+  margin: 24px auto 32px auto;
   background: transparent;
-  border-radius: 0;
-  margin-top: 24px;
-  margin-bottom: 32px;
+  padding: 0px 24px;
 }
 .wp-subscription-list-header {
   margin-bottom: 28px;
@@ -683,4 +693,111 @@ body[class*="wpsubscription_page_wp-subscription"] #wpcontent {
   background: #d63638;
   color: #fff !important;
   text-decoration: none;
+}
+
+/* --------------------------------------------------------------------------
+   Integrations: sticky filter rail + results
+
+   Three facet groups and a dozen chips do not fit across the top without
+   pushing the first card off the fold, and a bar up there scrolls away exactly
+   when a long list needs narrowing. They live in a column instead, which stays
+   in reach while the results scroll.
+   -------------------------------------------------------------------------- */
+
+/*
+ * The `hidden` attribute is only `display: none` in the UA stylesheet, so any
+ * class that sets `display` outranks it. `.wpsubs-btn` is `inline-flex`, which
+ * meant the Reset button stayed on screen with `hidden` set — visible, and
+ * still clickable. Anything toggled by the filter script needs this.
+ */
+.subscrpt-int-filters [hidden],
+.subscrpt-int-card[hidden],
+[data-subscrpt-int-section][hidden],
+[data-subscrpt-int-empty][hidden],
+[data-subscrpt-integration-filters][hidden] {
+  display: none !important;
+}
+
+.subscrpt-int-layout {
+  display: grid;
+  grid-template-columns: 232px minmax(0, 1fr);
+  gap: 48px;
+  align-items: start;
+}
+
+.subscrpt-int-results {
+  min-width: 0;
+}
+
+/* The rail sticks below the page header, which is itself sticky at 32px. */
+.subscrpt-int-sidebar {
+  position: sticky;
+  top: 104px;
+  max-height: calc(100vh - 124px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.subscrpt-int-filters {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+/* The filter rail is the shared `wpsubs-vnav` component (one nav per facet).
+   Only the count badge at the end of each row is page-specific. */
+.subscrpt-int-chip__count {
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+  padding: 0 6px;
+  border-radius: 9999px;
+  background: var(--wpsubs-surface-muted, #f3f4f6);
+  color: var(--wpsubs-text-muted, #6b7280);
+  flex-shrink: 0;
+}
+
+.wpsubs-vnav__item.is-active .subscrpt-int-chip__count {
+  background: var(--wpsubs-brand, #ff4d00);
+  color: #fff;
+}
+
+.subscrpt-int-empty {
+  margin: 0 0 20px;
+  padding: 40px 24px;
+  text-align: center;
+  font-size: 13px;
+  color: var(--wpsubs-text-muted, #6b7280);
+  background: var(--wpsubs-surface, #fff);
+  border: 1px solid var(--wpsubs-border, #e5e7eb);
+  border-radius: var(--wpsubs-radius, 8px);
+}
+
+/* Below this the rail would squeeze the card grid to one column, so it goes
+   back on top and stops sticking. */
+@media screen and (max-width: 1200px) {
+  .subscrpt-int-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .subscrpt-int-sidebar {
+    position: static;
+    max-height: none;
+    overflow: visible;
+  }
+
+  .subscrpt-int-filters {
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    gap: 12px 20px;
+  }
+
+  /* Each facet's vnav sits as its own column in the wrapped rail. */
+  .subscrpt-int-filters .wpsubs-vnav {
+    flex: 1 1 180px;
+  }
+
+  [data-subscrpt-int-reset] {
+    flex: 0 0 100%;
+  }
 }

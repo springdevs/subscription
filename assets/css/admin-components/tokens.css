@@ -1,0 +1,28 @@
+/* ==========================================================================
+   WPSubscription Admin Components  (prefix: wpsubs-)
+   Design reference: WP SmartPay sp-layout.css
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   Design tokens
+   -------------------------------------------------------------------------- */
+:root {
+  --wpsubs-brand: #ff4d00;
+  --wpsubs-brand-dark: #d93f00;
+  --wpsubs-brand-light: #fff1eb;
+  --wpsubs-brand-ring: rgba(255, 77, 0, 0.2);
+
+  --wpsubs-surface: #ffffff;
+  --wpsubs-surface-muted: #f9fafb;
+  --wpsubs-border: #e5e7eb;
+  --wpsubs-border-strong: #d1d5db;
+
+  --wpsubs-text: #374151;
+  --wpsubs-text-muted: #6b7280;
+  --wpsubs-text-subtle: #9ca3af;
+
+  --wpsubs-radius: 8px;
+  --wpsubs-radius-sm: 5px;
+  --wpsubs-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  --wpsubs-shadow-md: 0 4px 16px rgba(0, 0, 0, 0.1), 0 1px 4px rgba(0, 0, 0, 0.06);
+}

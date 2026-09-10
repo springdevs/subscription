@@ -1,0 +1,134 @@
+/* --------------------------------------------------------------------------
+   Settings layout  (wpsubs-settings-*)
+
+   Heading — full-width section label at the top of a card group.
+   Field   — two-column row: fixed-width label on left, control on right.
+   -------------------------------------------------------------------------- */
+
+/* Heading: spans full width of the card by pulling out of card padding (20px 24px).
+   Its own padding matches the card's, so the first line of a panel starts at the
+   same height whether that panel opens with a heading or straight into a field —
+   which is what lets the section rail beside it line up with either. */
+.wpsubs-settings-heading {
+  background: var(--wpsubs-surface-muted);
+  border-bottom: 1px solid var(--wpsubs-border);
+  border-radius: calc(var(--wpsubs-radius) - 1px) calc(var(--wpsubs-radius) - 1px) 0 0;
+  margin: -20px -24px 20px;
+  padding: 20px 24px;
+}
+
+/* A heading that is not the panel's first band separates two groups rather
+   than capping the card. It keeps the full-bleed width but sits below the
+   field above it, squared off and ruled on both edges — without this the
+   -20px top margin drags it over that field's description. */
+.wpsubs-settings-heading:not(:first-child) {
+  margin-top: 20px;
+  border-top: 1px solid var(--wpsubs-border);
+  border-radius: 0;
+}
+
+.wpsubs-settings-heading__title {
+  font-size: 12px !important;
+  font-weight: 600 !important;
+  color: var(--wpsubs-text-muted) !important;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin: 0;
+  line-height: 1.4;
+}
+
+.wpsubs-settings-heading__desc {
+  font-size: 12px !important;
+  color: var(--wpsubs-text-muted);
+  margin: 3px 0 0;
+  line-height: 1.5;
+}
+
+/* Field row */
+.wpsubs-settings-field {
+  display: flex;
+  align-items: flex-start;
+  gap: 24px;
+}
+
+.wpsubs-settings-field__label {
+  flex: 0 0 220px;
+  font-size: 13px !important;
+  font-weight: 500;
+  color: var(--wpsubs-text);
+  line-height: 1.4;
+  padding-top: 2px; /* visually align with single-line input height */
+}
+
+.wpsubs-settings-field__control {
+  flex: 1;
+  min-width: 0;
+}
+
+/* Pro-locked fields: shown in the free plugin as a non-interactive preview. */
+.wpsubs-settings-field--locked .wpsubs-settings-field__control {
+  opacity: 0.55;
+  pointer-events: none;
+  user-select: none;
+}
+
+.subscrpt-pro-badge {
+  display: inline-flex;
+  align-items: center;
+  vertical-align: middle;
+  margin-right: 6px;
+  padding: 2px 6px;
+  border-radius: 3px;
+  background: var(--wpsubs-brand);
+  color: var(--wpsubs-surface);
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1.4;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+/* Constrain and normalise control widths */
+.wpsubs-settings-field__control .wpsubs-input,
+.wpsubs-settings-field__control .wpsubs-select {
+  min-width: 260px;
+  max-width: 400px;
+}
+
+.wpsubs-settings-field__control .wpsubs-adv-select__trigger {
+  min-width: 260px;
+}
+
+.wpsubs-settings-field__control .wpsubs-tag-select {
+  min-width: 260px;
+  max-width: 400px;
+}
+
+/* Input group (joined fields) — constrain width as a whole */
+.wpsubs-settings-field__control .wpsubs-input-group {
+  max-width: 420px;
+}
+
+/* Hint / description below the control */
+.wpsubs-settings-field__hint {
+  font-size: 12px !important;
+  color: var(--wpsubs-text-muted);
+  margin: 6px 0 0;
+  line-height: 1.5;
+}
+
+/* Toggle label — wraps the switch + inline label text */
+.wpsubs-settings-toggle-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  line-height: 1;
+  padding-top: 0;
+  position: relative;
+}
+
+.wpsubs-settings-toggle-label__text {
+  font-size: 13px !important;
+  color: var(--wpsubs-text);
+}

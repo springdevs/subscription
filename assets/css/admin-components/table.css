@@ -1,0 +1,231 @@
+/* --------------------------------------------------------------------------
+   Table card (white card wrapping table + footer)
+   -------------------------------------------------------------------------- */
+.wpsubs-table-card {
+  background: var(--wpsubs-surface);
+  border: 1px solid var(--wpsubs-border);
+  border-radius: var(--wpsubs-radius);
+}
+
+/* --------------------------------------------------------------------------
+   Table
+   -------------------------------------------------------------------------- */
+.wpsubs-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: 13.5px;
+  margin: 0;
+}
+
+/* Header */
+.wpsubs-table thead {
+  background: var(--wpsubs-surface-muted);
+}
+
+.wpsubs-table thead th {
+  padding: 13px 18px;
+  text-align: left;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--wpsubs-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  white-space: nowrap;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid var(--wpsubs-border);
+  box-shadow: none;
+  vertical-align: middle;
+}
+
+/* Round the thead top corners so they follow the card's border-radius */
+.wpsubs-table thead tr:first-child th:first-child {
+  border-top-left-radius: calc(var(--wpsubs-radius) - 1px);
+}
+.wpsubs-table thead tr:first-child th:last-child {
+  border-top-right-radius: calc(var(--wpsubs-radius) - 1px);
+}
+
+/* Column modifiers */
+.wpsubs-col--check {
+  width: 20px !important;
+  padding-right: 4px !important;
+}
+.wpsubs-col--actions {
+  width: 44px;
+  text-align: right !important;
+}
+.wpsubs-col--nowrap {
+  white-space: nowrap;
+}
+
+/* Body rows */
+.wpsubs-table tbody tr {
+  transition: background 0.1s;
+  background: transparent;
+}
+
+.wpsubs-table tbody tr:hover {
+  background: var(--wpsubs-surface-muted);
+}
+
+.wpsubs-table tbody tr.wpsubs-row--selected {
+  background: var(--wpsubs-brand-light);
+}
+
+/* Cells — border on td instead of tr (required for border-collapse: separate) */
+.wpsubs-table td {
+  padding: 18px;
+  color: var(--wpsubs-text);
+  vertical-align: middle;
+  border: none;
+  border-bottom: 1px solid var(--wpsubs-border);
+  box-shadow: none;
+}
+
+.wpsubs-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+/* Keep the card's rounded bottom corners visible on last-row hover. */
+.wpsubs-table tbody tr:last-child td:first-child {
+  border-bottom-left-radius: var(--wpsubs-radius);
+}
+
+.wpsubs-table tbody tr:last-child td:last-child {
+  border-bottom-right-radius: var(--wpsubs-radius);
+}
+
+.wpsubs-table td.wpsubs-col--check {
+  padding-right: 4px;
+}
+
+.wpsubs-table td.wpsubs-cell--muted {
+  color: var(--wpsubs-text-muted);
+  font-size: 12.5px;
+}
+
+.wpsubs-table td.wpsubs-cell--actions {
+  width: 1%;
+  white-space: nowrap;
+  padding: 0 10px 0 4px;
+}
+
+/* --------------------------------------------------------------------------
+   Avatar  — light bg + dark text, 8 deterministic colors
+   -------------------------------------------------------------------------- */
+.wpsubs-customer {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.wpsubs-customer__info {
+  min-width: 0;
+}
+
+.wpsubs-customer__name {
+  font-weight: 400;
+  color: var(--wpsubs-text);
+  font-size: 13.5px;
+  line-height: 1.3;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-decoration: none;
+  display: block;
+}
+
+a.wpsubs-customer__name:hover {
+  color: var(--wpsubs-brand);
+  text-decoration: none;
+}
+
+.wpsubs-customer__sub {
+  font-size: 12px;
+  color: var(--wpsubs-text-muted);
+  line-height: 1.3;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: block;
+}
+
+.wpsubs-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 700;
+  flex-shrink: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  user-select: none;
+  background: var(--wpsubs-surface-muted);
+  color: var(--wpsubs-text-muted);
+}
+
+.wpsubs-avatar[data-color="0"] {
+  background: #dbeafe;
+  color: #1d4ed8;
+}
+.wpsubs-avatar[data-color="1"] {
+  background: #d1fae5;
+  color: #065f46;
+}
+.wpsubs-avatar[data-color="2"] {
+  background: #fce7f3;
+  color: #9d174d;
+}
+.wpsubs-avatar[data-color="3"] {
+  background: #e0e7ff;
+  color: #4338ca;
+}
+.wpsubs-avatar[data-color="4"] {
+  background: #fef3c7;
+  color: #92400e;
+}
+.wpsubs-avatar[data-color="5"] {
+  background: #fee2e2;
+  color: #991b1b;
+}
+.wpsubs-avatar[data-color="6"] {
+  background: #f3e8ff;
+  color: #6b21a8;
+}
+.wpsubs-avatar[data-color="7"] {
+  background: #ccfbf1;
+  color: #134e4a;
+}
+
+/* --------------------------------------------------------------------------
+   Cell: product title + id below
+   -------------------------------------------------------------------------- */
+.wpsubs-cell-title {
+  font-weight: 400;
+  color: var(--wpsubs-text);
+  font-size: 13.5px;
+  line-height: 1.3;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-decoration: none;
+  display: block;
+}
+
+a.wpsubs-cell-title:hover {
+  color: var(--wpsubs-brand);
+  text-decoration: none;
+}
+
+.wpsubs-cell-id {
+  font-size: 12px;
+  color: var(--wpsubs-text-muted);
+  line-height: 1.3;
+  display: block;
+}

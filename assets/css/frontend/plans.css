@@ -1,0 +1,201 @@
+/**
+ * Storefront plan selector styles — base (free).
+ *
+ * A radio card per plan group; the group's terms render as pill buttons with a
+ * billing note beneath. This is the shared base used by both plugins: Pro reuses
+ * this stylesheet and layers a small discount-badge overlay on top of it.
+ *
+ * Override-friendly: tunable values are CSS custom properties on `.subscrpt-buybox`,
+ * every rule is a single low-specificity class, and nothing uses `!important`.
+ */
+
+.subscrpt-buybox {
+  --subscrpt-line: #e2e4e7;
+  --subscrpt-accent: #2271b1;
+  --subscrpt-muted: #6a6f76;
+  --subscrpt-surface: #fff;
+  --subscrpt-selected-bg: #f7fbff;
+  --subscrpt-radius: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin: 0 0 22px;
+  max-width: 540px;
+}
+
+.subscrpt-buybox__card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  padding: 16px 18px;
+  border: 1px solid var(--subscrpt-line);
+  border-radius: var(--subscrpt-radius);
+  background: var(--subscrpt-surface);
+  cursor: pointer;
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease,
+    background 0.15s ease;
+}
+
+.subscrpt-buybox__card:hover {
+  border-color: #c3c4c7;
+}
+
+.subscrpt-buybox__card.is-selected {
+  border-color: var(--subscrpt-accent);
+  box-shadow: 0 0 0 1px var(--subscrpt-accent);
+  background: var(--subscrpt-selected-bg);
+}
+
+/* Show focus on the whole card instead of the default square outline on the
+   radio (removed below) — keeps keyboard focus visible without the box. */
+.subscrpt-buybox__card:focus-within {
+  border-color: var(--subscrpt-accent);
+  box-shadow: 0 0 0 1px var(--subscrpt-accent);
+}
+
+/* Radio + control on one centered row so they line up. */
+.subscrpt-buybox__head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.subscrpt-buybox__radio {
+  flex: 0 0 auto;
+  width: 18px;
+  height: 18px;
+  margin: 0;
+  accent-color: var(--subscrpt-accent);
+}
+
+.subscrpt-buybox__radio:focus {
+  outline: none;
+  box-shadow: none;
+}
+
+.subscrpt-buybox__label {
+  font-weight: 600;
+  font-size: 16px;
+}
+
+/* One-Time card (Pro) — name on the left, price on the right. */
+.subscrpt-buybox__price {
+  margin-left: auto;
+  white-space: nowrap;
+  font-size: 16px;
+}
+
+.subscrpt-buybox__price del {
+  margin-right: 6px;
+  color: var(--subscrpt-muted);
+  font-weight: 400;
+  text-decoration: line-through;
+}
+
+.subscrpt-buybox__price ins {
+  font-weight: 700;
+  text-decoration: none;
+}
+
+/* Term options as pill buttons, aligned under the head (past the radio). */
+.subscrpt-buybox__terms {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
+  padding-left: 28px;
+}
+
+.subscrpt-buybox__term {
+  flex: 1 1 0;
+  appearance: none;
+  -webkit-appearance: none;
+  cursor: pointer;
+  padding: 8px 16px;
+  border: 1px solid var(--subscrpt-line);
+  border-radius: 6px;
+  background: var(--subscrpt-surface);
+  color: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.4;
+  text-align: center;
+  transition:
+    border-color 0.15s ease,
+    background 0.15s ease,
+    color 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.subscrpt-buybox__term:hover {
+  border-color: var(--subscrpt-accent);
+  background: var(--subscrpt-selected-bg);
+}
+
+.subscrpt-buybox__term:focus {
+  outline: none;
+}
+
+.subscrpt-buybox__term:focus-visible {
+  outline: none;
+  border-color: var(--subscrpt-accent);
+  box-shadow: 0 0 0 2px rgba(34, 113, 177, 0.25);
+}
+
+.subscrpt-buybox__term.is-active {
+  border-color: var(--subscrpt-accent);
+  background: var(--subscrpt-accent);
+  color: #fff;
+  font-weight: 600;
+}
+
+.subscrpt-buybox__term.is-active:hover {
+  background: var(--subscrpt-accent);
+}
+
+/* Note aligns under the control, past the radio; sits close under the name. */
+.subscrpt-buybox__note {
+  padding-left: 28px;
+  color: var(--subscrpt-muted);
+  font-size: 13px;
+}
+
+/* Struck-through regular price beside the discounted price in the note. */
+.subscrpt-buybox__note del {
+  margin-right: 4px;
+  text-decoration: line-through;
+  opacity: 0.7;
+}
+
+/* Variable products (Pro) render an empty container until a variation is chosen. */
+.subscrpt-buybox__placeholder {
+  margin: 0;
+  padding: 16px 18px;
+  border: 1px dashed var(--subscrpt-line);
+  border-radius: var(--subscrpt-radius);
+  color: var(--subscrpt-muted);
+  font-size: 14px;
+}
+
+/* Discount badge — the card is already position: relative above. */
+.subscrpt-buybox {
+  --subscrpt-badge-bg: var(--subscrpt-accent);
+  --subscrpt-badge-text: #fff;
+}
+
+.subscrpt-buybox__badge {
+  position: absolute;
+  top: -12px;
+  right: 14px;
+  z-index: 1;
+  padding: 3px 11px;
+  border-radius: 999px;
+  background: var(--subscrpt-badge-bg);
+  color: var(--subscrpt-badge-text);
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.5;
+  white-space: nowrap;
+}

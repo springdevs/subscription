@@ -51,6 +51,9 @@ class Stripe extends \WC_Stripe_Payment_Gateway {
 		// Last-resort guard: any Checkout Session that still gets created must carry a customer.
 		add_filter( 'wc_stripe_request_body', [ $this, 'ensure_customer_on_checkout_session' ], 10, 2 );
 
+		// SetupIntents ($0 trial orders) reject setup_future_usage.
+		add_filter( 'wc_stripe_request_body', [ $this, 'strip_setup_future_usage_from_setup_intents' ], 10, 2 );
+
 		// Persist whatever Stripe ended up using, so renewals can charge it.
 		add_action( 'woocommerce_payment_complete', [ $this, 'backfill_stripe_meta_for_subscription_order' ], 20, 1 );
 	}
@@ -595,6 +598,22 @@ class Stripe extends \WC_Stripe_Payment_Gateway {
 		}
 
 		$request['payment_intent_data']['setup_future_usage'] = 'off_session';
+
+		return $request;
+	}
+
+	/**
+	 * Strip the PaymentIntent-only `setup_future_usage` from SetupIntent requests
+	 * ($0 trial orders), which Stripe otherwise rejects as an unknown parameter.
+	 *
+	 * @param array  $request Stripe API request body.
+	 * @param string $api     Stripe API endpoint.
+	 * @return array
+	 */
+	public function strip_setup_future_usage_from_setup_intents( $request, $api ) {
+		if ( is_array( $request ) && is_string( $api ) && 0 === strpos( $api, 'setup_intents' ) ) {
+			unset( $request['setup_future_usage'] );
+		}
 
 		return $request;
 	}

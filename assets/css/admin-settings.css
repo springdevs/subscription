@@ -151,3 +151,230 @@
   width: max-content;
   min-width: unset;
 }
+
+/* ──────────────────────────────────────────────────────────────────────────
+   Page header — title, save action, description, rule. Same shape as the
+   Plans and Reports screens so the admin reads as one product.
+   ────────────────────────────────────────────────────────────────────────── */
+
+.subscrpt-settings__head {
+  margin-bottom: 20px;
+}
+
+.subscrpt-settings__head-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0 0 6px;
+}
+
+.subscrpt-settings__title {
+  font-size: 1.375rem !important;
+  font-weight: 700 !important;
+  color: var(--wpsubs-text, #374151);
+  margin: 0 !important;
+  padding: 0 !important;
+  line-height: 1.2;
+}
+
+.subscrpt-settings__desc {
+  font-size: 13px;
+  color: var(--wpsubs-text-muted, #6b7280);
+  margin: 0 0 12px;
+  line-height: 1.5;
+}
+
+.subscrpt-settings__head-rule {
+  border-top: 1px dashed #d0d3d7;
+}
+
+.subscrpt-settings__save {
+  flex: 0 0 auto;
+}
+
+/* ──────────────────────────────────────────────────────────────────────────
+   Rail and panels
+   Every panel is in the DOM on every request, because the form posts to
+   options.php and an unrendered field is a field that saves nothing.
+   ────────────────────────────────────────────────────────────────────────── */
+
+.subscrpt-settings__layout {
+  display: grid;
+  grid-template-columns: 216px minmax(0, 1fr);
+  gap: 20px;
+  align-items: start;
+}
+
+/* The rail and the panel share a top edge, but their text does not: a field
+   label sits under the card's 1px border and 20px padding, a rail label under
+   the item's own 7px. The 14px difference is that gap closed, so the first
+   section name and the first setting's label land on the same line. */
+.subscrpt-settings__sidebar {
+  position: sticky;
+  top: 104px;
+  padding-top: 14px;
+  max-height: calc(100vh - 140px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+/* The sidebar rail itself is the reusable `wpsubs-vnav` component
+   (admin-components/vnav.css); only its placement lives here. */
+
+/* Stacks the panels in the `All` category, and holds a single one otherwise. */
+.subscrpt-settings__panels {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.subscrpt-settings__panel {
+  padding: 20px 24px;
+}
+
+/* The `hidden` attribute is only a user-agent `display: none`, so any class
+   that sets `display` beats it. Panels carry `wpsubs-table-card`, so say it
+   again with the weight the attribute cannot bring on its own. */
+.subscrpt-settings__panel[hidden] {
+  display: none !important;
+}
+
+.subscrpt-settings__rule {
+  border-top: 1px solid var(--wpsubs-border, #f1f5f9);
+  margin: 16px 0;
+}
+
+@media screen and (max-width: 960px) {
+  .subscrpt-settings__layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .subscrpt-settings__sidebar {
+    position: static;
+    max-height: none;
+    overflow: visible;
+  }
+
+  .subscrpt-settings__sidebar .wpsubs-vnav {
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   Cancellation Flow
+
+   A wide tab panel with an options rail beside it. Deliberately not the
+   settings layout above: that one leads with a 216px nav rail and makes its
+   sidebar sticky and scrollable, which is right for navigation and wrong for
+   a panel of fields.
+   -------------------------------------------------------------------------- */
+.subscrpt-flow__layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 340px;
+  gap: 20px;
+  align-items: start;
+}
+
+@media (max-width: 960px) {
+  .subscrpt-flow__layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* The options rail is far narrower than a settings panel, so its fields stack
+   rather than using the shared 220px label / 260px control row, which needs
+   about 500px before it fits. */
+.subscrpt-flow__options .wpsubs-settings-field {
+  flex-direction: column;
+  gap: 8px;
+}
+
+.subscrpt-flow__options .wpsubs-settings-field + .wpsubs-settings-field {
+  margin-top: 18px;
+}
+
+.subscrpt-flow__options .wpsubs-settings-field__label {
+  flex: 0 0 auto;
+}
+
+.subscrpt-flow__options .wpsubs-settings-field__control .wpsubs-input,
+.subscrpt-flow__options .wpsubs-settings-field__control .wpsubs-select,
+.subscrpt-flow__options .wpsubs-settings-field__control .wpsubs-adv-select__trigger {
+  min-width: 0;
+  max-width: 100%;
+  width: 100%;
+}
+
+/* Both panels share one padding rhythm so the two columns line up. */
+.subscrpt-flow__panel {
+  padding: 20px;
+}
+
+/* The saved reason list: the same row treatment the manage modal uses, so the
+   page and the modal read as one thing. Numbered, because the order is what a
+   customer sees. */
+.subscrpt-flow__reasons {
+  list-style: none;
+  margin: 0 0 18px;
+  padding: 0;
+  counter-reset: subscrpt-reason;
+}
+
+.subscrpt-flow__reasons li {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  border: 1px solid var(--wpsubs-border, #e5e7eb);
+  border-radius: var(--wpsubs-radius-sm, 5px);
+  background: var(--wpsubs-surface, #fff);
+  font-size: 13px;
+  color: var(--wpsubs-text, #374151);
+}
+
+.subscrpt-flow__reasons li + li {
+  margin-top: 8px;
+}
+
+.subscrpt-flow__reasons li::before {
+  counter-increment: subscrpt-reason;
+  content: counter(subscrpt-reason);
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 999px;
+  background: var(--wpsubs-surface-muted, #f9fafb);
+  color: var(--wpsubs-text-muted, #6b7280);
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.subscrpt-flow__empty {
+  margin: 0 0 18px;
+  color: var(--wpsubs-text-subtle, #9ca3af);
+  font-size: 13px;
+}
+
+/* The reasons control carries no label of its own - the tab names the panel.
+   The label element is still emitted (with whitespace, so `:empty` never
+   matches) and its `flex: 0 0 220px` becomes a 220px tall gap once the row
+   stacks, so hide it outright. */
+.subscrpt-flow__panel--reasons .wpsubs-settings-field {
+  flex-direction: column;
+  gap: 10px;
+}
+
+.subscrpt-flow__panel--reasons .wpsubs-settings-field__label {
+  display: none;
+}
+
+.subscrpt-flow__note {
+  margin: 18px 0 0;
+  color: var(--wpsubs-text-muted, #6b7280);
+  font-size: 12px;
+  line-height: 1.6;
+}

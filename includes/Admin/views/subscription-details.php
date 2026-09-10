@@ -40,6 +40,7 @@ $badge_mod_map = array(
 	'pe_cancelled' => 'pending-cancel',
 	'cancelled'    => 'cancelled',
 	'expired'      => 'expired',
+	'completed'    => 'completed',
 	'draft'        => 'draft',
 	'trash'        => 'trash',
 );
@@ -103,9 +104,10 @@ if ( $order && isset( $subscription_data['price'] ) && '' !== $subscription_data
 	$timing_option = $subscription_data['schedule']['timing_option'] ?? '';
 	$period_label  = '';
 	if ( $timing_option ) {
+		$timing_unit  = ucfirst( Helper::get_typos( $timing_per, $timing_option ) );
 		$period_label = $timing_per > 1
-			? $timing_per . ' ' . ucfirst( $timing_option ) . 's'
-			: ucfirst( $timing_option );
+			? $timing_per . ' ' . $timing_unit
+			: $timing_unit;
 	}
 
 	// Net of any discount that carries into renewals, with the original struck through.
@@ -135,12 +137,13 @@ if ( ! empty( $subscription_data['start_date'] ) ) {
 		'value' => esc_html( wp_date( get_option( 'date_format' ), strtotime( $subscription_data['start_date'] ) ) ),
 	);
 }
-if ( ! empty( $subscription_data['next_date'] ) ) {
-	$summary_tiles[] = array(
-		'label' => __( 'Next Payment', 'subscription' ),
-		'value' => esc_html( wp_date( get_option( 'date_format' ), strtotime( $subscription_data['next_date'] ) ) ),
-	);
-}
+// Always show the Next Payment tile; dash when there is no next date.
+$summary_tiles[] = array(
+	'label' => __( 'Next Payment', 'subscription' ),
+	'value' => ! empty( $subscription_data['next_date'] )
+		? esc_html( wp_date( get_option( 'date_format' ), strtotime( $subscription_data['next_date'] ) ) )
+		: '-',
+);
 // Total payments is not part of $subscription_data; pull it from the info rows.
 if ( isset( $rows['total_payments'] ) ) {
 	$summary_tiles[] = array(
@@ -163,6 +166,7 @@ $used_keys = array(
 // Plan card: product + qty render side by side; trial/signup fee as extra rows.
 $plan_product = isset( $rows['product'] ) ? $rows['product']['value'] : '';
 $plan_qty     = isset( $rows['quantity'] ) ? $rows['quantity']['value'] : '';
+$plan_label   = function_exists( 'subscrpt_get_subscription_plan_label' ) ? subscrpt_get_subscription_plan_label( $subscription_id ) : '';
 $plan_extra   = array();
 foreach ( array( 'product', 'quantity', 'signup_fee', 'trial', 'trial_period' ) as $plan_key ) {
 	$used_keys[ $plan_key ] = true;
@@ -298,30 +302,11 @@ $subscrpt_render_table_tools = function () {
 				),
 			)
 		);
-		wpsubs_render_adv_select(
+		wpsubs_render_per_page_select(
 			array(
-				'name'    => 'subscrpt_per_page',
-				'value'   => '10',
-				'align'   => 'right',
-				'class'   => 'subscrpt-filter-perpage',
-				'options' => array(
-					array(
-						'value' => '10',
-						'label' => __( '10 / page', 'subscription' ),
-					),
-					array(
-						'value' => '20',
-						'label' => __( '20 / page', 'subscription' ),
-					),
-					array(
-						'value' => '50',
-						'label' => __( '50 / page', 'subscription' ),
-					),
-					array(
-						'value' => '100',
-						'label' => __( '100 / page', 'subscription' ),
-					),
-				),
+				'name'  => 'subscrpt_per_page',
+				'align' => 'right',
+				'class' => 'subscrpt-filter-perpage',
 			)
 		);
 		?>
@@ -430,6 +415,14 @@ $subscrpt_details_ctx = array(
 									</div>
 									<div class="subscrpt-plan-meta">
 										<span class="subscrpt-plan-name"><?php echo $plan_product ? wp_kses_post( $plan_product ) : '&mdash;'; ?></span>
+										<?php if ( $plan_label ) : ?>
+											<span class="subscrpt-plan-term">
+												<?php
+												/* translators: %s: plan name */
+												printf( esc_html__( 'Plan: %s', 'subscription' ), esc_html( $plan_label ) );
+												?>
+											</span>
+										<?php endif; ?>
 										<span class="subscrpt-plan-qty">
 											<?php
 											/* translators: %s: quantity */
@@ -1011,6 +1004,7 @@ $subscrpt_details_ctx = array(
 .subscrpt-plan-name a { color: var(--wpsubs-text); text-decoration: none; }
 .subscrpt-plan-name a:hover { color: var(--wpsubs-brand); }
 .subscrpt-plan-qty { font-size: 13px; color: var(--wpsubs-text-muted); }
+.subscrpt-plan-term { font-size: 13px; color: var(--wpsubs-text-muted); }
 .subscrpt-plan-col { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
 .subscrpt-plan-label {
 	font-size: 11px;

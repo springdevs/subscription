@@ -17,6 +17,17 @@ class Action {
 	 * @param bool   $write_comment Write comment?.
 	 */
 	public static function status( string $status, int $subscription_id, bool $write_comment = true ) {
+		// A split-payment subscription whose final installment is paid is terminal:
+		// never (re)activate it. Any renewal-payment path that tries to set it active
+		// after completion is coerced to `completed` so the status can't flip back.
+		if (
+			'active' === $status
+			&& function_exists( 'subscrpt_is_max_payments_reached' )
+			&& subscrpt_is_max_payments_reached( $subscription_id )
+		) {
+			$status = 'completed';
+		}
+
 		$old_status = get_post_status( $subscription_id );
 
 		wp_update_post(
@@ -26,7 +37,8 @@ class Action {
 			)
 		);
 
-		if ( $write_comment ) {
+		// Only note a real transition — never re-log the same status.
+		if ( $write_comment && $old_status !== $status ) {
 			self::write_comment( $status, $subscription_id );
 		}
 
@@ -65,7 +77,30 @@ class Action {
 			case 'on-hold':
 				self::on_hold( $subscription_id );
 				break;
+			case 'completed':
+				self::completed( $subscription_id );
+				break;
 		}
+	}
+
+	/**
+	 * Write Comment About Completed Subscription.
+	 *
+	 * @param int $subscription_id Subscription ID.
+	 */
+	private static function completed( int $subscription_id ) {
+		$comment_id = wp_insert_comment(
+			array(
+				'comment_author'  => 'Subscription for WooCommerce',
+				'comment_content' => 'Subscription completed. All payments made.',
+				'comment_post_ID' => $subscription_id,
+				'comment_type'    => 'order_note',
+			)
+		);
+		update_comment_meta( $comment_id, '_subscrpt_activity', 'Subscription Completed' );
+		update_comment_meta( $comment_id, '_subscrpt_activity_type', 'subs_completed' );
+
+		do_action( 'subscrpt_subscription_completed', $subscription_id );
 	}
 
 	/**
@@ -97,7 +132,7 @@ class Action {
 		$comment_id = wp_insert_comment(
 			array(
 				'comment_author'  => 'Subscription for WooCommerce',
-				'comment_content' => 'Subscription activated.Next payment due date set.',
+				'comment_content' => 'Subscription activated. Next payment due date set.',
 				'comment_post_ID' => $subscription_id,
 				'comment_type'    => 'order_note',
 			)
@@ -189,6 +224,12 @@ class Action {
 		);
 		update_comment_meta( $comment_id, '_subscrpt_activity', 'Subscription Pending Cancellation' );
 		update_comment_meta( $comment_id, '_subscrpt_activity_type', 'subs_pe_cancel' );
+
+		// WC_Email classes only exist once the mailer has been built, and they
+		// attach their own listeners from their constructors. Without this, an
+		// email listening for a pending cancellation is simply not registered yet
+		// when the action fires - the same reason cancelled() calls it.
+		WC()->mailer();
 
 		do_action( 'subscrpt_subscription_pending_cancellation', $subscription_id );
 	}

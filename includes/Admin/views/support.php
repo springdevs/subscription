@@ -38,7 +38,7 @@ $other_plugins = array(
 ?>
 
 
-<div class="wp-subscription-admin-content list-page subscrpt-subs-list">
+<div class="wp-subscription-admin-content list-page">
 
 	<!-- Page header -->
 	<div style="margin-bottom:24px;">

@@ -1,0 +1,196 @@
+/* --------------------------------------------------------------------------
+   Tag Select  (wpsubs-tag-select)
+   Pill/tag input with an inline filter and a filterable dropdown.
+   Supports single and multi-select. Use wpsubs_render_tag_select() PHP helper.
+   -------------------------------------------------------------------------- */
+.wpsubs-tag-select {
+  position: relative;
+  display: block;
+}
+
+/* The visible "input" area: pills + text input + chevron */
+.wpsubs-tag-select__field {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 36px 4px 6px;
+  min-height: 36px;
+  border: 1px solid var(--wpsubs-border);
+  border-radius: var(--wpsubs-radius-sm);
+  background: var(--wpsubs-surface);
+  cursor: text;
+  position: relative;
+  box-sizing: border-box;
+  transition:
+    border-color 0.12s,
+    box-shadow 0.12s;
+}
+
+.wpsubs-tag-select--open .wpsubs-tag-select__field,
+.wpsubs-tag-select__field:focus-within {
+  border-color: var(--wpsubs-brand);
+  box-shadow: 0 0 0 3px var(--wpsubs-brand-ring);
+  outline: none;
+}
+
+/* Pill (selected item badge) */
+.wpsubs-tag-select__pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 2px 3px 2px 8px;
+  background: var(--wpsubs-brand-light);
+  border: 1px solid var(--wpsubs-brand-ring);
+  border-radius: 4px;
+  font-size: 12px;
+  font-family: inherit;
+  color: var(--wpsubs-text);
+  max-width: 200px;
+  flex-shrink: 0;
+}
+
+.wpsubs-tag-select__pill-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  line-height: 1.4;
+}
+
+.wpsubs-tag-select__pill-remove {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border: none;
+  background: none;
+  padding: 0;
+  cursor: pointer;
+  color: var(--wpsubs-text-muted);
+  border-radius: 3px;
+  font-size: 15px;
+  line-height: 1;
+  flex-shrink: 0;
+  transition:
+    background 0.1s,
+    color 0.1s;
+}
+
+.wpsubs-tag-select__pill-remove:hover {
+  background: rgba(34, 113, 177, 0.15);
+  color: var(--wpsubs-brand-dark);
+}
+
+/* Inline filter input */
+.wpsubs-tag-select__input {
+  flex: 1;
+  min-width: 80px;
+  height: 28px !important;
+  min-height: 28px !important;
+  border: none !important;
+  outline: none !important;
+  background: transparent !important;
+  font-size: 13px !important;
+  font-family: inherit !important;
+  color: var(--wpsubs-text) !important;
+  padding: 0 2px !important;
+  box-shadow: none !important;
+  border-radius: 0 !important;
+  margin: 0 !important;
+}
+
+.wpsubs-tag-select__input::placeholder {
+  color: var(--wpsubs-text-subtle);
+}
+
+/* Chevron icon — absolutely positioned on the right */
+.wpsubs-tag-select__chevron {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none;
+  opacity: 0.5;
+  display: flex;
+  align-items: center;
+  transition: opacity 0.12s;
+}
+
+.wpsubs-tag-select--open .wpsubs-tag-select__chevron {
+  opacity: 0.8;
+}
+
+.wpsubs-tag-select--open .wpsubs-tag-select__chevron svg {
+  transform: rotate(180deg);
+}
+
+/* Dropdown panel */
+.wpsubs-tag-select__dropdown {
+  display: none;
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  width: 100%;
+  box-sizing: border-box;
+  background: var(--wpsubs-surface);
+  border: 1px solid var(--wpsubs-border);
+  border-radius: var(--wpsubs-radius);
+  box-shadow: var(--wpsubs-shadow-md);
+  z-index: 9999;
+  animation: wpsubs-dropdown-in 0.1s ease;
+}
+
+.wpsubs-tag-select--open .wpsubs-tag-select__dropdown {
+  display: block;
+}
+
+.wpsubs-tag-select__list {
+  max-height: 220px;
+  overflow-y: auto;
+  padding: 4px;
+}
+
+.wpsubs-tag-select__item {
+  display: block;
+  width: 100%;
+  padding: 7px 10px;
+  border-radius: var(--wpsubs-radius-sm);
+  border: none;
+  background: transparent;
+  font-size: 13px;
+  font-family: inherit;
+  color: var(--wpsubs-text);
+  cursor: pointer;
+  text-align: left;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: background 0.1s;
+  box-sizing: border-box;
+  line-height: 1.4;
+}
+
+.wpsubs-tag-select__item:hover {
+  background: var(--wpsubs-surface-muted);
+  color: var(--wpsubs-text);
+  text-decoration: none;
+}
+
+.wpsubs-tag-select__item[data-disabled] {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.wpsubs-tag-select__empty {
+  display: none;
+  padding: 10px 14px;
+  font-size: 12.5px;
+  color: var(--wpsubs-text-muted);
+  text-align: center;
+}
+
+/* Settings context */
+.wpsubs-settings-field__control .wpsubs-tag-select {
+  max-width: 400px;
+}

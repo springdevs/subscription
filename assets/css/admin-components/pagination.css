@@ -1,0 +1,123 @@
+/* --------------------------------------------------------------------------
+   Pagination footer (inside table card)
+   -------------------------------------------------------------------------- */
+.wpsubs-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  border-top: 1px solid var(--wpsubs-border);
+  flex-wrap: wrap;
+  gap: 8px 12px;
+  min-width: 0;
+}
+
+.wpsubs-pagination__info {
+  min-width: 0;
+  flex-shrink: 1;
+  font-size: 12.5px;
+  color: var(--wpsubs-text-muted);
+}
+
+.wpsubs-pagination__nav {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 4px;
+  min-width: 0;
+}
+
+.wpsubs-pagination__btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  border: 1px solid var(--wpsubs-border);
+  border-radius: var(--wpsubs-radius-sm);
+  background: var(--wpsubs-surface);
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--wpsubs-text-muted);
+  transition:
+    border-color 0.12s,
+    color 0.12s,
+    background 0.12s;
+  text-decoration: none;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+/* Strip the WordPress admin / browser default focus ring. WP admin's
+   `forms.css` applies a coloured border + box-shadow on :focus to every
+   button-class element; on these small chips it looks like a heavy
+   double-border. Keep a subtle :focus-visible ring for keyboard users. */
+.wpsubs-pagination__btn:focus,
+.wpsubs-pagination__btn:focus-visible {
+  outline: none;
+  box-shadow: none;
+  border-color: var(--wpsubs-border);
+  color: var(--wpsubs-text-muted);
+  background: var(--wpsubs-surface);
+}
+.wpsubs-pagination__btn:focus-visible {
+  box-shadow: 0 0 0 2px var(--wpsubs-brand-ring);
+  border-color: var(--wpsubs-brand);
+  color: var(--wpsubs-brand);
+}
+
+.wpsubs-pagination__btn:hover {
+  border-color: var(--wpsubs-brand);
+  color: var(--wpsubs-brand);
+  text-decoration: none;
+}
+
+.wpsubs-pagination__btn--disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.wpsubs-pagination__btn--active {
+  background: var(--wpsubs-brand);
+  border-color: var(--wpsubs-brand);
+  color: #fff;
+  font-weight: 600;
+  cursor: default;
+  pointer-events: none;
+}
+
+/* Ellipsis is a non-interactive chip with the same shell as a page button.
+   Reuses the base `.wpsubs-pagination__btn` for size/border/background/radius
+   and only overrides cursor + hover (so it can't be mistaken for clickable). */
+.wpsubs-pagination__btn--ellipsis {
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  color: var(--wpsubs-text-subtle);
+  cursor: default;
+  pointer-events: none;
+  user-select: none;
+}
+.wpsubs-pagination__btn--ellipsis:hover {
+  border-color: var(--wpsubs-border);
+  color: var(--wpsubs-text-subtle);
+}
+
+/* Back-compat alias — kept so existing markup / extensions using the
+   standalone class still render identically. */
+.wpsubs-pagination__ellipsis {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border: 1px solid var(--wpsubs-border);
+  border-radius: var(--wpsubs-radius-sm);
+  background: var(--wpsubs-surface);
+  cursor: default;
+  user-select: none;
+  flex-shrink: 0;
+}

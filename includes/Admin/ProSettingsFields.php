@@ -79,7 +79,7 @@ class ProSettingsFields {
 		return [
 			[
 				'type'       => 'select',
-				'group'      => 'main',
+				'group'      => 'renewals',
 				'priority'   => 7,
 				'field_data' => [
 					'id'          => 'subscrpt_renewal_price',
@@ -94,7 +94,7 @@ class ProSettingsFields {
 			],
 			[
 				'type'       => 'toggle',
-				'group'      => 'main',
+				'group'      => 'renewals',
 				'priority'   => 8,
 				'field_data' => [
 					'id'          => 'subscrpt_early_renew',
@@ -103,39 +103,6 @@ class ProSettingsFields {
 					'description' => __( 'With early renewals enabled, customers can renew their subscriptions before the next payment date.', 'subscription' ),
 					'value'       => '1',
 					'checked'     => '1' === get_option( 'subscrpt_early_renew', '1' ),
-				],
-			],
-			[
-				'type'       => 'select',
-				'group'      => 'main',
-				'priority'   => 9,
-				'field_data' => [
-					'id'          => 'subscrpt_cancellation_delay',
-					'title'       => __( 'Cancellation Timing', 'subscription' ),
-					'description' => __( 'When a subscription is cancelled, choose when it actually ends.', 'subscription' ),
-					'options'     => [
-						'24h'     => __( 'After 24 hours', 'subscription' ),
-						'instant' => __( 'Immediately', 'subscription' ),
-						'period'  => __( 'At end of billing period (before next renewal)', 'subscription' ),
-					],
-					'selected'    => esc_attr( \SpringDevs\Subscription\Illuminate\Cancellation::get_settings( 'subscrpt_cancellation_delay' ) ),
-				],
-			],
-			[
-				'type'       => 'editlist',
-				'group'      => 'main',
-				'priority'   => 9.6,
-				'field_data' => [
-					'id'              => 'subscrpt_cancellation_reasons',
-					'title'           => __( 'Cancellation Reasons', 'subscription' ),
-					'description'     => __( 'Reasons offered in the cancellation survey form. Shown when Cancellation Survey is enabled.', 'subscription' ),
-					'value'           => \SpringDevs\Subscription\Illuminate\Cancellation::get_reasons(),
-					'modal'           => true,
-					'button_label'    => __( 'Manage reasons', 'subscription' ),
-					'modal_title'     => __( 'Cancellation Reasons', 'subscription' ),
-					'add_placeholder' => __( 'Add a reason…', 'subscription' ),
-					'add_label'       => __( 'Add reason', 'subscription' ),
-					'empty_text'      => __( 'No reasons yet. Add one below.', 'subscription' ),
 				],
 			],
 		];
@@ -151,7 +118,7 @@ class ProSettingsFields {
 			[
 				'type'       => 'heading',
 				'group'      => 'grace_period',
-				'priority'   => 3,
+				'priority'   => 5,
 				'field_data' => [
 					'title' => __( 'Grace Period Settings', 'subscription' ),
 				],
@@ -214,7 +181,7 @@ class ProSettingsFields {
 			[
 				'type'       => 'heading',
 				'group'      => 'payment_failure',
-				'priority'   => 4,
+				'priority'   => 6,
 				'field_data' => [
 					'title' => __( 'Payment Failure Handling', 'subscription' ),
 				],
@@ -350,7 +317,7 @@ class ProSettingsFields {
 			[
 				'type'       => 'heading',
 				'group'      => 'health_queue',
-				'priority'   => 8,
+				'priority'   => 9,
 				'field_data' => [
 					'title' => __( 'Subscription Health', 'subscription' ),
 				],
@@ -394,6 +361,19 @@ class ProSettingsFields {
 					'checked'     => '1' === get_option( 'wp_subscription_auto_complete_order', '1' ),
 				],
 			],
+			[
+				'type'       => 'toggle',
+				'group'      => 'payment_gateways',
+				'priority'   => 2,
+				'field_data' => [
+					'id'          => 'subscrpt_require_payment_on_trial',
+					'title'       => __( 'Require Payment for Free Trials', 'subscription' ),
+					'label'       => __( 'Collect payment details at checkout for trial subscriptions', 'subscription' ),
+					'description' => __( 'Collect payment details up front on free trials so renewals charge automatically.', 'subscription' ),
+					'value'       => '1',
+					'checked'     => '1' === get_option( 'subscrpt_require_payment_on_trial', '1' ),
+				],
+			],
 		];
 	}
 
@@ -405,8 +385,16 @@ class ProSettingsFields {
 	private function switch_fields() {
 		return [
 			[
+				'type'       => 'heading',
+				'group'      => 'switching',
+				'priority'   => 3,
+				'field_data' => [
+					'title' => __( 'Switching & Upgrades', 'subscription' ),
+				],
+			],
+			[
 				'type'       => 'toggle',
-				'group'      => 'general',
+				'group'      => 'switching',
 				'priority'   => 9,
 				'field_data' => [
 					'id'          => 'subscrpt_switch_enabled',
@@ -419,7 +407,7 @@ class ProSettingsFields {
 			],
 			[
 				'type'       => 'toggle',
-				'group'      => 'general',
+				'group'      => 'switching',
 				'priority'   => 10,
 				'field_data' => [
 					'id'          => 'subscrpt_downgrade_allowed',
@@ -432,7 +420,7 @@ class ProSettingsFields {
 			],
 			[
 				'type'       => 'join',
-				'group'      => 'general',
+				'group'      => 'switching',
 				'priority'   => 11,
 				'field_data' => [
 					'title'       => __( 'Switch Fee', 'subscription' ),
@@ -472,7 +460,7 @@ class ProSettingsFields {
 			],
 			[
 				'type'       => 'select',
-				'group'      => 'general',
+				'group'      => 'switching',
 				'priority'   => 12,
 				'field_data' => [
 					'id'          => 'subscrpt_switch_fee_apply_to',
@@ -499,7 +487,7 @@ class ProSettingsFields {
 			[
 				'type'       => 'heading',
 				'group'      => 'role_based_settings',
-				'priority'   => 6,
+				'priority'   => 7,
 				'field_data' => [
 					'title' => __( 'Role-Based Settings', 'subscription' ),
 				],
@@ -529,7 +517,7 @@ class ProSettingsFields {
 			[
 				'type'       => 'heading',
 				'group'      => 'live_qr_settings',
-				'priority'   => 5,
+				'priority'   => 8,
 				'field_data' => [
 					'title' => __( 'Quick Details QR Settings', 'subscription' ),
 				],
@@ -602,7 +590,7 @@ class ProSettingsFields {
 			[
 				'type'       => 'heading',
 				'group'      => 'payment_gateways',
-				'priority'   => 0.1,
+				'priority'   => 1,
 				'field_data' => [
 					'title' => __( 'Payment Gateway Settings', 'subscription' ),
 				],

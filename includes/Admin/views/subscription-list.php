@@ -20,11 +20,11 @@ for ( $i = 0; $i < 12; $i++ ) {
 	$months[ date( 'Y-m', $month ) ] = date( 'F Y', $month );
 }
 ?>
-<div class="wp-subscription-admin-content list-page subscrpt-subs-list">
+<div class="wp-subscription-admin-content list-page">
 
 	<?php
-		// Getting started card — hidden once a subscription product exists.
-		require __DIR__ . '/subscription-gsc.php';
+		// Getting started ("Welcome to WPSubscription") card hidden for now — re-enable later.
+		// require __DIR__ . '/subscription-gsc.php';
 	?>
 
 	<!-- Page header -->
@@ -67,6 +67,10 @@ for ( $i = 0; $i < 12; $i++ ) {
 						array(
 							'value' => 'expired',
 							'label' => __( 'Expired', 'subscription' ),
+						),
+						array(
+							'value' => 'completed',
+							'label' => __( 'Completed', 'subscription' ),
 						),
 						array(
 							'value' => 'trash',
@@ -116,30 +120,12 @@ for ( $i = 0; $i < 12; $i++ ) {
 
 			<?php
 			$current_per_page = isset( $_GET['per_page'] ) ? intval( wp_unslash( $_GET['per_page'] ) ) : 20;
-			wpsubs_render_adv_select(
+			wpsubs_render_per_page_select(
 				array(
-					'name'    => 'per_page',
-					'value'   => (string) $current_per_page,
-					'options' => array(
-						array(
-							'value' => '10',
-							'label' => __( '10 / page', 'subscription' ),
-						),
-						array(
-							'value' => '20',
-							'label' => __( '20 / page', 'subscription' ),
-						),
-						array(
-							'value' => '50',
-							'label' => __( '50 / page', 'subscription' ),
-						),
-						array(
-							'value' => '100',
-							'label' => __( '100 / page', 'subscription' ),
-						),
-					),
-					'align'   => 'right',
-					'id'      => 'wpsubs-per-page-select',
+					'name'  => 'per_page',
+					'value' => (string) $current_per_page,
+					'align' => 'right',
+					'id'    => 'wpsubs-per-page-select',
 				)
 			);
 			?>
@@ -253,9 +239,10 @@ for ( $i = 0; $i < 12; $i++ ) {
 						$timing_option  = $subscription_data['schedule']['timing_option'] ?? '';
 						$timing_label   = '';
 						if ( $timing_per && $timing_option ) {
+							$timing_unit  = \SpringDevs\Subscription\Illuminate\Helper::get_typos( $timing_per, $timing_option );
 							$timing_label = ( (int) $timing_per > 1 )
-								? $timing_per . ' ' . $timing_option . 's'
-								: $timing_option;
+								? $timing_per . ' ' . $timing_unit
+								: $timing_unit;
 						}
 
 						// Avatar
@@ -283,6 +270,7 @@ for ( $i = 0; $i < 12; $i++ ) {
 							'pe_cancelled' => 'pending-cancel',
 							'cancelled'    => 'cancelled',
 							'expired'      => 'expired',
+							'completed'    => 'completed',
 							'draft'        => 'draft',
 							'trash'        => 'trash',
 						);

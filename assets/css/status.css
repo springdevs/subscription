@@ -33,6 +33,11 @@ span.subscrpt-legacy-status--expired {
   color: #991b1b;
 }
 
+span.subscrpt-legacy-status--completed {
+  background: #e0e7ff;
+  color: #3730a3;
+}
+
 span.subscrpt-legacy-status--cancelled {
   background: #e2e8f0;
   color: #475569;

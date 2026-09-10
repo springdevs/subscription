@@ -2,6 +2,8 @@
 
 namespace SpringDevs\Subscription\Illuminate;
 
+use SpringDevs\Subscription\Illuminate\Emails\CancellationAdmin;
+use SpringDevs\Subscription\Illuminate\Emails\SavedAdmin;
 use SpringDevs\Subscription\Illuminate\Emails\StatusChangedAdmin;
 use SpringDevs\Subscription\Illuminate\Emails\SubscriptionCancelled;
 use SpringDevs\Subscription\Illuminate\Emails\SubscriptionExpired;
@@ -98,6 +100,15 @@ class Email {
 		$emails['subscrpt_status_changed_admin_email']   = new StatusChangedAdmin();
 		$emails['subscrpt_subscription_expired_email']   = new SubscriptionExpired();
 		$emails['subscrpt_subscription_cancelled_email'] = new SubscriptionCancelled();
+
+		// The admin cancellation notices are free's reduced stand-ins. Pro ships
+		// richer equivalents on the same events, so registering both would list
+		// two of each in WooCommerce and mail the store owner twice.
+		if ( ! subscrpt_pro_activated() ) {
+			$emails['subscrpt_cancellation_admin']       = new CancellationAdmin();
+			$emails['subscrpt_cancellation_saved_admin'] = new SavedAdmin();
+		}
+
 		return $emails;
 	}
 

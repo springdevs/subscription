@@ -53,3 +53,37 @@
     -webkit-transform: rotate(359deg);
   }
 }
+
+/* ---------------------------------------------------------------------------
+ * "Not fully active" warning row on the plugins list page.
+ * ------------------------------------------------------------------------- */
+
+/*
+ * The plugin row's own data-slug is derived from the plugin name, so target the
+ * stable data-plugin value (the plugin basename) instead.
+ */
+tr[data-plugin="subscription/subscription.php"] > * {
+  background: #fef2f2 !important; /* red-50 */
+  box-shadow: none !important;
+}
+
+tr[data-plugin="subscription/subscription.php"] .check-column,
+.subscrpt-plugin-warning-row .check-column {
+  border-left: 4px solid #dc2626 !important; /* red-600 */
+}
+
+.subscrpt-plugin-warning-row > * {
+  background: #fef2f2 !important; /* red-50 */
+  box-shadow: inset 0 -1px 0 rgba(0, 0, 0, 0.1) !important;
+}
+
+.subscrpt-plugin-warning-row .check-column span {
+  display: block;
+  margin-inline: auto;
+  margin-top: 4px;
+}
+
+.subscrpt-plugin-warning-row .check-column span::before,
+.subscrpt-plugin-warning-row .column-primary p {
+  color: #dc2626 !important; /* red-600 */
+}

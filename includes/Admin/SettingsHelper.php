@@ -110,6 +110,171 @@ class SettingsHelper {
 	}
 
 	/**
+	 * Label a settings group for its tab.
+	 *
+	 * The label is the group's `heading` field, which is also what the panel
+	 * shows, so a tab and its panel can never disagree. An add-on that adds a
+	 * group without a heading still gets a usable tab rather than a blank one:
+	 * `live_qr_settings` reads as "Live Qr Settings", which is wrong-ish but
+	 * findable, and the fix is for that add-on to add a heading.
+	 *
+	 * `main` is the exception. It is what a field with no `group` falls back to,
+	 * so it holds whatever nobody placed rather than anything named "Main". No
+	 * field ships in it — this plugin has no settings that are merely general —
+	 * and it only becomes a tab when something lands there uninvited.
+	 *
+	 * @param string $group_id Group key.
+	 * @param array  $group    Group data: `fields`, `priority`.
+	 * @return string Unescaped label.
+	 */
+	public static function group_label( $group_id, array $group ) {
+		foreach ( $group['fields'] ?? array() as $field ) {
+			if ( 'heading' === ( $field['type'] ?? '' ) && ! empty( $field['field_data']['title'] ) ) {
+				return $field['field_data']['title'];
+			}
+		}
+
+		if ( 'main' === $group_id ) {
+			return __( 'General', 'subscription' );
+		}
+
+		return ucwords( str_replace( array( '_', '-' ), ' ', (string) $group_id ) );
+	}
+
+	/**
+	 * Whether every field in a group is locked behind Pro.
+	 *
+	 * Drives the "Pro" marker on the tab, so the whole panel does not have to be
+	 * opened to find out that none of it can be changed yet.
+	 *
+	 * @param array $group Group data.
+	 * @return bool
+	 */
+	public static function group_is_pro_locked( array $group ) {
+		$has_field = false;
+
+		foreach ( $group['fields'] ?? array() as $field ) {
+			if ( 'heading' === ( $field['type'] ?? '' ) ) {
+				continue;
+			}
+			$has_field = true;
+			if ( empty( $field['field_data']['pro_locked'] ) ) {
+				return false;
+			}
+		}
+
+		return $has_field;
+	}
+
+	/**
+	 * The settings sections, in display order.
+	 *
+	 * One level, named for the job a merchant came to do rather than for the
+	 * plugin's internals. Each section is one rail item and one panel; the
+	 * groups inside it stack, so nothing is ever two clicks deep.
+	 *
+	 * There is deliberately no "All settings" entry. It duplicated every panel
+	 * on one page, which made the rail beside it look like decoration and gave
+	 * every setting two addresses.
+	 *
+	 * @return array<string,string> Section key => label.
+	 */
+	public static function categories() {
+		return array(
+			'renewals'  => __( 'Renewals', 'subscription' ),
+			'payments'  => __( 'Payments', 'subscription' ),
+			'switching' => __( 'Switching & Upgrades', 'subscription' ),
+			'customers' => __( 'Customers', 'subscription' ),
+			'advanced'  => __( 'Advanced', 'subscription' ),
+		);
+	}
+
+	/**
+	 * Which section a settings group belongs to.
+	 *
+	 * Groups are merged rather than mapped one-to-one: a section holding a
+	 * single option is a wasted click, so `health_queue` sits with the other
+	 * plumbing in Advanced, and everything the customer meets — the role they
+	 * are given, checking out as a guest, what their subscription's quick view
+	 * shows — is in Customers.
+	 *
+	 * Unmapped groups, including any an add-on registers without knowing
+	 * sections exist, fall into `advanced`, so a new group is always reachable.
+	 *
+	 * @param string $group_id Group key.
+	 * @return string Section key.
+	 */
+	public static function group_category( $group_id ) {
+		$map = array(
+			'renewals'            => 'renewals',
+			'payment_gateways'    => 'payments',
+			'payment_failure'     => 'payments',
+			'grace_period'        => 'payments',
+			'switching'           => 'switching',
+			'role_based_settings' => 'customers',
+			'guest_checkout'      => 'customers',
+			'live_qr_settings'    => 'customers',
+			'api_settings'        => 'advanced',
+			'health_queue'        => 'advanced',
+		);
+
+		return $map[ $group_id ] ?? 'advanced';
+	}
+
+	/**
+	 * Group keys bucketed by section, each list in the order the groups already
+	 * sort in.
+	 *
+	 * Empty sections are dropped. Most of them are filled by Pro, and free
+	 * alone would otherwise show rail items that open onto nothing.
+	 *
+	 * @param array $settings_fields Grouped, sorted settings fields.
+	 * @return array<string,string[]> Section key => ordered group keys.
+	 */
+	public static function category_groups( array $settings_fields ) {
+		$out = array();
+		foreach ( array_keys( self::categories() ) as $cat ) {
+			$out[ $cat ] = array();
+		}
+
+		foreach ( array_keys( $settings_fields ) as $group_id ) {
+			$cat           = self::group_category( $group_id );
+			$out[ $cat ][] = $group_id;
+		}
+
+		return array_filter(
+			$out,
+			function ( $group_ids ) {
+				return ! empty( $group_ids );
+			}
+		);
+	}
+
+	/**
+	 * Whether every group in a section is locked behind Pro.
+	 *
+	 * Drives the "Pro" marker on the rail item, so a section none of which can
+	 * be changed yet says so before it is opened.
+	 *
+	 * @param string[] $group_ids       Group keys in the section.
+	 * @param array    $settings_fields Grouped settings fields.
+	 * @return bool
+	 */
+	public static function category_is_pro_locked( array $group_ids, array $settings_fields ) {
+		if ( empty( $group_ids ) ) {
+			return false;
+		}
+
+		foreach ( $group_ids as $group_id ) {
+			if ( ! self::group_is_pro_locked( $settings_fields[ $group_id ] ?? array() ) ) {
+				return false;
+			}
+		}
+
+		return true;
+	}
+
+	/**
 	 * Render specified settings field.
 	 *
 	 * @param string $field Field type.
@@ -584,7 +749,7 @@ class SettingsHelper {
 	 * Generic and reusable: a sortable list of text items with per-row remove/move
 	 * controls and an inline input + add button. The ordered list is serialized as
 	 * JSON (`[{ key, label }]`) into a hidden input so it submits with the form;
-	 * behaviour is wired by `WPSubsEditList` (admin-components.js). All user-facing
+	 * behaviour is wired by `WPSubsEditList` (admin-components/editlist.js). All user-facing
 	 * strings are overridable so the field carries no feature-specific text.
 	 *
 	 * When `modal` is true the list lives inside a `wpsubs-modal` (via the

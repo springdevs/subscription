@@ -1,100 +1,133 @@
 {
-    "version": 1,
-    "rules": {
-        "general": {
-            "indentation": {
-                "php": 4,
-                "js": 2,
-                "css": 2,
-                "scss": 2
-            },
-            "lineEnding": "lf",
-            "charset": "utf-8",
-            "trimTrailingWhitespace": true,
-            "insertFinalNewline": true
+  "$comment": [
+    "Conventions for the free WPSubscription plugin (converslabs/subscription).",
+    "",
+    "This file previously described a WPS_/wps_ prefix scheme and a src/ layout.",
+    "Neither has existed for a long time: the prefixes are subscrpt_ and",
+    "SUBSCRPT_, and the PHP lives in includes/. Anything written from the old",
+    "rules had to be renamed by hand.",
+    "",
+    "The same conventions are documented at length in CLAUDE.md."
+  ],
+  "version": 2,
+  "rules": {
+    "general": {
+      "indentation": { "php": "tab", "js": 2, "css": 2, "scss": 2 },
+      "lineEnding": "lf",
+      "charset": "utf-8",
+      "trimTrailingWhitespace": true,
+      "insertFinalNewline": true
+    },
+    "naming": {
+      "$comment": [
+        "WPS_ / wps_ / WP_SUBSCRIPTION_* are legacy. includes/LegacyCompat.php",
+        "still aliases the old names so existing installs and Pro keep working —",
+        "that is back-compat, not a pattern to copy. Never use them in new code.",
+        "",
+        "The subscrpt_ hook prefix is SHARED with the Pro plugin. A new hook must",
+        "not collide with one of Pro's; grep both codebases before adding."
+      ],
+      "prefixes": {
+        "namespace": "SpringDevs\\Subscription\\",
+        "functions": "subscrpt_",
+        "constants": "SUBSCRPT_",
+        "hooks": "subscrpt_",
+        "postTypes": "subscrpt_",
+        "cssClasses": "subscrpt-"
+      },
+      "classNames": {
+        "$comment": "Namespaced classes need no prefix. The one global class is the bootstrap singleton.",
+        "bootstrap": "Sdevs_Subscription"
+      },
+      "deprecated": ["WPS_", "wps_", "WP_SUBSCRIPTION_"]
+    },
+    "structure": {
+      "$comment": "PSR-4 maps SpringDevs\\Subscription\\ to includes/. There is no src/ for PHP.",
+      "directories": {
+        "includes": {
+          "description": "All PHP. PSR-4 root.",
+          "subdirs": {
+            "Admin": "Settings pages, product config UI, subscription list and management",
+            "Admin/views": "PHP view files for the admin UI",
+            "Frontend": "Product display, cart, checkout, My Account, action controller",
+            "Illuminate": "Business logic — lifecycle, cron, email, renewals, gateway wiring",
+            "Illuminate/Gateways": "Stripe and PayPal",
+            "Utils": "Product and subscription helpers",
+            "Traits": "Shared behaviour"
+          }
         },
-        "naming": {
-            "prefixes": {
-                "classes": "WPS_",
-                "functions": "wps_",
-                "constants": "WPS_",
-                "hooks": "wps_",
-                "postTypes": "wps_",
-                "taxonomies": "wps_"
-            }
-        },
-        "structure": {
-            "directories": {
-                "src": {
-                    "description": "Main plugin source code",
-                    "subdirs": {
-                        "Admin": "Admin-related functionality",
-                        "Frontend": "Frontend-related functionality",
-                        "Gateways": "Payment gateway integrations",
-                        "Templates": "Template files",
-                        "Models": "Data models and database interactions"
-                    }
-                },
-                "assets": {
-                    "description": "Static assets",
-                    "subdirs": {
-                        "css": "Stylesheets",
-                        "js": "JavaScript files",
-                        "images": "Images and icons",
-                        "fonts": "Font files"
-                    }
-                },
-                "templates": {
-                    "description": "Template files for frontend display",
-                    "subdirs": {
-                        "admin": "Admin template files",
-                        "frontend": "Frontend template files",
-                        "emails": "Email template files"
-                    }
-                }
-            }
-        },
-        "documentation": {
-            "required": {
-                "classes": true,
-                "methods": true,
-                "functions": true,
-                "hooks": true,
-                "filters": true
-            },
-            "format": {
-                "php": "PHPDoc",
-                "js": "JSDoc"
-            }
-        },
-        "security": {
-            "required": {
-                "nonceVerification": true,
-                "capabilityChecks": true,
-                "dataSanitization": true,
-                "escaping": true
-            }
-        },
-        "compatibility": {
-            "php": ">=7.4",
-            "wordpress": ">=4.6",
-            "woocommerce": ">=3.0"
-        },
-        "features": {
-            "onboarding": {
-                "required": {
-                    "wizard": true,
-                    "setupGuide": true,
-                    "templates": true
-                }
-            },
-            "ui": {
-                "required": {
-                    "responsive": true,
-                    "accessibility": true,
-                    "modernDesign": true
-                }
-            }
-        }
+        "src": "JavaScript source only. Compiled to build/ by @wordpress/scripts.",
+        "build": "Compiled JS. Committed, unlike most projects.",
+        "templates": "Front-end and email templates, overridable by a theme.",
+        "assets": "CSS, images and non-bundled JS.",
+        "languages": "subscription.pot, regenerated by yarn update-lang-files."
+      }
+    },
+    "dataModel": {
+      "postType": "subscrpt_order",
+      "$comment": [
+        "These six statuses are registered in includes/Illuminate/Post.php.",
+        "wp_update_post() does not validate post_status, so writing anything else",
+        "stores it silently and the subscription then matches no query — it stays",
+        "in the database and disappears from every admin list and My Account.",
+        "Note on_hold takes an UNDERSCORE. on-hold is WooCommerce's order status."
+      ],
+      "statuses": [
+        "pending",
+        "active",
+        "on_hold",
+        "cancelled",
+        "expired",
+        "pe_cancelled"
+      ]
+    },
+    "versioning": {
+      "$comment": [
+        "package.json is the source of truth. The plugin header and readme carry",
+        "the literal placeholder #WPSUBS_VERSION, which scripts/release.sh",
+        "substitutes at package time. Typing a real version into the header means",
+        "it is never substituted and the shipped header disagrees with the zip."
+      ],
+      "sourceOfTruth": "package.json",
+      "placeholder": "#WPSUBS_VERSION"
+    },
+    "proBoundary": {
+      "$comment": [
+        "The Pro plugin extends this one through subscrpt_* hooks and never edits",
+        "a file here. This plugin runs WITHOUT Pro on nearly every install, so it",
+        "must never name a symbol Pro declares — that works in a development",
+        "environment with both installed and fatals everywhere else.",
+        "",
+        "The only sanctioned way to ask about Pro is an existence test."
+      ],
+      "allowed": [
+        "class_exists( 'Sdevs_Wc_Subscription_Pro' )",
+        "defined( 'SUBSCRIPT_PRO_VERSION' )",
+        "subscrpt_pro_activated()"
+      ],
+      "forbidden": "Any other reference to a Pro class, function or constant."
+    },
+    "standards": {
+      "phpcs": "phpcs.xml — WordPress Coding Standards, PHP 7.4 target",
+      "requires": { "php": "7.4", "wordpress": "6.0", "woocommerce": "6.0" },
+      "security": [
+        "Escape all output: esc_html, esc_attr, esc_url, wp_kses_post",
+        "Sanitize all input",
+        "AJAX and admin-post handlers verify a nonce and current_user_can()",
+        "$wpdb->prepare() for every query with a variable in it",
+        "wp_safe_redirect() + exit, never echo a location.href script"
+      ],
+      "docs": "PHPDoc on every class, method and global function, and on every do_action/apply_filters."
+    },
+    "commands": {
+      "install": "yarn install-dev",
+      "build": "yarn build",
+      "watch": "yarn watch",
+      "lint": "composer lint:php",
+      "format": "composer format:php",
+      "pot": "yarn update-lang-files",
+      "release": "yarn release",
+      "commit": "yarn commit"
     }
-} 
+  }
+}

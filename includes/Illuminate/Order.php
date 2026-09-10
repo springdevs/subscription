@@ -85,6 +85,15 @@ class Order {
 			$next_date = sdevs_wp_strtotime( $recurr_timing, time() );
 		}
 
+		// Split payment: no next date after the final installment.
+		if (
+			in_array( $subscription_history->type, array( 'renew', 'early-renew' ), true )
+			&& function_exists( 'subscrpt_is_max_payments_reached' )
+			&& subscrpt_is_max_payments_reached( $subscription_id )
+		) {
+			return;
+		}
+
 		/**
 		 * Filter the subscription next payment date before it is saved.
 		 *
@@ -264,10 +273,34 @@ class Order {
 		foreach ( $histories as $history ) {
 			if ( 'new' === $history->type || 'renew' === $history->type ) {
 				$subscription_id = $history->subscription_id;
+
+				// Renewals ignore the intermediate `processing` state for renewal orders.
+				if ( 'renew' === $history->type && 'processing' === $order->get_status() ) {
+					continue;
+				}
+
+				// Capture the status before the max-payments check below may flip it.
+				$current_status = get_post_status( $subscription_id );
+
+				// Split payment: complete instead of re-activate after the final installment.
+				$target_status = $post_status;
+				if (
+					'active' === $target_status
+					&& function_exists( 'subscrpt_is_max_payments_reached' )
+					&& subscrpt_is_max_payments_reached( $subscription_id )
+				) {
+					$target_status = 'completed';
+				}
+
+				// Skip no-op transitions so the note and side effects don't duplicate.
+				if ( $current_status === $target_status ) {
+					continue;
+				}
+
 				wp_update_post(
 					array(
 						'ID'          => $subscription_id,
-						'post_status' => $post_status,
+						'post_status' => $target_status,
 					)
 				);
 
@@ -284,7 +317,7 @@ class Order {
 				// Add enhanced split payment activity logging
 				$this->add_split_payment_activity_note( $history->subscription_id, $history->type, $post_status, $order );
 
-				Action::write_comment( $post_status, $history->subscription_id );
+				Action::write_comment( $target_status, $history->subscription_id );
 			} else {
 				do_action( 'subscrpt_order_status_changed', $order, $history );
 			}
@@ -397,92 +430,6 @@ class Order {
 				$subscription_id
 			);
 			$order->add_order_note( $order_note );
-		}
-
-		// Add payment milestone notes for significant progress
-		$this->add_payment_milestone_notes( $subscription_id, $payments_made, $max_payments );
-	}
-
-	/**
-	 * Add payment milestone notes for significant progress (25%, 50%, 75%, 100%).
-	 *
-	 * @param int $subscription_id Subscription ID.
-	 * @param int $payments_made   Number of payments made.
-	 * @param int $max_payments    Maximum number of payments.
-	 */
-	private function add_payment_milestone_notes( $subscription_id, $payments_made, $max_payments ) {
-		if ( ! $max_payments || $max_payments <= 0 ) {
-			return;
-		}
-
-		$percentage    = round( ( $payments_made / $max_payments ) * 100 );
-		$milestone_key = '_subscrpt_milestone_' . $percentage . '_logged';
-
-		// Check if this milestone has already been logged
-		if ( get_post_meta( $subscription_id, $milestone_key, true ) ) {
-			return;
-		}
-
-		$milestone_note = '';
-		$activity_type  = '';
-
-		switch ( $percentage ) {
-			case 25:
-				$milestone_note = sprintf(
-					/* translators: %1$d: payments made, %2$d: total payments */
-					__( 'Payment milestone reached: %1$d of %2$d payments completed (25%%).', 'subscription' ),
-					$payments_made,
-					$max_payments
-				);
-				$activity_type = __( 'Payment Milestone - 25%', 'subscription' );
-				break;
-
-			case 50:
-				$milestone_note = sprintf(
-					/* translators: %1$d: payments made, %2$d: total payments */
-					__( 'Payment milestone reached: %1$d of %2$d payments completed (50%%). Halfway there!', 'subscription' ),
-					$payments_made,
-					$max_payments
-				);
-				$activity_type = __( 'Payment Milestone - 50%', 'subscription' );
-				break;
-
-			case 75:
-				$milestone_note = sprintf(
-					/* translators: %1$d: payments made, %2$d: total payments */
-					__( 'Payment milestone reached: %1$d of %2$d payments completed (75%%). Almost complete!', 'subscription' ),
-					$payments_made,
-					$max_payments
-				);
-				$activity_type = __( 'Payment Milestone - 75%', 'subscription' );
-				break;
-
-			case 100:
-				$milestone_note = sprintf(
-					/* translators: %1$d: payments made, %2$d: total payments */
-					__( 'Payment milestone reached: %1$d of %2$d payments completed (100%%). Split payment plan complete!', 'subscription' ),
-					$payments_made,
-					$max_payments
-				);
-				$activity_type = __( 'Payment Milestone - 100%', 'subscription' );
-				break;
-		}
-
-		// Add milestone note if applicable
-		if ( $milestone_note ) {
-			$comment_id = wp_insert_comment(
-				array(
-					'comment_author'  => 'Subscription for WooCommerce',
-					'comment_content' => $milestone_note,
-					'comment_post_ID' => $subscription_id,
-					'comment_type'    => 'order_note',
-				)
-			);
-			update_comment_meta( $comment_id, '_subscrpt_activity', $activity_type );
-			update_comment_meta( $comment_id, '_subscrpt_activity_type', 'split_payment' );
-
-			// Mark milestone as logged
-			update_post_meta( $subscription_id, $milestone_key, current_time( 'timestamp' ) );
 		}
 	}
 

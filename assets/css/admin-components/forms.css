@@ -1,0 +1,169 @@
+/* --------------------------------------------------------------------------
+   Base input
+   -------------------------------------------------------------------------- */
+.wpsubs-input {
+  display: block;
+  width: 100%;
+  height: 36px;
+  min-height: 36px !important;
+  padding: 0 12px;
+  margin: 0;
+  border: 1px solid var(--wpsubs-border) !important;
+  border-radius: var(--wpsubs-radius-sm) !important;
+  background: var(--wpsubs-surface) !important;
+  font-size: 13px !important;
+  font-family: inherit !important;
+  color: var(--wpsubs-text) !important;
+  outline: none !important;
+  box-shadow: none !important;
+  box-sizing: border-box;
+  transition:
+    border-color 0.15s,
+    box-shadow 0.15s;
+}
+
+.wpsubs-input:focus {
+  border-color: var(--wpsubs-brand) !important;
+  box-shadow: 0 0 0 3px var(--wpsubs-brand-ring) !important;
+}
+
+.wpsubs-input::placeholder {
+  color: var(--wpsubs-text-subtle) !important;
+}
+
+.wpsubs-input:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  background: var(--wpsubs-surface-muted) !important;
+}
+
+/* --------------------------------------------------------------------------
+   Input with icon  (.wpsubs-input-wrap)
+
+   Usage:
+     <div class="wpsubs-input-wrap wpsubs-input-wrap--icon-l">
+       <svg class="wpsubs-input-icon">...</svg>
+       <input class="wpsubs-input">
+     </div>
+
+   Modifiers: --icon-l (icon on left)  --icon-r (icon on right)
+   -------------------------------------------------------------------------- */
+.wpsubs-input-wrap {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  width: 100%;
+}
+
+.wpsubs-input-wrap .wpsubs-input-icon {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 15px;
+  height: 15px;
+  color: var(--wpsubs-text-subtle);
+  pointer-events: none;
+  flex-shrink: 0;
+}
+
+.wpsubs-input-wrap--icon-l .wpsubs-input-icon {
+  left: 10px;
+}
+.wpsubs-input-wrap--icon-l .wpsubs-input {
+  padding-left: 34px !important;
+}
+
+.wpsubs-input-wrap--icon-r .wpsubs-input-icon {
+  right: 10px;
+}
+.wpsubs-input-wrap--icon-r .wpsubs-input {
+  padding-right: 34px !important;
+}
+
+/* --------------------------------------------------------------------------
+   Input group  (.wpsubs-input-group)
+
+   A flex row that snaps children edge-to-edge with shared borders.
+   Children: .wpsubs-input, .wpsubs-btn, .wpsubs-select, .wpsubs-adv-select
+
+   Usage:
+     <div class="wpsubs-input-group">
+       <input class="wpsubs-input">
+       <button class="wpsubs-btn wpsubs-btn--outline">Search</button>
+     </div>
+   -------------------------------------------------------------------------- */
+.wpsubs-input-group {
+  display: inline-flex;
+  align-items: stretch;
+}
+
+.wpsubs-input-group > .wpsubs-input,
+.wpsubs-input-group > .wpsubs-btn,
+.wpsubs-input-group > .wpsubs-tooltip > .wpsubs-btn,
+.wpsubs-input-group > .wpsubs-select,
+.wpsubs-input-group > .wpsubs-adv-select > .wpsubs-adv-select__trigger {
+  border-radius: 0 !important;
+}
+
+/* Normalise button height to match input height inside a group */
+.wpsubs-input-group > .wpsubs-btn,
+.wpsubs-input-group > .wpsubs-tooltip > .wpsubs-btn {
+  height: 36px;
+}
+
+/* Restore radius on first and last direct children */
+.wpsubs-input-group > :first-child,
+.wpsubs-input-group > :first-child > .wpsubs-adv-select__trigger {
+  border-top-left-radius: var(--wpsubs-radius-sm) !important;
+  border-bottom-left-radius: var(--wpsubs-radius-sm) !important;
+}
+
+.wpsubs-input-group > :last-child,
+.wpsubs-input-group > :last-child > .wpsubs-adv-select__trigger,
+.wpsubs-input-group > :last-child > .wpsubs-btn {
+  border-top-right-radius: var(--wpsubs-radius-sm) !important;
+  border-bottom-right-radius: var(--wpsubs-radius-sm) !important;
+}
+
+/* Collapse adjacent borders */
+.wpsubs-input-group > *:not(:first-child),
+.wpsubs-input-group > .wpsubs-adv-select:not(:first-child) > .wpsubs-adv-select__trigger {
+  margin-left: -1px;
+}
+
+/* Bring focused item to front so its border ring shows fully */
+.wpsubs-input-group > .wpsubs-input:focus,
+.wpsubs-input-group > .wpsubs-btn:focus,
+.wpsubs-input-group > .wpsubs-tooltip > .wpsubs-btn:focus,
+.wpsubs-input-group > .wpsubs-select:focus,
+.wpsubs-input-group > .wpsubs-adv-select--open > .wpsubs-adv-select__trigger {
+  position: relative;
+  z-index: 1;
+}
+
+/* --------------------------------------------------------------------------
+   Search  — convenience wrapper around input-wrap (backward compat kept)
+   -------------------------------------------------------------------------- */
+.wpsubs-search {
+  min-width: 180px;
+  max-width: 280px;
+}
+
+.wpsubs-search .wpsubs-input-wrap {
+  width: 100%;
+}
+
+/* --------------------------------------------------------------------------
+   Gated region  (subscrpt-gated)
+
+   A block of settings switched off by a toggle elsewhere on the screen. Dimmed
+   and non-interactive, but still rendered and still submitted: these are meta
+   fields on the product form, and disabling them would post nothing and wipe
+   the stored values on the next save. The JS pairs this with `inert`, which
+   takes them out of the tab order without taking them out of the form.
+   -------------------------------------------------------------------------- */
+.subscrpt-gated {
+  opacity: 0.45;
+  pointer-events: none;
+  user-select: none;
+}

@@ -1,4 +1,9 @@
 <?php
+/**
+ * Storefront product handling for subscriptions.
+ *
+ * @package SpringDevs\Subscription
+ */
 
 namespace SpringDevs\Subscription\Frontend;
 
@@ -29,7 +34,13 @@ class Product {
 			10,
 			2
 		);
-		add_filter( 'woocommerce_product_add_to_cart_text', array( $this, 'change_single_add_to_cart_text' ), 10, 2 );
+		add_filter( 'woocommerce_product_add_to_cart_text', array( $this, 'change_loop_add_to_cart_text' ), 10, 2 );
+		// Plan-tied simple products behave like a variable product on the shop /
+		// Product Collection loops: a "Select options" link to the product page (so
+		// the customer picks a plan), never a direct/ajax add-to-cart. These native
+		// product-method filters drive both the classic loop and the block button.
+		add_filter( 'woocommerce_product_add_to_cart_url', array( $this, 'plan_loop_add_to_cart_url' ), 10, 2 );
+		add_filter( 'woocommerce_product_supports', array( $this, 'plan_loop_disable_ajax' ), 10, 3 );
 		add_filter( 'woocommerce_get_price_html', array( $this, 'change_price_html' ), 10, 2 );
 		add_filter( 'woocommerce_quantity_input_args', array( $this, 'update_input_args' ), 10, 2 );
 		add_filter( 'woocommerce_add_to_cart', array( $this, 'update_cart_quantity' ), 10, 3 );
@@ -253,6 +264,69 @@ class Product {
 		}
 
 		return $text;
+	}
+
+	/**
+	 * Whether this is a plan-tied simple product that should behave like a
+	 * variable product on the shop / Product Collection loops.
+	 *
+	 * @param mixed $product Product object.
+	 *
+	 * @return bool
+	 */
+	private function is_plan_loop_product( $product ) {
+		return $product instanceof \WC_Product
+			&& $product->is_type( 'simple' )
+			&& subscrpt_plan_offered( $product->get_id() );
+	}
+
+	/**
+	 * Loop / block add-to-cart button text: "Select options" for plan products,
+	 * otherwise the classic label logic.
+	 *
+	 * @param string      $text    Add-to-cart button text.
+	 * @param \WC_Product $product Product object.
+	 *
+	 * @return string
+	 */
+	public function change_loop_add_to_cart_text( $text, $product ) {
+		if ( $this->is_plan_loop_product( $product ) ) {
+			return __( 'Select options', 'subscription' );
+		}
+
+		return $this->change_single_add_to_cart_text( $text, $product );
+	}
+
+	/**
+	 * Loop / block add-to-cart URL: the product page for plan products, so the
+	 * customer lands on the plan selector instead of a bare add-to-cart.
+	 *
+	 * @param string      $url     Add-to-cart URL.
+	 * @param \WC_Product $product Product object.
+	 *
+	 * @return string
+	 */
+	public function plan_loop_add_to_cart_url( $url, $product ) {
+		return $this->is_plan_loop_product( $product ) ? $product->get_permalink() : $url;
+	}
+
+	/**
+	 * Disable ajax add-to-cart for plan products so their loop / block button
+	 * renders as a "Select options" link (navigates to the product page) rather
+	 * than an ajax add.
+	 *
+	 * @param bool        $supports Whether the feature is supported.
+	 * @param string      $feature  Feature name.
+	 * @param \WC_Product $product  Product object.
+	 *
+	 * @return bool
+	 */
+	public function plan_loop_disable_ajax( $supports, $feature, $product ) {
+		if ( 'ajax_add_to_cart' === $feature && $this->is_plan_loop_product( $product ) ) {
+			return false;
+		}
+
+		return $supports;
 	}
 
 	/**

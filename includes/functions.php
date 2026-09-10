@@ -1,4 +1,9 @@
 <?php
+/**
+ * Global helper functions.
+ *
+ * @package SpringDevs\Subscription
+ */
 
 use Automattic\WooCommerce\Internal\DataStores\Orders\CustomOrdersTableController;
 use SpringDevs\Subscription\Illuminate\Subscription\Subscription;
@@ -76,12 +81,258 @@ function subscrpt_pro_activated(): bool {
 }
 
 /**
+ * Whether a product is tied to at least one active subscription plan.
+ *
+ * The single fallback guard every surface (storefront, checkout, admin) branches
+ * on: when this returns false, code must fall back to the classic `_subscrpt_*`
+ * per-product meta and must not read or write any plan table. Keeps plan
+ * detection consistent so no surface invents its own.
+ *
+ * @param int $product_id   Product (parent) id.
+ * @param int $variation_id Variation id, or 0 for simple products.
+ *
+ * @return bool
+ */
+function subscrpt_product_has_plan( $product_id, $variation_id = 0 ): bool {
+	return ! empty(
+		\SpringDevs\Subscription\Illuminate\Plans\PlanRepository::resolve_for_product( $product_id, $variation_id )
+	);
+}
+
+/**
+ * Whether a product / variation is actually offered as a subscription on the
+ * storefront: it must be tied to a plan AND be subscription-enabled
+ * (`_subscrpt_enabled`) on the exact entity — the variation when a variation id
+ * is given, otherwise the product. Storefront surfaces (plan selector, plan
+ * price, variation visibility) branch on this so a plan-tied but disabled
+ * product / variation shows no subscription UI at all.
+ *
+ * @param int $product_id   Product (parent) id.
+ * @param int $variation_id Variation id, or 0 for simple products.
+ *
+ * @return bool
+ */
+function subscrpt_plan_offered( $product_id, $variation_id = 0 ): bool {
+	if ( ! subscrpt_product_has_plan( $product_id, $variation_id ) ) {
+		return false;
+	}
+
+	return subscrpt_is_subscription_enabled( $product_id, $variation_id );
+}
+
+/**
+ * Whether a product / variation is subscription-enabled (`_subscrpt_enabled`).
+ *
+ * When the enable meta was never explicitly saved, a connected plan turns the
+ * subscription on by default — so attaching a plan enables it automatically, and
+ * it stays on until a save explicitly clears the toggle (an empty saved value).
+ * With no plan and no saved meta it is off (a fresh product defaults to off).
+ *
+ * @param int $product_id   Product (parent) id.
+ * @param int $variation_id Variation id, or 0 for simple products.
+ *
+ * @return bool
+ */
+function subscrpt_is_subscription_enabled( $product_id, $variation_id = 0 ): bool {
+	$entity_id = $variation_id ? (int) $variation_id : (int) $product_id;
+
+	if ( metadata_exists( 'post', $entity_id, '_subscrpt_enabled' ) ) {
+		return ! empty( get_post_meta( $entity_id, '_subscrpt_enabled', true ) );
+	}
+
+	// Never explicitly set: a connected plan enables the subscription by default.
+	return subscrpt_product_has_plan( $product_id, $variation_id );
+}
+
+/**
+ * Discount badge text for a storefront plan selector card.
+ *
+ * The single source both selectors share, so free and Pro word a discount
+ * identically. Returning an empty string from the filter hides the badge.
+ *
+ * @param array       $group   Plan group (id, type, label, terms, discount_percent, …).
+ * @param \WC_Product $product Product or variation being rendered.
+ * @param int         $percent The group's best discount percentage.
+ * @param bool        $varying Whether the group's terms discount by differing
+ *                             amounts, in which case the badge reads "up to".
+ *
+ * @return string
+ */
+function subscrpt_card_badge_text( $group, $product, $percent = 0, $varying = false ) {
+	if ( $percent > 0 ) {
+		$default = $varying
+			/* translators: %d: discount percentage. */
+			? sprintf( __( 'Save up to %d%%', 'subscription' ), $percent )
+			/* translators: %d: discount percentage. */
+			: sprintf( __( 'Save %d%%', 'subscription' ), $percent );
+	} else {
+		$default = __( 'Sale', 'subscription' );
+	}
+
+	/**
+	 * Filters the discount badge text on a storefront plan selector card.
+	 *
+	 * @param string      $text    Badge text (empty string hides the badge).
+	 * @param array       $group   The plan group (id, type, label, terms, discount_percent, …).
+	 * @param \WC_Product $product Product or variation being rendered.
+	 * @param int         $percent Computed discount percentage for the group.
+	 */
+	return (string) apply_filters( 'subscrpt_plan_card_badge', $default, $group, $product, $percent );
+}
+
+/**
+ * Build the storefront One-Time Purchase card for a product or variation.
+ *
+ * Offered only when the merchant opted in on this exact product or variation:
+ * `_subscrpt_one_time_enabled` is stored per variation, so pass the variation
+ * itself, never its parent, whose flag only means "any variation enabled".
+ *
+ * The single source of the one-time price maths. Both selectors call it so the
+ * free and Pro storefronts can never disagree on a price; Pro layers its
+ * discount badge onto the returned group rather than recomputing anything.
+ *
+ * @param \WC_Product $product Product or variation.
+ *
+ * @return array|null Selector group in plan-selector.php shape, or null when
+ *                    one-time purchase is not offered for this product.
+ */
+function subscrpt_one_time_group( $product ) {
+	if ( ! $product instanceof \WC_Product || ! function_exists( 'wc_price' ) ) {
+		return null;
+	}
+
+	if ( 'yes' !== get_post_meta( $product->get_id(), '_subscrpt_one_time_enabled', true ) ) {
+		return null;
+	}
+
+	$regular = (float) $product->get_regular_price();
+	$sale    = $product->get_sale_price();
+	$price   = '' !== $sale ? (float) $sale : $regular;
+
+	// Strike the regular price through only when one-time is genuinely on sale.
+	$old_price = ( '' !== $sale && (float) $sale < $regular ) ? wc_price( $regular ) : '';
+	$percent   = ( '' !== $old_price && $regular > 0 )
+		? (int) round( ( $regular - $price ) / $regular * 100 )
+		: 0;
+
+	$group = array(
+		'id'               => 'one_time',
+		'type'             => 'one_time',
+		'label'            => __( 'One Time Purchase', 'subscription' ),
+		'price'            => wc_price( $price ),
+		'old_price'        => $old_price,
+		'terms'            => array(),
+		'note'             => '',
+		'badge'            => '',
+		'discount_percent' => $percent,
+	);
+
+	if ( $percent > 0 ) {
+		$group['badge'] = subscrpt_card_badge_text( $group, $product, $percent, false );
+	}
+
+	return $group;
+}
+
+/**
+ * Truncate a string to a max length, appending an ellipsis when shortened.
+ *
+ * Multibyte-safe. Returns the text unchanged when it is within the limit, so
+ * callers can compare the result to the original to detect truncation (e.g. to
+ * add a title attribute with the full text).
+ *
+ * @param string $text   Text to truncate.
+ * @param int    $length Maximum length before truncation. Default 30.
+ *
+ * @return string
+ */
+function subscrpt_truncate_text( $text, $length = 30 ) {
+	$text = (string) $text;
+	return mb_strlen( $text ) > $length ? mb_substr( $text, 0, $length ) . '…' : $text;
+}
+
+/**
+ * Resolve a setting that was renamed without its readers being updated.
+ *
+ * Commit d4719e1 ("changed SUBSCRPT to WP_SUBSCRIPTION") renamed six option ids
+ * inside Admin/Settings.php and touched no reader. Four were caught later; two
+ * were not, so since 2025-05-08 the settings screen has been writing
+ * `wp_subscription_*` while the code kept reading `subscrpt_*` — the saved value
+ * never reached the feature, and the feature's default never reached the screen.
+ *
+ * Reading both names is what makes the two agree again. It is deliberately a
+ * read and not a migration: `subscrpt_is_auto_renew_enabled()` is called from
+ * the Stripe gateway and the renewal actions, and an option write on that path
+ * to fix a display problem is a bad trade. A site that saves its settings once
+ * writes the current name and never consults the legacy one again.
+ *
+ * @param string $option        Current option name.
+ * @param string $legacy_option Name used before the rename.
+ * @param mixed  $default_value Value when neither is set.
+ * @return mixed
+ */
+function subscrpt_get_renamed_option( $option, $legacy_option, $default_value = '' ) {
+	$value = get_option( $option, '' );
+
+	if ( '' !== $value && false !== $value && null !== $value ) {
+		return $value;
+	}
+
+	return get_option( $legacy_option, $default_value );
+}
+
+/**
+ * Get renewal process settings.
+ *
+ * Must be used everywhere the renewal process is read, including the settings
+ * field itself — if the screen resolved the value differently from the code it
+ * would show "Automatic" to a site that is in fact set to manual.
+ *
+ * @return string 'auto' or 'manual'.
+ */
+function subscrpt_get_renewal_process() {
+	return (string) subscrpt_get_renamed_option( 'wp_subscription_renewal_process', 'subscrpt_renewal_process', 'auto' );
+}
+
+/**
+ * Notice shown when a manual renewal puts the product in the cart.
+ *
+ * @return string
+ */
+function subscrpt_get_manual_renew_cart_notice() {
+	return (string) subscrpt_get_renamed_option( 'wp_subscription_manual_renew_cart_notice', 'subscrpt_manual_renew_cart_notice', '' );
+}
+
+/**
  * Get renewal process settings.
  *
  * @return bool
  */
 function subscrpt_is_auto_renew_enabled() {
-	return 'auto' === get_option( 'subscrpt_renewal_process', 'auto' );
+	return 'auto' === subscrpt_get_renewal_process();
+}
+
+/**
+ * Split-payment amounts for a given total and installment count.
+ *
+ * Single source of truth for split math so the product page, cart, checkout and
+ * subscription always agree:
+ *   - per_installment = total / count, rounded UP to 2 decimals (ceil)
+ *   - total           = the price exactly as entered (never per × count)
+ *
+ * @param float|string $total Total price as entered on the plan/product.
+ * @param int          $count Number of installments (minimum 1).
+ * @return array{total:float,count:int,per_installment:float}
+ */
+function subscrpt_split_amounts( $total, $count ) {
+	$total = (float) $total;
+	$count = max( 1, (int) $count );
+
+	return array(
+		'total'           => $total,
+		'count'           => $count,
+		'per_installment' => ceil( $total / $count * 100 ) / 100,
+	);
 }
 
 /**
@@ -114,7 +365,7 @@ function subscrpt_get_max_payments( $subscription_id ) {
 		$max_payments = get_post_meta( $subscription_id, '_subscrpt_max_no_payment', true );
 	}
 
-	return $max_payments ?: '';
+	return $max_payments ? $max_payments : '';
 }
 
 /**
@@ -128,14 +379,12 @@ function subscrpt_count_payments_made( $subscription_id ) {
 
 	$table_name = $wpdb->prefix . 'subscrpt_order_relation';
 
+	// Query the relation table only. Joining wp_posts would drop every row under
+	// HPOS (orders are not stored there); wc_get_order() below is HPOS-safe.
 	// phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 	$relations = $wpdb->get_results(
 		$wpdb->prepare(
-			"SELECT sr.*, p.post_status, p.post_date 
-		FROM $table_name sr 
-		INNER JOIN {$wpdb->posts} p ON sr.order_id = p.ID 
-		WHERE sr.subscription_id = %d
-		ORDER BY p.post_date ASC",
+			"SELECT * FROM $table_name WHERE subscription_id = %d ORDER BY id ASC",
 			$subscription_id
 		)
 	);
@@ -195,11 +444,8 @@ function subscrpt_is_max_payments_reached( $subscription_id ) {
 
 	// Fire action when split payment plan is completed (first time only)
 	if ( $is_reached && ! get_post_meta( $subscription_id, '_subscrpt_split_payment_completed_fired', true ) ) {
-		// Add completion milestone note
-		subscrpt_add_payment_completion_note( $subscription_id, $payments_made, $max_payments );
-
-		// Allow customization of subscription status after completion
-		$expire_status = apply_filters( 'subscrpt_split_payment_expire_status', 'expired', $subscription_id, $payments_made, $max_payments );
+		// All installments paid: complete the subscription (no renewal / expiry / grace).
+		$expire_status = apply_filters( 'subscrpt_split_payment_expire_status', 'completed', $subscription_id, $payments_made, $max_payments );
 
 		// Update subscription status if different from current
 		$current_status = get_post_status( $subscription_id );
@@ -211,6 +457,9 @@ function subscrpt_is_max_payments_reached( $subscription_id ) {
 				)
 			);
 		}
+
+		// Clear the next date so cron never expires it into a grace period.
+		delete_post_meta( $subscription_id, '_subscrpt_next_date' );
 
 		do_action( 'subscrpt_split_payment_completed', $subscription_id, $payments_made, $max_payments );
 		update_post_meta( $subscription_id, '_subscrpt_split_payment_completed_fired', true );
@@ -290,6 +539,42 @@ function subscrpt_get_payment_type( $subscription_id ) {
 }
 
 /**
+ * Human-readable label of the plan a subscription was purchased on.
+ *
+ * Combines the plan group name and the plan-term title (e.g. "Split Pay – Every
+ * Day"). Returns an empty string for legacy per-product subscriptions that were
+ * not bought through a plan.
+ *
+ * @param int $subscription_id Subscription ID.
+ * @return string Plan label, or '' when the subscription has no plan.
+ */
+function subscrpt_get_subscription_plan_label( $subscription_id ) {
+	$plan_id = (int) get_post_meta( $subscription_id, '_subscrpt_plan_id', true );
+	if ( ! $plan_id || ! class_exists( '\SpringDevs\Subscription\Illuminate\Plans\PlanRepository' ) ) {
+		return '';
+	}
+
+	$plan = \SpringDevs\Subscription\Illuminate\Plans\PlanRepository::get_plan( $plan_id );
+	if ( ! $plan ) {
+		return '';
+	}
+
+	$term_title  = isset( $plan['title'] ) ? trim( (string) $plan['title'] ) : '';
+	$group_title = '';
+	$group_id    = (int) ( $plan['plan_group_id'] ?? 0 );
+	if ( $group_id ) {
+		$group = \SpringDevs\Subscription\Illuminate\Plans\PlanRepository::get_group( $group_id );
+		if ( $group && isset( $group['title'] ) ) {
+			$group_title = trim( (string) $group['title'] );
+		}
+	}
+
+	$parts = array_filter( array( $group_title, $term_title ) );
+
+	return implode( ' – ', $parts );
+}
+
+/**
  * Enhanced completion check considering failed payments and access suspension.
  *
  * @param int $subscription_id Subscription ID.
@@ -316,7 +601,7 @@ function subscrpt_check_enhanced_completion( $subscription_id, $payments_made, $
 	}
 
 	// Check for maximum failure threshold
-	$failure_count                  = get_post_meta( $subscription_id, '_subscrpt_payment_failure_count', true ) ?: 0;
+	$failure_count                  = (int) get_post_meta( $subscription_id, '_subscrpt_payment_failure_count', true );
 	$max_failures_before_completion = apply_filters( 'subscrpt_max_failures_before_completion', 0, $subscription_id );
 
 	if ( $max_failures_before_completion > 0 && $failure_count >= $max_failures_before_completion ) {
@@ -350,14 +635,12 @@ function subscrpt_count_all_payment_attempts( $subscription_id ) {
 
 	$table_name = $wpdb->prefix . 'subscrpt_order_relation';
 
+	// Query the relation table only. Joining wp_posts would drop every row under
+	// HPOS (orders are not stored there); wc_get_order() below is HPOS-safe.
 	// phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 	$relations = $wpdb->get_results(
 		$wpdb->prepare(
-			"SELECT sr.*, p.post_status, p.post_date 
-		FROM $table_name sr 
-		INNER JOIN {$wpdb->posts} p ON sr.order_id = p.ID 
-		WHERE sr.subscription_id = %d
-		ORDER BY p.post_date ASC",
+			"SELECT * FROM $table_name WHERE subscription_id = %d ORDER BY id ASC",
 			$subscription_id
 		)
 	);
@@ -549,6 +832,9 @@ if ( ! function_exists( 'wps_subscription_get_timing_types' ) ) {
  * Get WC product in subscription wrapper.
  *
  * @deprecated 1.8.17 Use SpringDevs\Subscription\Illuminate\Subscription\Subscription::get_subs_product().
+ *
+ * @param \WC_Product|int $product Product object or product id.
+ * @return mixed Subscription product wrapper.
  */
 function sdevs_get_subscription_product( $product ) {
 	// Deprecated notice.
@@ -585,63 +871,4 @@ function subscrpt_write_debug_log( $log ): void {
 			error_log( 'wp_subscription: ' . $log ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions
 		}
 	}
-}
-
-/**
- * Add payment completion note for split payment subscriptions.
- *
- * @param int $subscription_id Subscription ID.
- * @param int $payments_made  Number of payments made.
- * @param int $max_payments   Maximum number of payments.
- */
-function subscrpt_add_payment_completion_note( $subscription_id, $payments_made, $max_payments ) {
-	// Check if this is a split payment subscription
-	if ( ! function_exists( 'subscrpt_get_payment_type' ) ) {
-		return;
-	}
-
-	$payment_type = subscrpt_get_payment_type( $subscription_id );
-	if ( 'split_payment' !== $payment_type ) {
-		return;
-	}
-
-	// Create completion note
-	$completion_note = sprintf(
-		/* translators: %1$d: payments made, %2$d: total payments */
-		__( 'Split payment plan completed successfully! %1$d of %2$d payments received.', 'subscription' ),
-		$payments_made,
-		$max_payments
-	);
-
-	// Add the completion note
-	$comment_id = wp_insert_comment(
-		array(
-			'comment_author'  => 'Subscription for WooCommerce',
-			'comment_content' => $completion_note,
-			'comment_post_ID' => $subscription_id,
-			'comment_type'    => 'order_note',
-		)
-	);
-	update_comment_meta( $comment_id, '_subscrpt_activity', __( 'Split Payment - Plan Complete', 'subscription' ) );
-	update_comment_meta( $comment_id, '_subscrpt_activity_type', 'split_payment' );
-
-	// Add payment summary note
-	$payment_summary = sprintf(
-		/* translators: %1$d: payments made, %2$d: total payments, %3$s: completion date */
-		__( 'Payment Summary: %1$d of %2$d installments completed on %3$s. All payments received successfully.', 'subscription' ),
-		$payments_made,
-		$max_payments,
-		date_i18n( wc_date_format(), current_time( 'timestamp' ) )
-	);
-
-	$summary_comment_id = wp_insert_comment(
-		array(
-			'comment_author'  => 'Subscription for WooCommerce',
-			'comment_content' => $payment_summary,
-			'comment_post_ID' => $subscription_id,
-			'comment_type'    => 'order_note',
-		)
-	);
-	update_comment_meta( $summary_comment_id, '_subscrpt_activity', __( 'Payment Summary - Complete', 'subscription' ) );
-	update_comment_meta( $summary_comment_id, '_subscrpt_activity_type', 'split_payment_summary' );
 }

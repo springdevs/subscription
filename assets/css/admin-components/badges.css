@@ -1,0 +1,140 @@
+/* --------------------------------------------------------------------------
+   Status badge with dot
+   -------------------------------------------------------------------------- */
+.wpsubs-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 2px 9px;
+  border-radius: 9999px;
+  font-size: 11px;
+  font-weight: 500;
+  white-space: nowrap;
+  line-height: 1.6;
+  border: 1px solid transparent;
+}
+
+.wpsubs-badge__dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.wpsubs-badge--neutral {
+  background: var(--wpsubs-surface-muted);
+  color: var(--wpsubs-text);
+  border-color: var(--wpsubs-border);
+}
+
+/* Brand-tinted tag — deeper than the brand-light card background so it stays
+   visible on both white and selected (peach) cards. */
+.wpsubs-badge--brand {
+  background: #ffe3d6;
+  color: var(--wpsubs-brand-dark);
+  border-color: #ffc4ab;
+}
+
+/* Grey tag for cards that already carry brand colour elsewhere (border, icon,
+   tint). Deeper than --neutral, which washes out against the selected card's
+   peach background. */
+.wpsubs-badge--muted {
+  background: #eceef1;
+  color: var(--wpsubs-text-muted);
+  border-color: #dcdfe4;
+}
+
+.wpsubs-badge--active {
+  background: #dcfce7;
+  color: #15803d;
+  border-color: #bbf7d0;
+}
+.wpsubs-badge--active .wpsubs-badge__dot {
+  background: #16a34a;
+}
+
+.wpsubs-badge--pending {
+  background: #eff6ff;
+  color: #1d4ed8;
+  border-color: #bfdbfe;
+}
+.wpsubs-badge--pending .wpsubs-badge__dot {
+  background: #3b82f6;
+}
+
+.wpsubs-badge--pending-cancel {
+  background: #fefce8;
+  color: #854d0e;
+  border-color: #fde68a;
+}
+.wpsubs-badge--pending-cancel .wpsubs-badge__dot {
+  background: #ca8a04;
+}
+
+/* Attention, not failure: something needs doing but nothing is broken. */
+.wpsubs-badge--warning {
+  background: #fefce8;
+  color: #854d0e;
+  border-color: #fde68a;
+}
+.wpsubs-badge--warning .wpsubs-badge__dot {
+  background: #ca8a04;
+}
+
+.wpsubs-badge--cancelled {
+  background: #f3f4f6;
+  color: #4b5563;
+  border-color: #e5e7eb;
+}
+.wpsubs-badge--cancelled .wpsubs-badge__dot {
+  background: #9ca3af;
+}
+
+.wpsubs-badge--expired {
+  background: #fee2e2;
+  color: #991b1b;
+  border-color: #fca5a5;
+}
+.wpsubs-badge--expired .wpsubs-badge__dot {
+  background: #dc2626;
+}
+
+.wpsubs-badge--completed {
+  background: #e0e7ff;
+  color: #3730a3;
+  border-color: #c7d2fe;
+}
+.wpsubs-badge--completed .wpsubs-badge__dot {
+  background: #4f46e5;
+}
+
+.wpsubs-badge--draft {
+  background: #f1f5f9;
+  color: #475569;
+  border-color: #cbd5e1;
+}
+.wpsubs-badge--draft .wpsubs-badge__dot {
+  background: #94a3b8;
+}
+
+.wpsubs-badge--trash {
+  background: #fee2e2;
+  color: #991b1b;
+  border-color: #fca5a5;
+}
+.wpsubs-badge--trash .wpsubs-badge__dot {
+  background: #ef4444;
+}
+
+/* Small brand "PRO" pill for gating Pro-only fields/options. */
+.wpsubs-badge--pro {
+  background: var(--wpsubs-brand);
+  color: var(--wpsubs-surface);
+  border-color: transparent;
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}

@@ -1,0 +1,62 @@
+/* --------------------------------------------------------------------------
+   Tabs
+   -------------------------------------------------------------------------- */
+.wpsubs-tabs__list {
+  display: flex;
+  gap: 4px;
+  border-bottom: 1px solid var(--wpsubs-border, #e5e7eb);
+  margin-bottom: 20px;
+}
+
+/* `display: flex` outweighs the bare `hidden` attribute, so restate it. */
+.wpsubs-tabs__list[hidden] {
+  display: none !important;
+}
+
+.wpsubs-tabs__tab {
+  appearance: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: none;
+  background: none;
+  margin: 0;
+  padding: 10px 16px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--wpsubs-text-muted, #6b7280);
+  text-decoration: none;
+  cursor: pointer;
+  border-bottom: 2px solid var(--wpsubs-border-strong, #d1d5db);
+  margin-bottom: -1px;
+  transition:
+    color 0.12s,
+    border-color 0.12s;
+}
+
+/* Used as a link in the settings tabs; keep it un-underlined in every state. */
+.wpsubs-tabs__tab:hover,
+.wpsubs-tabs__tab:focus {
+  text-decoration: none;
+  box-shadow: none;
+}
+
+.wpsubs-tabs__tab:hover {
+  color: var(--wpsubs-text, #374151);
+  border-bottom-color: var(--wpsubs-text-subtle, #9ca3af);
+}
+
+.wpsubs-tabs__tab[aria-selected="true"] {
+  color: var(--wpsubs-brand, #ff4d00);
+  border-bottom-color: var(--wpsubs-brand, #ff4d00);
+}
+
+.wpsubs-tabs__tab:focus-visible {
+  outline: 2px solid var(--wpsubs-brand-ring, rgba(255, 77, 0, 0.2));
+  outline-offset: 2px;
+  border-radius: var(--wpsubs-radius-sm, 5px);
+}
+
+.wpsubs-tab-panel[hidden] {
+  display: none;
+}

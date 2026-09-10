@@ -1,0 +1,182 @@
+/**
+ * Tooltip — the single, canonical tooltip for the admin component system.
+ *
+ * CSS-only, driven by a `data-tip` attribute. Works two ways:
+ *
+ *  1. Wrap any element (e.g. a button):
+ *       <span class="wpsubs-tooltip" data-tip="Regenerate API Key"><button>…</button></span>
+ *
+ *  2. Inline help icon beside a label (see wpsubs_render_tooltip()):
+ *       <span class="wpsubs-tooltip" data-tip="…" role="img" aria-label="…">
+ *         <span class="dashicons dashicons-editor-help wpsubs-tooltip__icon" aria-hidden="true"></span>
+ *       </span>
+ *
+ * The bubble (::after) shows above the trigger with a downward caret (::before),
+ * only while the trigger is hovered/focused. Long text wraps (max-width). The
+ * trigger is a non-labelable <span>, so nesting it inside a <label> never makes
+ * label-hover reveal the bubble. Place it inside an overflow:visible container.
+ *
+ * Placement is orthogonal — combine one direction with one alignment:
+ *   Direction (which side): --top (default), --bottom, --left, --right
+ *   Alignment (offset along the cross-axis): --start, --center (default), --end
+ * e.g. `wpsubs-tooltip--bottom wpsubs-tooltip--end`. The caret always points at
+ * the trigger regardless of alignment.
+ */
+
+.wpsubs-tooltip {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  vertical-align: text-bottom;
+}
+
+/* Bubble. */
+.wpsubs-tooltip[data-tip]::after {
+  content: attr(data-tip);
+  position: absolute;
+  bottom: calc(100% + 9px);
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 9999;
+  width: max-content;
+  max-width: 240px;
+  padding: 8px 11px;
+  border-radius: 7px;
+  background: var(--wpsubs-text, #1f2327);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 1.5;
+  text-align: left;
+  text-transform: none;
+  letter-spacing: normal;
+  white-space: normal;
+  box-shadow:
+    0 8px 24px rgba(0, 0, 0, 0.16),
+    0 3px 8px rgba(0, 0, 0, 0.1);
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* Caret — a rotated square. It sits ABOVE the bubble (higher z-index) and
+   overlaps its edge, so the bubble's edge/shadow never draws a seam across the
+   arrow: the arrow and bubble read as one solid shape. */
+.wpsubs-tooltip[data-tip]::before {
+  content: "";
+  position: absolute;
+  bottom: calc(100% + 9px);
+  left: 50%;
+  width: 9px;
+  height: 9px;
+  background: var(--wpsubs-text, #1f2327);
+  transform: translate(-50%, 40%) rotate(45deg);
+  z-index: 10000;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.wpsubs-tooltip[data-tip]:hover::after,
+.wpsubs-tooltip[data-tip]:hover::before,
+.wpsubs-tooltip[data-tip]:focus-visible::after,
+.wpsubs-tooltip[data-tip]:focus-visible::before {
+  opacity: 1;
+}
+
+/* Help-icon usage (wpsubs_render_hint): the --hint modifier carries the gap
+   from the preceding label text, so the trigger span stays exactly icon-width
+   and the caret centres on the icon. */
+.wpsubs-tooltip--hint {
+  margin-left: 5px;
+}
+
+.wpsubs-tooltip__icon.dashicons {
+  font-size: 15px;
+  width: 15px;
+  height: 15px;
+  line-height: 1;
+  color: var(--wpsubs-text-subtle);
+  cursor: help;
+  transition: color 0.12s ease;
+}
+
+.wpsubs-tooltip:hover .wpsubs-tooltip__icon.dashicons {
+  color: var(--wpsubs-brand, #2271b1);
+}
+
+/* ==========================================================================
+   Directional placement — which side the bubble is on. Default (no class) is
+   --top. The caret always sits over the trigger's centre and points at it.
+   ========================================================================== */
+
+/* Bottom: bubble below, caret on its top edge. */
+.wpsubs-tooltip--bottom[data-tip]::after {
+  bottom: auto;
+  top: calc(100% + 9px);
+}
+.wpsubs-tooltip--bottom[data-tip]::before {
+  bottom: auto;
+  top: calc(100% + 9px);
+  transform: translate(-50%, -40%) rotate(45deg);
+}
+
+/* Left: bubble to the left, vertically centred, caret on its right edge. */
+.wpsubs-tooltip--left[data-tip]::after {
+  bottom: auto;
+  left: auto;
+  right: calc(100% + 9px);
+  top: 50%;
+  transform: translateY(-50%);
+}
+.wpsubs-tooltip--left[data-tip]::before {
+  bottom: auto;
+  left: auto;
+  right: calc(100% + 9px);
+  top: 50%;
+  transform: translate(40%, -50%) rotate(45deg);
+}
+
+/* Right: bubble to the right, vertically centred, caret on its left edge. */
+.wpsubs-tooltip--right[data-tip]::after {
+  bottom: auto;
+  left: calc(100% + 9px);
+  top: 50%;
+  transform: translateY(-50%);
+}
+.wpsubs-tooltip--right[data-tip]::before {
+  bottom: auto;
+  left: calc(100% + 9px);
+  top: 50%;
+  transform: translate(-40%, -50%) rotate(45deg);
+}
+
+/* ==========================================================================
+   Alignment — where the bubble sits along the axis perpendicular to the
+   direction. Default is --center. The caret does NOT move (it stays over the
+   trigger), only the bubble shifts.
+   ========================================================================== */
+
+/* Horizontal align for top/bottom directions (i.e. not left/right). */
+.wpsubs-tooltip--start:not(.wpsubs-tooltip--left):not(.wpsubs-tooltip--right)[data-tip]::after {
+  left: -8px;
+  right: auto;
+  transform: none;
+}
+.wpsubs-tooltip--end:not(.wpsubs-tooltip--left):not(.wpsubs-tooltip--right)[data-tip]::after {
+  left: auto;
+  right: -8px;
+  transform: none;
+}
+
+/* Vertical align for left/right directions. */
+.wpsubs-tooltip--left.wpsubs-tooltip--start[data-tip]::after,
+.wpsubs-tooltip--right.wpsubs-tooltip--start[data-tip]::after {
+  top: -8px;
+  bottom: auto;
+  transform: none;
+}
+.wpsubs-tooltip--left.wpsubs-tooltip--end[data-tip]::after,
+.wpsubs-tooltip--right.wpsubs-tooltip--end[data-tip]::after {
+  top: auto;
+  bottom: -8px;
+  transform: none;
+}

@@ -233,6 +233,22 @@ class Post {
 		);
 
 		register_post_status(
+			'completed',
+			array(
+				'label'                     => _x( 'Completed', 'post status label', 'subscription' ),
+				'public'                    => true,
+				// translators: completed posts count.
+				'label_count'               => _n_noop( 'Completed <span class="count">(%s)</span>', 'Completed <span class="count">(%s)</span>', 'subscription' ),
+				'post_type'                 => array( 'subscrpt_order' ),
+				'show_in_admin_all_list'    => true,
+				'show_in_admin_status_list' => true,
+				'show_in_metabox_dropdown'  => true,
+				'show_in_inline_dropdown'   => true,
+				'dashicon'                  => '',
+			)
+		);
+
+		register_post_status(
 			'pe_cancelled',
 			array(
 				'label'                     => _x( 'Pending Cancellation', 'post status label', 'subscription' ),

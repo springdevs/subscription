@@ -50,6 +50,12 @@ do_action( 'before_single_subscrpt_content', $id );
 		flex-wrap: wrap;
 		gap: 10px;
 	}
+	.product-name .subscrpt-plan-term {
+		display: block;
+		margin-top: 4px;
+		font-size: 13px;
+		color: #6b7280;
+	}
 </style>
 <table class="woocommerce-table woocommerce-table--order-details shop_table order_details subscription_details">
 	<tbody>
@@ -110,7 +116,7 @@ do_action( 'before_single_subscrpt_content', $id );
 			</td>
 			<td><?php echo esc_html( $start_date ); ?></td>
 		</tr>
-		<?php if ( null == $trial || in_array( $trial_mode, array( 'off', 'extended' ), true ) ) : ?>
+		<?php if ( ( null == $trial || in_array( $trial_mode, array( 'off', 'extended' ), true ) ) && get_post_meta( $id, '_subscrpt_next_date', true ) ) : ?>
 			<tr>
 				<td>
 				<?php
@@ -204,9 +210,12 @@ do_action( 'before_single_subscrpt_content', $id );
 		<!-- Access Duration Information for Split Payments -->
 		<?php if ( 'split_payment' === $payment_type && $max_payments > 0 ) : ?>
 			<?php
-			$access_ends_timing   = get_post_meta( $product_id, '_subscrpt_access_ends_timing', true ) ?: 'after_full_duration';
-			$custom_duration_time = get_post_meta( $product_id, '_subscrpt_custom_access_duration_time', true ) ?: 1;
-			$custom_duration_type = get_post_meta( $product_id, '_subscrpt_custom_access_duration_type', true ) ?: 'months';
+			// Plan subscriptions store access-ends on the subscription; classic ones on
+			// the product. Prefer the subscription meta, fall back to the product.
+			$access_ends_timing   = get_post_meta( $id, '_subscrpt_access_ends_timing', true );
+			$access_ends_timing   = $access_ends_timing ? $access_ends_timing : ( get_post_meta( $product_id, '_subscrpt_access_ends_timing', true ) ?: 'after_full_duration' );
+			$custom_duration_time = get_post_meta( $id, '_subscrpt_custom_access_duration_time', true ) ?: ( get_post_meta( $product_id, '_subscrpt_custom_access_duration_time', true ) ?: 1 );
+			$custom_duration_type = get_post_meta( $id, '_subscrpt_custom_access_duration_type', true ) ?: ( get_post_meta( $product_id, '_subscrpt_custom_access_duration_type', true ) ?: 'months' );
 
 			// Calculate access end date if Pro version is available
 			$access_end_date_string = null;
@@ -301,6 +310,12 @@ do_action( 'before_single_subscrpt_content', $id );
 			<td class="product-name">
 				<a href="<?php echo esc_html( $product_link ); ?>"><?php echo esc_html( $product_name ); ?></a>
 				<strong class="product-quantity">× <?php echo esc_html( $order_item->get_quantity() ); ?></strong>
+				<?php
+				$plan_label = function_exists( 'subscrpt_get_subscription_plan_label' ) ? subscrpt_get_subscription_plan_label( $id ) : '';
+				if ( $plan_label ) :
+					?>
+					<span class="subscrpt-plan-term"><?php printf( esc_html__( 'Plan: %s', 'subscription' ), esc_html( $plan_label ) ); ?></span>
+				<?php endif; ?>
 			</td>
 			<td class="product-total">
 				<span class="woocommerce-Price-amount amount">

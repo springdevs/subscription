@@ -1,6 +1,13 @@
 <?php
+/**
+ * REST API bootstrap.
+ *
+ * @package SpringDevs\Subscription
+ */
 
 namespace SpringDevs\Subscription;
+
+use SpringDevs\Subscription\Api\PlanController;
 
 /**
  * API Class
@@ -21,5 +28,6 @@ class API {
 	 * @return void
 	 */
 	public function register_api() {
+		( new PlanController() )->register_routes();
 	}
 }
