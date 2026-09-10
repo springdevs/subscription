@@ -1,7 +1,7 @@
 === Subscriptions for WooCommerce with Stripe Recurring Payments ===
 Contributors: converswp, shamsbd71, aushamim
 Tags: woocommerce subscriptions, subscriptions, recurring payments, billing, stripe
-Requires at least: 6.0
+Requires at least: 6.2
 Tested up to: 7.1
 Stable tag: #WPSUBS_VERSION
 Requires PHP: 7.4

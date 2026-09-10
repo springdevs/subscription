@@ -238,7 +238,7 @@ class Integrations {
 			'stripe'   => [
 				'title'              => 'Stripe',
 				'description'        => 'Process subscription payments securely with Stripe.',
-				'icon_url'           => 'https://ps.w.org/woocommerce-gateway-stripe/assets/icon-256x256.png',
+				'icon_url'           => SUBSCRPT_ASSETS . '/images/integrations/stripe.png',
 				'type'               => 'payment_gateway',
 				'is_installed'       => class_exists( 'WC_Stripe' ),
 				'is_active'          => self::is_gateway_enabled( 'stripe' ),
@@ -390,7 +390,7 @@ class Integrations {
 			'tutor_lms'   => [
 				'title'        => 'Tutor LMS',
 				'description'  => 'Restrict course access based on subscription status. Enroll and unenroll students automatically.',
-				'icon_url'     => 'https://ps.w.org/tutor/assets/icon-256x256.gif',
+				'icon_url'     => SUBSCRPT_ASSETS . '/images/integrations/tutor-lms.jpg',
 				'type'         => 'third_party',
 				'is_pro'       => true,
 				'category'     => 'lms',
@@ -413,7 +413,7 @@ class Integrations {
 			'learnpress'  => [
 				'title'        => 'LearnPress',
 				'description'  => 'Connect subscriptions with LearnPress courses. Enroll users automatically when subscriptions are active.',
-				'icon_url'     => 'https://ps.w.org/learnpress/assets/icon-256x256.gif',
+				'icon_url'     => SUBSCRPT_ASSETS . '/images/integrations/learnpress.png',
 				'type'         => 'third_party',
 				'is_pro'       => true,
 				'category'     => 'lms',
@@ -460,7 +460,7 @@ class Integrations {
 			'fluentcrm'   => [
 				'title'        => 'FluentCRM',
 				'description'  => 'Trigger email sequences and manage contacts based on subscription events and status changes.',
-				'icon_url'     => 'https://ps.w.org/fluent-crm/assets/icon-256x256.png',
+				'icon_url'     => SUBSCRPT_ASSETS . '/images/integrations/fluentcrm.png',
 				'type'         => 'third_party',
 				'is_pro'       => true,
 				'category'     => 'crm',
@@ -484,7 +484,7 @@ class Integrations {
 			'automatorwp' => [
 				'title'        => 'AutomatorWP',
 				'description'  => 'Build powerful automations triggered by subscription events without writing any code.',
-				'icon_url'     => 'https://ps.w.org/automatorwp/assets/icon-256x256.png',
+				'icon_url'     => SUBSCRPT_ASSETS . '/images/integrations/automatorwp.png',
 				'type'         => 'third_party',
 				'is_pro'       => true,
 				'category'     => 'automation',
@@ -507,7 +507,7 @@ class Integrations {
 			'wpfusion'    => [
 				'title'        => 'WP Fusion',
 				'description'  => 'Sync subscription data with your CRM and marketing platforms through WP Fusion.',
-				'icon_url'     => 'https://ps.w.org/wp-fusion-lite/assets/icon-256x256.png',
+				'icon_url'     => SUBSCRPT_ASSETS . '/images/integrations/wp-fusion.png',
 				'type'         => 'third_party',
 				'is_pro'       => true,
 				'category'     => 'automation',
@@ -531,7 +531,7 @@ class Integrations {
 			'mailpoet'    => [
 				'title'        => 'MailPoet',
 				'description'  => 'Add subscribers to MailPoet lists and trigger email automations based on subscription lifecycle events.',
-				'icon_url'     => 'https://ps.w.org/mailpoet/assets/icon-256x256.png',
+				'icon_url'     => SUBSCRPT_ASSETS . '/images/integrations/mailpoet.png',
 				'type'         => 'third_party',
 				'is_pro'       => true,
 				'category'     => 'email',
@@ -578,7 +578,7 @@ class Integrations {
 			'license_mgr' => [
 				'title'        => 'License Manager for WooCommerce',
 				'description'  => 'Generate and manage software license keys that are automatically tied to active subscriptions.',
-				'icon_url'     => 'https://ps.w.org/license-manager-for-woocommerce/assets/icon-256x256.gif',
+				'icon_url'     => SUBSCRPT_ASSETS . '/images/integrations/license-manager.png',
 				'type'         => 'third_party',
 				'is_pro'       => true,
 				'category'     => 'license',
