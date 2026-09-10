@@ -147,11 +147,18 @@ final class Sdevs_Subscription {
 	}
 
 	/**
-	 * Placeholder for activation function
+	 * Set the plugin up, and ask the admin screen to show itself once.
+	 *
+	 * The redirect cannot happen here: activation runs inside plugins.php,
+	 * which is still deciding what to render and has already sent headers by
+	 * the time this returns. A short-lived flag hands the job to the next
+	 * admin request instead — see Admin::maybe_redirect_after_activation().
 	 */
 	public function activate() {
 		$installer = new SpringDevs\Subscription\Installer();
 		$installer->run();
+
+		set_transient( 'subscrpt_activation_redirect', 1, 30 );
 	}
 
 	/**
