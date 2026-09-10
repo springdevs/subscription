@@ -522,6 +522,15 @@ class PlanController {
 			update_post_meta( $oid, '_subscrpt_enabled', 'yes' );
 		}
 
+		// Default the purchase limit when the product has never had one set. The
+		// storefront gate (Frontend\Product::check_if_purchasable) only overrides
+		// WooCommerce's empty-price rule when a limit is set, so without this a
+		// plan-connected product with no base price stays un-purchasable — its
+		// plan selector never renders until a product save writes this meta.
+		if ( '' === get_post_meta( $oid, '_subscrpt_limit', true ) ) {
+			update_post_meta( $oid, '_subscrpt_limit', 'unlimited' );
+		}
+
 		return rest_ensure_response( PlanRepository::get_relation( $id ) );
 	}
 

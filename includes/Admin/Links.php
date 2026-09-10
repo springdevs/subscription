@@ -24,9 +24,8 @@ class Links {
 	 * @param array $links Plugin Links.
 	 */
 	public function plugin_action_links( $links ) {
-		// Getting Started link hidden for now — re-enable later.
-		// $getting_started_url = admin_url( 'admin.php?page=wp-subscription-onboarding' );
-		// array_unshift( $links, '<a href="' . esc_url( $getting_started_url ) . '">' . __( 'Getting Started', 'subscription' ) . '</a>' );
+		$getting_started_url = admin_url( 'admin.php?page=wp-subscription-onboarding' );
+		array_unshift( $links, '<a href="' . esc_url( $getting_started_url ) . '">' . __( 'Getting Started', 'subscription' ) . '</a>' );
 		if ( ! subscrpt_pro_activated() ) {
 			$links[] = '<a href="https://wpsubscription.co/?utm_source=plugin&utm_medium=admin&utm_campaign=upgrade_pro" target="_blank" style="color:#3db634;">' . __( 'Upgrade to premium', 'subscription' ) . '</a>';
 		}

@@ -24,6 +24,43 @@ class Menu {
 		add_action( 'admin_menu', array( $this, 'reorder_submenu' ), 999 );
 		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_admin_assets' ) );
 		add_action( 'wp_ajax_subscrpt_bulk_action', array( $this, 'handle_bulk_action_ajax' ) );
+		add_action( 'admin_init', array( $this, 'maybe_onboarding_redirect' ) );
+	}
+
+	/**
+	 * Send a first-time user to the onboarding wizard when they open the
+	 * WPSubscription dashboard with no plan created yet.
+	 *
+	 * This runs on the dashboard visit rather than on activation, so it works
+	 * regardless of when WooCommerce gets installed (the plugin only loads its
+	 * admin once WooCommerce is active). A persistent "seen" flag makes it fire
+	 * at most once, so the user is never trapped away from the dashboard.
+	 *
+	 * @return void
+	 */
+	public function maybe_onboarding_redirect() {
+		// Only on the WPSubscription dashboard page.
+		if ( ! isset( $_GET['page'] ) || 'wp-subscription' !== $_GET['page'] ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- menu navigation, no state change.
+			return;
+		}
+
+		if ( wp_doing_ajax() || is_network_admin() || ! current_user_can( 'manage_options' ) ) {
+			return;
+		}
+
+		// Fire at most once, ever.
+		if ( get_option( 'subscrpt_onboarding_seen' ) ) {
+			return;
+		}
+		update_option( 'subscrpt_onboarding_seen', 1, false );
+
+		// Only first-time users with no plan yet.
+		if ( ! empty( \SpringDevs\Subscription\Illuminate\Plans\PlanRepository::get_groups() ) ) {
+			return;
+		}
+
+		wp_safe_redirect( admin_url( 'admin.php?page=wp-subscription-onboarding' ) );
+		exit;
 	}
 
 	/**
@@ -54,21 +91,37 @@ class Menu {
 			SUBSCRPT_VERSION
 		);
 
-		// Enqueue onboarding wizard JS (loaded on wizard page)
+		// Enqueue onboarding wizard JS (loaded on wizard page). Depends on the
+		// admin components so the cadence picker (adv-select) is ready.
 		wp_enqueue_script(
 			'subscrpt-onboarding-wizard',
 			SUBSCRPT_ASSETS . '/js/admin/onboarding-wizard.js',
-			array( 'jquery' ),
+			array( 'jquery', 'subscrpt_admin_components' ),
 			SUBSCRPT_VERSION,
 			true
 		);
+		$subscrpt_wizard_has_products = (bool) wc_get_products(
+			array(
+				'status' => array( 'publish', 'draft', 'pending', 'private' ),
+				'limit'  => 1,
+				'return' => 'ids',
+			)
+		);
+
 		wp_localize_script(
 			'subscrpt-onboarding-wizard',
 			'subscrpt_wizard',
 			array(
 				'ajax_url'          => admin_url( 'admin-ajax.php' ),
 				'subscriptions_url' => admin_url( 'admin.php?page=wp-subscription' ),
+				'dashboard_url'     => admin_url( 'admin.php?page=wp-subscription' ),
+				'products_url'      => admin_url( 'edit.php?post_type=product' ),
+				'plans_url'         => admin_url( 'admin.php?page=wp-subscription-plans' ),
+				'rest_url'          => rest_url( 'wpsubscription/v1/plans' ),
+				'rest_nonce'        => wp_create_nonce( 'wp_rest' ),
 				'currency_symbol'   => get_woocommerce_currency_symbol(),
+				'is_pro'            => subscrpt_pro_activated(),
+				'has_products'      => $subscrpt_wizard_has_products,
 			)
 		);
 
@@ -824,15 +877,12 @@ class Menu {
 	 * Initial load always shows page 1 (JS handles transitions from there)
 	 */
 	public function render_onboarding_wizard() {
-		// Start session if not already started
+		// Start session if not already started (used by the wizard reset handler).
 		if ( ! session_id() && ! headers_sent() ) {
 			session_start();
 		}
 
-		// Always start at page 1 on direct load (SPA behavior — JS drives page transitions)
-		$GLOBALS['wizard_page'] = 1;
-
-		$this->render_admin_header( __( 'Setup Wizard', 'subscription' ), __( 'Create your first subscription product', 'subscription' ) );
+		$this->render_admin_header( __( 'Setup Wizard', 'subscription' ), __( 'Create your first subscription plan', 'subscription' ) );
 		include __DIR__ . '/views/onboarding-wizard.php';
 		$this->render_admin_footer();
 	}
