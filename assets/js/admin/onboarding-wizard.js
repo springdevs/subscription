@@ -32,7 +32,8 @@
       this.autoName = $.trim($("#subscrpt_plan_title").val());
       this.bindEvents();
       this.initLivePreview();
-      this.updatePlanSummary();
+      this.initFocusZoom();
+      this.updatePreview();
       $("#subscrpt-link-plans").attr("href", this.cfg.plans_url || "#");
       $("#subscrpt-link-products").attr("href", this.cfg.products_url || "#");
     },
@@ -112,6 +113,16 @@
 
       $(".wpsubs-wizard-section").removeClass("active");
       $("#subscrpt-section-" + pageNum).addClass("active");
+
+      // Swap the footer nav to this step's buttons.
+      $(".wpsubs-wizard-nav").attr("hidden", "hidden");
+      $('.wpsubs-wizard-nav[data-nav="' + pageNum + '"]').removeAttr("hidden");
+
+      // Light up the part of the preview this step fills in.
+      var groups = { 1: "plan", 2: "dur", 3: "prod", 4: "done" };
+      $("#subscrpt-preview-graph").attr("data-active", groups[pageNum] || "plan");
+      this.updatePreview();
+
       $("html, body").animate({ scrollTop: 0 }, 150);
     },
 
@@ -136,12 +147,7 @@
       }
       this.autoName = suggested;
 
-      $("#p1-summary-type").text(card.data("label") ? String(card.data("label")) : "");
-      this.updatePlanSummary();
-    },
-
-    updatePlanSummary: function () {
-      $("#p1-summary-name").text($.trim($("#subscrpt_plan_title").val()) || "Your plan");
+      this.updatePreview();
     },
 
     nextFromPlan: function (e) {
@@ -157,20 +163,37 @@
 
     initLivePreview: function () {
       var self = this;
-      $(document).on("input", "#subscrpt_billing_frequency, #subscrpt_free_trial", function () {
-        self.updatePlanPreview();
-      });
-      $(document).on("input", "#subscrpt_plan_title", function () {
-        self.updatePlanPreview();
-        self.updatePlanSummary();
-      });
+      var update = function () {
+        self.updatePreview();
+      };
+      // All the fields whose typing should reflect into the preview graph.
       $(document).on(
-        "wpsubs:select",
-        "#subscrpt-billing-interval-select, #subscrpt-trial-interval-select",
-        function () {
-          self.updatePlanPreview();
-        },
+        "input",
+        "#subscrpt_plan_title, #subscrpt_billing_frequency, #subscrpt_free_trial, #subscrpt_new_product_name",
+        update,
       );
+      $(document).on("wpsubs:select", "#subscrpt-billing-interval-select, #subscrpt-trial-interval-select", update);
+    },
+
+    // Zoom the matching preview card while its field is focused.
+    initFocusZoom: function () {
+      var graph = $("#subscrpt-preview-graph");
+      var groups = [
+        { sel: "#subscrpt_plan_title", group: "plan" },
+        {
+          sel: "#subscrpt_billing_frequency, #subscrpt_free_trial, #subscrpt_signup_fee, #subscrpt-billing-interval-select, #subscrpt-trial-interval-select",
+          group: "dur",
+        },
+        { sel: "#subscrpt-product-search-input, #subscrpt_new_product_name, #subscrpt_connect_price", group: "prod" },
+      ];
+      groups.forEach(function (g) {
+        $(document).on("focusin", g.sel, function () {
+          graph.attr("data-focus", g.group);
+        });
+        $(document).on("focusout", g.sel, function () {
+          graph.attr("data-focus", "");
+        });
+      });
     },
 
     unitLabel: function (unit, count) {
@@ -178,23 +201,28 @@
       return n > 1 ? n + " " + unit + "s" : unit;
     },
 
-    updatePlanPreview: function () {
-      var title = $("#subscrpt_plan_title").val() || "Your plan";
+    // The name shown on the preview's product node, from whichever connect mode
+    // is active.
+    previewProductName: function () {
+      if (this.hasProducts && this.currentConnectMode() === "existing") {
+        return this.selectedProductName || "";
+      }
+      return $.trim($("#subscrpt_new_product_name").val());
+    },
+
+    // Fill the persistent preview graph from the current form state. Each step
+    // updates its own node; empty fields keep the placeholder label.
+    updatePreview: function () {
+      $("#subscrpt-preview-plan").text($.trim($("#subscrpt_plan_title").val()) || "Your plan");
+      $("#subscrpt-preview-plan-type").text($(".wpsubs-plan-type-card.active").data("label") || "Recurring");
+
       var freq = $("#subscrpt_billing_frequency").val() || "1";
       var interval = $("input[name='subscrpt_billing_interval']").val() || "month";
-      var trial = $("#subscrpt_free_trial").val();
-      var trialInterval = $("input[name='subscrpt_trial_interval']").val() || "day";
+      $("#subscrpt-preview-dur").text("Every " + this.unitLabel(interval, freq));
 
-      $("#p2-preview-plan").text(title);
-      $("#p2-preview-billing").text("every " + this.unitLabel(interval, freq));
-
-      var trialNum = parseInt(trial, 10);
-      if (trialNum > 0) {
-        $("#p2-preview-trial")
-          .text(trialNum + " " + (trialNum > 1 ? trialInterval + "s" : trialInterval) + " free trial")
-          .show();
-      } else {
-        $("#p2-preview-trial").hide();
+      var prod = this.previewProductName();
+      if (prod) {
+        $("#subscrpt-preview-prod").text(prod);
       }
     },
 
@@ -289,6 +317,7 @@
       $("#subscrpt-connect-existing").toggle(mode === "existing");
       $("#subscrpt-connect-new").toggle(mode === "new");
       $("#subscrpt-btn-connect").html((mode === "new" ? "Create & connect" : "Connect plan") + " ›");
+      this.updatePreview();
     },
 
     openProductSearch: function () {
@@ -346,6 +375,7 @@
       }
 
       this.selectedProductName = name;
+      this.updatePreview();
     },
 
     clearProduct: function () {
@@ -435,23 +465,11 @@
 
     // ----- Page 4: finish -----
 
-    showDone: function (productName, price) {
-      var symbol = this.cfg.currency_symbol || "$";
-      var planInitials = (this.planTitle || "Plan")
-        .split(" ")
-        .filter(Boolean)
-        .slice(0, 2)
-        .map(function (w) {
-          return w[0].toUpperCase();
-        })
-        .join("");
-
-      $("#p4-plan-avatar").text(planInitials || "P");
-      $("#p4-plan-name").text(this.planTitle || "Plan");
-      $("#p4-plan-billing").text(this.billingText || "");
-      $("#p4-product-name").text(productName);
-      $("#p4-price").text(price ? symbol + parseFloat(price).toFixed(2) : "—");
-
+    showDone: function (productName) {
+      // The finished flow is shown by the persistent preview graph.
+      if (productName) {
+        $("#subscrpt-preview-prod").text(productName);
+      }
       this.switchSection(4);
     },
 
@@ -469,10 +487,11 @@
           self.termId = 0;
           self.planTitle = "";
           self.billingText = "";
-          $("#subscrpt_free_trial, #subscrpt_signup_fee, #subscrpt_connect_price").val("");
+          $("#subscrpt_free_trial, #subscrpt_signup_fee, #subscrpt_connect_price, #subscrpt_new_product_name").val("");
           $("#subscrpt_billing_frequency").val("1");
-          $("#subscrpt_new_product_name").val("");
           self.clearProduct();
+          // Reset the preview product node back to its placeholder.
+          $("#subscrpt-preview-prod").text("Product");
           self.switchSection(1);
         },
       );

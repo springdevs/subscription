@@ -5,12 +5,88 @@
  * Enqueued via includes/Admin/Menu.php (handle: subscrpt-onboarding-wizard).
  */
 #subscrpt-onboarding-wizard {
-  max-width: 680px;
-}
-#subscrpt-onboarding-wizard:has(#subscrpt-section-1.active),
-#subscrpt-onboarding-wizard:has(#subscrpt-section-2.active) {
   max-width: 900px;
 }
+
+/* Two columns: the steps on the left, a persistent live-preview rail on the
+   right that stays put while the steps swap. */
+/* One card: steps top-left, its nav footer bottom-left, and the preview
+   spanning the full height of the right column. */
+.wpsubs-wizard-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 420px;
+  grid-template-rows: 1fr auto;
+  grid-template-areas:
+    "steps preview"
+    "footer preview";
+  background: var(--wpsubs-surface, #fff);
+  border: 1px solid var(--wpsubs-border, #e5e7eb);
+  border-radius: var(--wpsubs-radius, 8px);
+  box-shadow: var(--wpsubs-shadow, 0 1px 3px rgba(0, 0, 0, 0.08));
+}
+.wpsubs-wizard-steps {
+  grid-area: steps;
+  min-width: 0;
+  padding: 28px 32px;
+}
+.wpsubs-wizard-aside {
+  grid-area: preview;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 28px 32px;
+  border-left: 1px solid var(--wpsubs-border, #e5e7eb);
+}
+.wpsubs-preview {
+  width: 100%;
+}
+/* Footer carries the step's Back / Continue buttons, under the steps only. */
+.wpsubs-wizard-footer {
+  grid-area: footer;
+  border-top: 1px solid var(--wpsubs-border, #e5e7eb);
+  padding: 16px 32px;
+}
+.wpsubs-wizard-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+/* `display: flex` outweighs the bare `hidden` attribute, so restate it. */
+.wpsubs-wizard-nav[hidden] {
+  display: none;
+}
+.wpsubs-preview__label {
+  margin: 0 0 2px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--wpsubs-text-muted, #6b7280);
+  text-align: center;
+}
+.wpsubs-preview__caption {
+  margin: 12px 2px 0;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--wpsubs-text-muted, #6b7280);
+  text-align: center;
+}
+@media (max-width: 900px) {
+  .wpsubs-wizard-layout {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas:
+      "steps"
+      "preview"
+      "footer";
+  }
+  .wpsubs-wizard-aside {
+    justify-content: flex-start;
+    border-left: none;
+    border-top: 1px solid var(--wpsubs-border, #e5e7eb);
+  }
+}
+
 /* Page sections — all rendered, JS toggles visibility */
 .wpsubs-wizard-section {
   display: none;
@@ -88,11 +164,9 @@
   margin: 0 8px;
 }
 /* Card */
+/* No longer its own box — it is the left half of the shared card. */
 .wpsubs-wizard-card {
-  background: var(--wpsubs-surface);
-  border: 1px solid var(--wpsubs-border);
-  border-radius: var(--wpsubs-radius);
-  padding: 28px 32px;
+  padding: 0;
   margin-bottom: 16px;
 }
 /* Form rows (shared) */
@@ -162,24 +236,6 @@
 .wpsubs-p2-option-card.active {
   border-color: var(--wpsubs-brand);
   background: var(--wpsubs-brand-light);
-}
-.wpsubs-p2-option-card__check {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  width: 20px;
-  height: 20px;
-  border-radius: 50%;
-  background: var(--wpsubs-brand);
-  display: none;
-  align-items: center;
-  justify-content: center;
-  color: var(--wpsubs-surface);
-  font-size: 11px;
-  font-weight: 700;
-}
-.wpsubs-p2-option-card.active .wpsubs-p2-option-card__check {
-  display: flex;
 }
 .wpsubs-p2-option-card__icon {
   width: 32px;
@@ -805,16 +861,6 @@
   box-sizing: border-box;
 }
 /* Page 1 specific — two-column hero layout */
-#subscrpt-section-1 {
-  max-width: 860px;
-}
-#subscrpt-section-1 .wpsubs-wizard-card {
-  padding: 56px 48px;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 64px;
-  align-items: center;
-}
 .wpsubs-p1-left {
   display: flex;
   flex-direction: column;
@@ -1025,44 +1071,179 @@
   }
 }
 
-/* Page 1 plan summary card (right column). */
-.wpsubs-p1-summary-card {
-  border: 1px solid var(--wpsubs-border);
-  border-radius: var(--wpsubs-radius);
-  background: var(--wpsubs-surface);
-  padding: 16px;
-  box-shadow: var(--wpsubs-shadow);
+/* Page 1 animated plan-structure preview (right column):
+   one Plan -> three Durations -> two Products, joined by flowing lines. */
+.wpsubs-p1-graph {
+  position: relative;
+  /* Fluid: fill the preview column instead of a fixed pixel box, so the nodes
+     scale with the rail rather than needing a wider container. */
+  width: 100%;
+  aspect-ratio: 300 / 420;
+  margin: 10px auto 0;
 }
-.wpsubs-p1-summary-type {
-  display: inline-block;
-  padding: 3px 9px;
-  border-radius: 999px;
-  background: var(--wpsubs-brand-light);
-  color: var(--wpsubs-brand);
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.02em;
+.wpsubs-p1-graph__lines {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
 }
-.wpsubs-p1-summary-name {
-  font-size: 15px;
-  font-weight: 700;
-  color: var(--wpsubs-text);
-  margin: 10px 0 12px;
-  line-height: 1.35;
-  word-break: break-word;
+.wpsubs-p1-flow {
+  fill: none;
+  stroke: var(--wpsubs-brand, #ff4d00);
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  stroke-dasharray: 3 6;
+  opacity: 0.5;
+  animation: wpsubs-p1-flow 0.9s linear infinite;
 }
-.wpsubs-p1-summary-meta {
+@keyframes wpsubs-p1-flow {
+  to {
+    stroke-dashoffset: -9;
+  }
+}
+
+.wpsubs-p1-node {
+  position: absolute;
+  z-index: 1;
   display: flex;
   align-items: center;
-  gap: 6px;
-  padding-top: 12px;
-  border-top: 1px dashed var(--wpsubs-border);
+  gap: 8px;
+  box-sizing: border-box;
+  padding: 10px 12px;
+  background: var(--wpsubs-surface, #fff);
+  border: 1px solid var(--wpsubs-border, #e5e7eb);
+  border-radius: 9px;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.08);
   font-size: 12px;
-  color: var(--wpsubs-text-muted);
+  font-weight: 600;
+  color: var(--wpsubs-text, #374151);
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  transform-origin: center;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    border-color 0.12s ease;
 }
-.wpsubs-p1-summary-meta svg {
-  color: var(--wpsubs-text-subtle);
+.wpsubs-p1-node__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   flex-shrink: 0;
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  background: var(--wpsubs-surface-muted, #f3f4f6);
+  color: var(--wpsubs-text-muted, #6b7280);
+}
+.wpsubs-p1-node__icon svg {
+  width: 14px;
+  height: 14px;
+}
+.wpsubs-p1-node__label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+/* Two-line node body: title over a muted subtitle. */
+.wpsubs-p1-node__text {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+.wpsubs-p1-node__title {
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.25;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.wpsubs-p1-node__sub {
+  font-size: 10px;
+  font-weight: 500;
+  line-height: 1.3;
+  color: var(--wpsubs-text-muted, #6b7280);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.wpsubs-p1-node--plan .wpsubs-p1-node__sub {
+  color: var(--wpsubs-brand, #ff4d00);
+  opacity: 0.85;
+}
+
+/* Plan node — brand accent, top of the fan-out. Widths are a % of the graph so
+   they scale with the column. */
+.wpsubs-p1-node--plan {
+  width: 58%;
+  border-color: var(--wpsubs-brand, #ff4d00);
+  background: var(--wpsubs-brand-light, #fff1eb);
+  color: var(--wpsubs-brand-dark, #d93f00);
+}
+.wpsubs-p1-node--plan .wpsubs-p1-node__icon {
+  background: var(--wpsubs-brand, #ff4d00);
+  color: #fff;
+}
+/* Durations (x3) — narrower, so tighten padding/icon to keep text room. */
+.wpsubs-p1-node--dur {
+  width: 30%;
+  padding: 8px 9px;
+  gap: 6px;
+}
+.wpsubs-p1-node--dur .wpsubs-p1-node__icon {
+  width: 20px;
+  height: 20px;
+}
+/* Products (x2). */
+.wpsubs-p1-node--prod {
+  width: 44%;
+}
+
+/* Ghost nodes — the "you can add more later" placeholders. */
+.wpsubs-p1-node--ghost {
+  opacity: 0.45;
+  border-style: dashed;
+  box-shadow: none;
+}
+
+/* The group belonging to the current step gets a brand ring. Ghosts never
+   light up — only the node the step actually fills in. */
+.wpsubs-p1-graph[data-active="plan"] .wpsubs-p1-node--plan,
+.wpsubs-p1-graph[data-active="dur"] .wpsubs-p1-node--dur:not(.wpsubs-p1-node--ghost),
+.wpsubs-p1-graph[data-active="prod"] .wpsubs-p1-node--prod:not(.wpsubs-p1-node--ghost) {
+  border-color: var(--wpsubs-brand, #ff4d00);
+  box-shadow: 0 0 0 3px var(--wpsubs-brand-ring, rgba(255, 77, 0, 0.22));
+  animation: wpsubs-p1-pulse 1.6s ease-in-out infinite;
+}
+@keyframes wpsubs-p1-pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 3px var(--wpsubs-brand-ring, rgba(255, 77, 0, 0.22));
+  }
+  50% {
+    box-shadow: 0 0 0 5px rgba(255, 77, 0, 0.1);
+  }
+}
+
+/* Zoom the card whose field is currently focused (wins over the pulse). */
+.wpsubs-p1-graph[data-focus="plan"] .wpsubs-p1-node--plan,
+.wpsubs-p1-graph[data-focus="dur"] .wpsubs-p1-node--dur:not(.wpsubs-p1-node--ghost),
+.wpsubs-p1-graph[data-focus="prod"] .wpsubs-p1-node--prod:not(.wpsubs-p1-node--ghost) {
+  transform: scale(1.14);
+  z-index: 3;
+  border-color: var(--wpsubs-brand, #ff4d00);
+  box-shadow: 0 10px 22px rgba(255, 77, 0, 0.2);
+  animation: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .wpsubs-p1-flow,
+  .wpsubs-p1-graph .wpsubs-p1-node {
+    animation: none;
+  }
 }
 
 /* Button loading state (plan create / connect requests in flight). */
@@ -1102,10 +1283,6 @@
 .wpsubs-p2-option-cards--list .wpsubs-p2-option-card__icon {
   margin-bottom: 0;
   flex-shrink: 0;
-}
-.wpsubs-p2-option-cards--list .wpsubs-p2-option-card__check {
-  top: 50%;
-  transform: translateY(-50%);
 }
 .wpsubs-p2-option-card__text {
   min-width: 0;
