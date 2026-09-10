@@ -1,4 +1,14 @@
 <?php
+/**
+ * Shared admin UI component renderers.
+ *
+ * @package SpringDevs\Subscription\Admin
+ */
+
+// Exit if accessed directly.
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
 
 /**
  * Compute the visible page list for a paginator (current ± 1 window with

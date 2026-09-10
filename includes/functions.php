@@ -5,6 +5,11 @@
  * @package SpringDevs\Subscription
  */
 
+// Exit if accessed directly.
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 use Automattic\WooCommerce\Internal\DataStores\Orders\CustomOrdersTableController;
 use SpringDevs\Subscription\Illuminate\Subscription\Subscription;
 use SpringDevs\Subscription\Utils\Product;

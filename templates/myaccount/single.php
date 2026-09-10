@@ -314,7 +314,7 @@ do_action( 'before_single_subscrpt_content', $id );
 				$plan_label = function_exists( 'subscrpt_get_subscription_plan_label' ) ? subscrpt_get_subscription_plan_label( $id ) : '';
 				if ( $plan_label ) :
 					?>
-					<span class="subscrpt-plan-term"><?php printf( esc_html__( 'Plan: %s', 'subscription' ), esc_html( $plan_label ) ); ?></span>
+					<span class="subscrpt-plan-term"><?php printf( /* translators: %s: plan name. */ esc_html__( 'Plan: %s', 'subscription' ), esc_html( $plan_label ) ); ?></span>
 				<?php endif; ?>
 			</td>
 			<td class="product-total">

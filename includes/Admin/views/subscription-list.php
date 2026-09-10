@@ -17,7 +17,7 @@ $filters_active = ! empty( $status ) || ! empty( $date_filter ) || ! empty( $sea
 $months         = array();
 for ( $i = 0; $i < 12; $i++ ) {
 	$month                           = strtotime( "-$i month" );
-	$months[ date( 'Y-m', $month ) ] = date( 'F Y', $month );
+	$months[ gmdate( 'Y-m', $month ) ] = gmdate( 'F Y', $month );
 }
 ?>
 <div class="wp-subscription-admin-content list-page">
@@ -293,7 +293,7 @@ for ( $i = 0; $i < 12; $i++ ) {
 							<span class="wpsubs-badge wpsubs-badge--<?php echo esc_attr( $badge_mod ); ?>">
 								<?php echo esc_html( $verbose_status ); ?>
 								<?php if ( $is_grace_period && $grace_remaining > 0 ) : ?>
-									<span class="dashicons dashicons-warning" style="font-size:11px;width:11px;height:11px;color:#d97706;" title="<?php echo esc_attr( sprintf( __( '%d days remaining in grace period', 'subscription' ), $grace_remaining ) ); ?>"></span>
+									<span class="dashicons dashicons-warning" style="font-size:11px;width:11px;height:11px;color:#d97706;" title="<?php echo esc_attr( sprintf( /* translators: %d: number of days left in the grace period. */ __( '%d days remaining in grace period', 'subscription' ), $grace_remaining ) ); ?>"></span>
 								<?php endif; ?>
 							</span>
 						</td>
