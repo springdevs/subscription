@@ -1095,11 +1095,17 @@
 }
 .wpsubs-p1-flow {
   fill: none;
-  stroke: var(--wpsubs-brand, #ff4d00);
+  /* Muted by default; a line only turns brand-orange once the duration it
+     belongs to is filled (.is-active, toggled from JS). */
+  stroke: var(--wpsubs-border, #e5e7eb);
   stroke-width: 1.5;
   stroke-linecap: round;
   stroke-dasharray: 3 6;
-  opacity: 0.5;
+  opacity: 0.35;
+}
+.wpsubs-p1-flow.is-active {
+  stroke: var(--wpsubs-brand, #ff4d00);
+  opacity: 0.55;
   animation: wpsubs-p1-flow 0.9s linear infinite;
 }
 @keyframes wpsubs-p1-flow {

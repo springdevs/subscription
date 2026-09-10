@@ -398,15 +398,18 @@ $subscrpt_icon_plan = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor
 				<p class="wpsubs-preview__label"><?php esc_html_e( 'Live preview', 'subscription' ); ?></p>
 				<div class="wpsubs-p1-graph" id="subscrpt-preview-graph" data-active="plan" aria-hidden="true">
 					<svg class="wpsubs-p1-graph__lines" viewBox="0 0 300 420" preserveAspectRatio="none">
-						<!-- Plan -> durations (spread wide, centre lowered) -->
-						<path class="wpsubs-p1-flow" d="M150,50 C150,80 45,80 45,110" />
-						<path class="wpsubs-p1-flow" d="M150,50 L150,140" />
-						<path class="wpsubs-p1-flow" d="M150,50 C150,80 255,80 255,110" />
-						<!-- Durations -> products (start at each card's bottom) -->
-						<path class="wpsubs-p1-flow" d="M45,148 C45,228 75,228 75,300" />
-						<path class="wpsubs-p1-flow" d="M150,178 C150,248 75,248 75,300" />
-						<path class="wpsubs-p1-flow" d="M150,178 C150,248 225,248 225,330" />
-						<path class="wpsubs-p1-flow" d="M255,148 C255,228 225,228 225,330" />
+						<!-- Plan -> durations (left→right offsets +0.5, +2, 0: right highest,
+							left slightly lower, middle lowest). data-line-dur maps each line
+							to the duration it feeds, so it colours in when filled. -->
+						<path class="wpsubs-p1-flow" data-line-dur="1" d="M150,50 C150,78 51,78 51,105" />
+						<path class="wpsubs-p1-flow" data-line-dur="0" d="M150,50 L150,143" />
+						<path class="wpsubs-p1-flow" data-line-dur="2" d="M150,50 C150,72 249,72 249,92" />
+						<!-- Durations -> products (start at each card's bottom). data-line-to="prod"
+							keeps these muted until a product is added, too. -->
+						<path class="wpsubs-p1-flow" data-line-dur="1" data-line-to="prod" d="M51,143 C51,225 75,225 75,300" />
+						<path class="wpsubs-p1-flow" data-line-dur="0" data-line-to="prod" d="M150,181 C150,245 75,245 75,300" />
+						<path class="wpsubs-p1-flow" data-line-dur="0" data-line-to="prod" d="M150,181 C150,255 225,255 225,330" />
+						<path class="wpsubs-p1-flow" data-line-dur="2" data-line-to="prod" d="M249,130 C249,230 225,230 225,330" />
 					</svg>
 
 					<div class="wpsubs-p1-node wpsubs-p1-node--plan" data-group="plan" style="left:21%;top:2.9%;">
@@ -417,21 +420,21 @@ $subscrpt_icon_plan = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor
 						</span>
 					</div>
 
-					<div class="wpsubs-p1-node wpsubs-p1-node--dur wpsubs-p1-node--ghost" data-group="dur" data-preview-dur="1" style="left:0%;top:26.2%;">
+					<div class="wpsubs-p1-node wpsubs-p1-node--dur wpsubs-p1-node--ghost" data-group="dur" data-preview-dur="1" style="left:2%;top:25%;">
 						<span class="wpsubs-p1-node__icon"><?php echo $subscrpt_icon_cal; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- trusted static SVG. ?></span>
 						<span class="wpsubs-p1-node__text">
 							<span class="wpsubs-p1-node__title"><?php esc_html_e( 'Duration', 'subscription' ); ?></span>
 							<span class="wpsubs-p1-node__sub"><?php esc_html_e( 'Add more', 'subscription' ); ?></span>
 						</span>
 					</div>
-					<div class="wpsubs-p1-node wpsubs-p1-node--dur wpsubs-p1-node--ghost" data-group="dur" data-preview-dur="0" style="left:35%;top:33.3%;">
+					<div class="wpsubs-p1-node wpsubs-p1-node--dur wpsubs-p1-node--ghost" data-group="dur" data-preview-dur="0" style="left:35%;top:34%;">
 						<span class="wpsubs-p1-node__icon"><?php echo $subscrpt_icon_cal; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- trusted static SVG. ?></span>
 						<span class="wpsubs-p1-node__text">
 							<span class="wpsubs-p1-node__title"><?php esc_html_e( 'Duration', 'subscription' ); ?></span>
 							<span class="wpsubs-p1-node__sub"><?php esc_html_e( 'Add more', 'subscription' ); ?></span>
 						</span>
 					</div>
-					<div class="wpsubs-p1-node wpsubs-p1-node--dur wpsubs-p1-node--ghost" data-group="dur" data-preview-dur="2" style="left:70%;top:26.2%;">
+					<div class="wpsubs-p1-node wpsubs-p1-node--dur wpsubs-p1-node--ghost" data-group="dur" data-preview-dur="2" style="left:68%;top:22%;">
 						<span class="wpsubs-p1-node__icon"><?php echo $subscrpt_icon_cal; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- trusted static SVG. ?></span>
 						<span class="wpsubs-p1-node__text">
 							<span class="wpsubs-p1-node__title"><?php esc_html_e( 'Duration', 'subscription' ); ?></span>

@@ -258,6 +258,20 @@
       if (prod) {
         $("#subscrpt-preview-prod").text(prod);
       }
+
+      // Connector lines: muted by default. A plan->duration line colours in
+      // once its duration is filled; a duration->product line also needs a
+      // product to be added.
+      var hasProduct = !!prod;
+      $("#subscrpt-preview-graph [data-line-dur]").each(function () {
+        var $line = $(this);
+        var idx = parseInt($line.data("line-dur"), 10) || 0;
+        var active = !!durations[idx];
+        if ($line.attr("data-line-to") === "prod") {
+          active = active && hasProduct;
+        }
+        $line.toggleClass("is-active", active);
+      });
     },
 
     // ----- Durations (accordion) -----
