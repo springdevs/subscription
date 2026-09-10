@@ -608,6 +608,68 @@
   });
 
   /* ------------------------------------------------------------------ *
+   * Products tab: refresh the panel in place.
+   * ------------------------------------------------------------------ */
+
+  /**
+   * Re-render the Products panel from the server, keeping the page where it
+   * was. Attaching, detaching and repricing all change server-formatted values
+   * (money, badges, which products exist), so the fragment is fetched rather
+   * than patched by hand — but a full reload for it threw the whole screen
+   * away, which is what made every one of these actions flash.
+   *
+   * Which products were expanded and the scroll position are restored, so the
+   * panel comes back looking like it never moved.
+   *
+   * @param {string|number} groupId Plan group id.
+   * @return {Promise}
+   */
+  function refreshProducts(groupId) {
+    var panel = document.getElementById("subscrpt-panel-products");
+    if (!panel || !groupId) {
+      return Promise.resolve();
+    }
+
+    var scrollY = window.scrollY;
+    var open = [];
+    panel.querySelectorAll("[data-pid]").forEach(function (item) {
+      var header = item.querySelector(".wpsubs-accordion__header");
+      if (header && "true" === header.getAttribute("aria-expanded")) {
+        open.push(item.getAttribute("data-pid"));
+      }
+    });
+
+    return api("GET", "/group-products/" + groupId).then(function (res) {
+      panel.innerHTML = (res && res.html) || "";
+
+      // Components bind on DOMContentLoaded; new markup needs a nudge.
+      if (window.WPSubsAccordion && window.WPSubsAccordion.init) {
+        window.WPSubsAccordion.init(panel);
+      }
+
+      open.forEach(function (pid) {
+        var item = panel.querySelector('[data-pid="' + pid + '"]');
+        var header = item && item.querySelector(".wpsubs-accordion__header");
+        if (header && "true" !== header.getAttribute("aria-expanded")) {
+          header.click();
+        }
+      });
+
+      window.scrollTo(0, scrollY);
+    });
+  }
+
+  /**
+   * The plan group this detail page is showing.
+   *
+   * @return {string} Group id, or "" off the detail page.
+   */
+  function currentGroupId() {
+    var host = document.querySelector("[data-plan-id]");
+    return host ? host.getAttribute("data-plan-id") || "" : "";
+  }
+
+  /* ------------------------------------------------------------------ *
    * Products tab (Pro): bulk-add products to the plan group.
    * ------------------------------------------------------------------ */
 
@@ -812,6 +874,7 @@
         if (list.lastElementChild) {
           list.lastElementChild.style.borderBottom = "none";
         }
+        syncPickerCount(modal);
       })
       .catch(function () {
         list.innerHTML =
@@ -820,6 +883,37 @@
           "</li>";
       });
   }
+
+  /**
+   * Update the picker's running tally. Ticking is a two-way control — it
+   * attaches and detaches — so the count is what says how the plan will look
+   * after saving, rather than how many were just clicked.
+   *
+   * @param {HTMLElement} modal The add-product modal.
+   */
+  function syncPickerCount(modal) {
+    var out = modal && modal.querySelector("[data-subscrpt-picker-count]");
+    if (!out) {
+      return;
+    }
+    var boxes = modal.querySelectorAll("[data-subscrpt-product-list] input[data-oid]");
+    var n = 0;
+    Array.prototype.forEach.call(boxes, function (box) {
+      if (box.checked) {
+        n += 1;
+      }
+    });
+    out.textContent = n ? (i18n.picked || "%d on this plan").replace("%d", n) : i18n.pickedNone || "";
+  }
+
+  // Any tick in the picker updates the tally.
+  document.addEventListener("change", function (e) {
+    var box = e.target.closest("[data-subscrpt-product-list] input[type=checkbox]");
+    var modal = box && box.closest("[data-subscrpt-add-product]");
+    if (modal) {
+      syncPickerCount(modal);
+    }
+  });
 
   // Load the picker when the modal opens (pre-checking attached products).
   document.addEventListener("wpsubs:modal:open", function (e) {
@@ -924,11 +1018,18 @@
         return Promise.all(calls);
       })
       .then(function () {
-        window.location.reload();
+        if (window.WPSubsModal) {
+          window.WPSubsModal.close(modal);
+        }
+        return refreshProducts(groupId);
+      })
+      .then(function () {
+        setLoading(btn, false);
+        planNotice(i18n.productsUpdated);
       })
       .catch(function (err) {
         setLoading(btn, false);
-        window.alert(err.message || i18n.genericError);
+        planNotice(err.message || i18n.genericError, "error");
       });
   });
 
@@ -964,11 +1065,15 @@
         );
       })
       .then(function () {
-        window.location.reload();
+        return refreshProducts(groupId);
+      })
+      .then(function () {
+        setLoading(btn, false);
+        planNotice(i18n.productRemoved);
       })
       .catch(function (err) {
         setLoading(btn, false);
-        window.alert(err.message || i18n.genericError);
+        planNotice(err.message || i18n.genericError, "error");
       });
   });
 
@@ -1005,11 +1110,15 @@
         );
       })
       .then(function () {
-        window.location.reload();
+        return refreshProducts(groupId);
+      })
+      .then(function () {
+        setLoading(btn, false);
+        planNotice(i18n.productRemoved);
       })
       .catch(function (err) {
         setLoading(btn, false);
-        window.alert(err.message || i18n.genericError);
+        planNotice(err.message || i18n.genericError, "error");
       });
   });
 
@@ -1139,11 +1248,15 @@
 
     Promise.all(calls)
       .then(function () {
-        window.location.reload();
+        return refreshProducts(currentGroupId());
+      })
+      .then(function () {
+        setLoading(btn, false);
+        planNotice(i18n.pricesSaved);
       })
       .catch(function (err) {
         setLoading(btn, false);
-        window.alert(err.message || i18n.genericError);
+        planNotice(err.message || i18n.genericError, "error");
       });
   });
 
@@ -1188,11 +1301,15 @@
       offer: offer ? offer.value : "",
     })
       .then(function () {
-        window.location.reload();
+        return refreshProducts(currentGroupId());
+      })
+      .then(function () {
+        setLoading(btn, false);
+        planNotice(i18n.pricesSaved);
       })
       .catch(function (err) {
         setLoading(btn, false);
-        window.alert(err.message || i18n.genericError);
+        planNotice(err.message || i18n.genericError, "error");
       });
   });
 
