@@ -54,11 +54,12 @@ class Menu {
 			SUBSCRPT_VERSION
 		);
 
-		// Enqueue onboarding wizard JS (loaded on wizard page)
+		// Enqueue onboarding wizard JS (loaded on wizard page). Depends on the
+		// admin components so the cadence picker (adv-select) is ready.
 		wp_enqueue_script(
 			'subscrpt-onboarding-wizard',
 			SUBSCRPT_ASSETS . '/js/admin/onboarding-wizard.js',
-			array( 'jquery' ),
+			array( 'jquery', 'subscrpt_admin_components' ),
 			SUBSCRPT_VERSION,
 			true
 		);

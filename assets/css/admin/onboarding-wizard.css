@@ -525,12 +525,17 @@
   opacity: 0.55;
   cursor: not-allowed;
 }
-/* Billing every group — number input + standalone adv-select */
+/* Billing every group — number input + standalone adv-select, matching the
+   plan duration editor (two separate controls with an 8px gap). */
 .wpsubs-p2-billing-group {
+  display: flex;
+  gap: 8px;
+  align-items: center;
   width: 100%;
 }
 .wpsubs-p2-billing-group .wpsubs-p2-billing-per-input {
-  flex-grow: 1;
+  flex: 1 1 auto;
+  min-width: 0;
 }
 #subscrpt-billing-period-select {
   width: 100%;
@@ -1215,8 +1220,14 @@
 .wpsubs-p1-graph[data-active="dur"] .wpsubs-p1-node--dur:not(.wpsubs-p1-node--ghost),
 .wpsubs-p1-graph[data-active="prod"] .wpsubs-p1-node--prod:not(.wpsubs-p1-node--ghost) {
   border-color: var(--wpsubs-brand, #ff4d00);
+  background: var(--wpsubs-brand-light, #fff1eb);
   box-shadow: 0 0 0 3px var(--wpsubs-brand-ring, rgba(255, 77, 0, 0.22));
   animation: wpsubs-p1-pulse 1.6s ease-in-out infinite;
+}
+/* Keep the subtitle readable on the tinted background. */
+.wpsubs-p1-graph[data-active="dur"] .wpsubs-p1-node--dur:not(.wpsubs-p1-node--ghost) .wpsubs-p1-node__sub,
+.wpsubs-p1-graph[data-active="prod"] .wpsubs-p1-node--prod:not(.wpsubs-p1-node--ghost) .wpsubs-p1-node__sub {
+  color: var(--wpsubs-brand-dark, #d93f00);
 }
 @keyframes wpsubs-p1-pulse {
   0%,
@@ -1230,8 +1241,8 @@
 
 /* Zoom the card whose field is currently focused (wins over the pulse). */
 .wpsubs-p1-graph[data-focus="plan"] .wpsubs-p1-node--plan,
-.wpsubs-p1-graph[data-focus="dur"] .wpsubs-p1-node--dur:not(.wpsubs-p1-node--ghost),
-.wpsubs-p1-graph[data-focus="prod"] .wpsubs-p1-node--prod:not(.wpsubs-p1-node--ghost) {
+.wpsubs-p1-graph[data-focus="prod"] .wpsubs-p1-node--prod:not(.wpsubs-p1-node--ghost),
+.wpsubs-p1-node.is-zoom:not(.wpsubs-p1-node--ghost) {
   transform: scale(1.14);
   z-index: 3;
   border-color: var(--wpsubs-brand, #ff4d00);
@@ -1286,4 +1297,92 @@
 }
 .wpsubs-p2-option-card__text {
   min-width: 0;
+}
+
+/* Durations accordion (step 2). */
+.wpsubs-dur {
+  border: 1px solid var(--wpsubs-border, #e5e7eb);
+  border-radius: var(--wpsubs-radius, 8px);
+  background: var(--wpsubs-surface, #fff);
+  margin-bottom: 10px;
+}
+.wpsubs-dur__head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+  cursor: pointer;
+  user-select: none;
+}
+.wpsubs-dur.is-open .wpsubs-dur__head {
+  border-bottom: 1px solid var(--wpsubs-border, #e5e7eb);
+}
+.wpsubs-dur__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  background: var(--wpsubs-brand-light, #fff1eb);
+  color: var(--wpsubs-brand, #ff4d00);
+}
+.wpsubs-dur__icon svg {
+  width: 15px;
+  height: 15px;
+}
+.wpsubs-dur__title {
+  flex: 1 1 auto;
+  min-width: 0;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--wpsubs-text, #374151);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.wpsubs-dur__remove {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 24px;
+  height: 24px;
+  border: none;
+  background: none;
+  border-radius: 5px;
+  color: var(--wpsubs-text-subtle, #9ca3af);
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+  transition:
+    color 0.12s,
+    background 0.12s;
+}
+.wpsubs-dur__remove:hover {
+  color: #dc2626;
+  background: #fef2f2;
+}
+#subscrpt-durations.has-multiple .wpsubs-dur__remove {
+  display: inline-flex;
+}
+.wpsubs-dur__chevron {
+  flex-shrink: 0;
+  color: var(--wpsubs-text-subtle, #9ca3af);
+  transition: transform 0.18s ease;
+}
+.wpsubs-dur.is-open .wpsubs-dur__chevron {
+  transform: rotate(180deg);
+}
+.wpsubs-dur__body {
+  padding: 14px;
+}
+.wpsubs-dur:not(.is-open) .wpsubs-dur__body {
+  display: none;
+}
+/* Cadence picker keeps its content width; the number input flexes to fill the
+   rest, so the picker never gets squeezed. */
+.wpsubs-dur__interval {
+  flex: 0 0 auto;
 }

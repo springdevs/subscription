@@ -17,14 +17,21 @@
 
   var INTERVAL_TO_INT = { day: 1, week: 2, month: 3, year: 4 };
 
+  // The preview graph has 3 duration slots, so durations are capped there.
+  var MAX_DURATIONS = 3;
+
   var Wizard = {
     cfg: {},
+    MAX_DURATIONS: MAX_DURATIONS,
     autoName: "",
-    // Created leaving page 2, used on page 3.
+    // Created leaving page 2 (one term per duration), used on page 3.
     groupId: 0,
-    termId: 0,
+    termIds: [],
     planTitle: "",
     billingText: "",
+    // Durations show as placeholder ghost cards in the preview until the user
+    // reaches page 2 and starts editing them.
+    reachedDurations: false,
 
     init: function () {
       this.cfg = window.subscrpt_wizard || {};
@@ -33,6 +40,7 @@
       this.bindEvents();
       this.initLivePreview();
       this.initFocusZoom();
+      this.initDurations();
       this.updatePreview();
       $("#subscrpt-link-plans").attr("href", this.cfg.plans_url || "#");
       $("#subscrpt-link-products").attr("href", this.cfg.products_url || "#");
@@ -67,9 +75,15 @@
       $(document).on("click", "#subscrpt-btn-skip", $.proxy(this.skip, this));
       $(document).on("click", "#subscrpt-btn-next-1", $.proxy(this.nextFromPlan, this));
 
-      // Page 2 (frequency).
+      // Page 2 (durations).
       $(document).on("click", "#subscrpt-btn-back-1", $.proxy(this.goToPage, this, 1));
       $(document).on("click", "#subscrpt-btn-create-plan", $.proxy(this.createPlan, this));
+      $(document).on("click", "#subscrpt-btn-add-duration", $.proxy(this.addDuration, this));
+      $(document).on("click", "[data-dur-toggle]", $.proxy(this.onDurToggle, this));
+      $(document).on("click", "[data-dur-remove]", $.proxy(this.onDurRemove, this));
+      $(document).on("input", "[data-dur-freq]", $.proxy(this.onDurBillingInput, this));
+      $(document).on("wpsubs:select", "[data-dur-interval]", $.proxy(this.onDurBillingInput, this));
+      $(document).on("input", "[data-dur-name]", $.proxy(this.onDurNameInput, this));
 
       // Page 3 (product).
       $(document).on("click", "#subscrpt-btn-back-2", $.proxy(this.goToPage, this, 2));
@@ -100,6 +114,12 @@
 
     switchSection: function (pageNum) {
       $("#subscrpt-wizard-page").val(pageNum);
+
+      // Once the user lands on the durations step, the preview duration nodes
+      // stop being placeholders and reflect the real durations.
+      if (pageNum >= 2) {
+        this.reachedDurations = true;
+      }
 
       $(".wpsubs-wizard-stepper__step").removeClass("active done");
       $(".wpsubs-wizard-stepper__step").each(function () {
@@ -166,13 +186,9 @@
       var update = function () {
         self.updatePreview();
       };
-      // All the fields whose typing should reflect into the preview graph.
-      $(document).on(
-        "input",
-        "#subscrpt_plan_title, #subscrpt_billing_frequency, #subscrpt_free_trial, #subscrpt_new_product_name",
-        update,
-      );
-      $(document).on("wpsubs:select", "#subscrpt-billing-interval-select, #subscrpt-trial-interval-select", update);
+      // Fields whose typing should reflect into the preview graph. Duration
+      // fields update the preview through their own handlers.
+      $(document).on("input", "#subscrpt_plan_title, #subscrpt_new_product_name", update);
     },
 
     // Zoom the matching preview card while its field is focused.
@@ -180,10 +196,6 @@
       var graph = $("#subscrpt-preview-graph");
       var groups = [
         { sel: "#subscrpt_plan_title", group: "plan" },
-        {
-          sel: "#subscrpt_billing_frequency, #subscrpt_free_trial, #subscrpt_signup_fee, #subscrpt-billing-interval-select, #subscrpt-trial-interval-select",
-          group: "dur",
-        },
         { sel: "#subscrpt-product-search-input, #subscrpt_new_product_name, #subscrpt_connect_price", group: "prod" },
       ];
       groups.forEach(function (g) {
@@ -194,11 +206,18 @@
           graph.attr("data-focus", "");
         });
       });
-    },
 
-    unitLabel: function (unit, count) {
-      var n = parseInt(count, 10) || 1;
-      return n > 1 ? n + " " + unit + "s" : unit;
+      // Durations zoom per card: focusing one duration's field zooms only the
+      // preview node that duration maps to (fill order = card order).
+      var durFields = "#subscrpt-durations input, #subscrpt-durations .wpsubs-adv-select__trigger";
+      $(document).on("focusin", durFields, function () {
+        var idx = $("#subscrpt-durations [data-dur]").index($(this).closest("[data-dur]"));
+        $("#subscrpt-preview-graph [data-preview-dur]").removeClass("is-zoom");
+        $('#subscrpt-preview-graph [data-preview-dur="' + idx + '"]').addClass("is-zoom");
+      });
+      $(document).on("focusout", durFields, function () {
+        $("#subscrpt-preview-graph [data-preview-dur]").removeClass("is-zoom");
+      });
     },
 
     // The name shown on the preview's product node, from whichever connect mode
@@ -216,14 +235,157 @@
       $("#subscrpt-preview-plan").text($.trim($("#subscrpt_plan_title").val()) || "Your plan");
       $("#subscrpt-preview-plan-type").text($(".wpsubs-plan-type-card.active").data("label") || "Recurring");
 
-      var freq = $("#subscrpt_billing_frequency").val() || "1";
-      var interval = $("input[name='subscrpt_billing_interval']").val() || "month";
-      $("#subscrpt-preview-dur").text("Every " + this.unitLabel(interval, freq));
+      // Duration nodes: stay placeholder ghost cards until the user reaches
+      // page 2, then each real duration lights up one node in fill order.
+      var self = this;
+      var durations = this.reachedDurations ? this.collectDurations() : [];
+      $("#subscrpt-preview-graph [data-preview-dur]").each(function () {
+        var $node = $(this);
+        var idx = parseInt($node.data("preview-dur"), 10) || 0;
+        var dur = durations[idx];
+        if (dur) {
+          $node.removeClass("wpsubs-p1-node--ghost");
+          $node.find(".wpsubs-p1-node__title").text(dur.name);
+          $node.find(".wpsubs-p1-node__sub").text(self.billingEvery(dur.freq, dur.interval));
+        } else {
+          $node.addClass("wpsubs-p1-node--ghost");
+          $node.find(".wpsubs-p1-node__title").text("Duration");
+          $node.find(".wpsubs-p1-node__sub").text("Add more");
+        }
+      });
 
       var prod = this.previewProductName();
       if (prod) {
         $("#subscrpt-preview-prod").text(prod);
       }
+    },
+
+    // ----- Durations (accordion) -----
+
+    // The "billing every" value: "1 month", "3 days".
+    billingEvery: function (freq, interval) {
+      var n = parseInt(freq, 10) || 1;
+      return n + " " + (interval || "month") + (n > 1 ? "s" : "");
+    },
+
+    // "1 month" -> "Every Month", "3 days" -> "Every 3 Days".
+    durationName: function (freq, interval) {
+      var labels = { day: "Day", week: "Week", month: "Month", year: "Year" };
+      var label = labels[interval] || "Month";
+      var n = parseInt(freq, 10) || 1;
+      return n > 1 ? "Every " + n + " " + label + "s" : "Every " + label;
+    },
+
+    initDurations: function () {
+      if (!$("#subscrpt-durations [data-dur]").length) {
+        this.addDuration();
+      }
+      this.refreshDurControls();
+    },
+
+    addDuration: function (e) {
+      if (e && e.preventDefault) {
+        e.preventDefault();
+      }
+      if ($("#subscrpt-durations [data-dur]").length >= this.MAX_DURATIONS) {
+        return;
+      }
+      var tpl = document.getElementById("subscrpt-duration-tpl");
+      if (!tpl || !tpl.content) {
+        return;
+      }
+      $("#subscrpt-durations").append(tpl.content.cloneNode(true));
+      var card = $("#subscrpt-durations [data-dur]").last();
+      // Wire up the cloned cadence picker (adv-select).
+      if (window.WPSubsAdvSelect) {
+        window.WPSubsAdvSelect.init(card[0]);
+      }
+      this.syncDurName(card, true);
+      this.openDuration(card);
+      this.refreshDurControls();
+      this.updatePreview();
+    },
+
+    openDuration: function (card) {
+      $("#subscrpt-durations [data-dur]").removeClass("is-open");
+      card.addClass("is-open");
+    },
+
+    onDurToggle: function (e) {
+      if ($(e.target).closest("[data-dur-remove]").length) {
+        return;
+      }
+      var card = $(e.currentTarget).closest("[data-dur]");
+      if (card.hasClass("is-open")) {
+        card.removeClass("is-open");
+      } else {
+        this.openDuration(card);
+      }
+    },
+
+    onDurRemove: function (e) {
+      e.preventDefault();
+      e.stopPropagation();
+      var cards = $("#subscrpt-durations [data-dur]");
+      if (cards.length <= 1) {
+        return;
+      }
+      var card = $(e.currentTarget).closest("[data-dur]");
+      var wasOpen = card.hasClass("is-open");
+      card.remove();
+      if (wasOpen) {
+        $("#subscrpt-durations [data-dur]").last().addClass("is-open");
+      }
+      this.refreshDurControls();
+      this.updatePreview();
+    },
+
+    onDurBillingInput: function (e) {
+      this.syncDurName($(e.target).closest("[data-dur]"), false);
+      this.updatePreview();
+    },
+
+    onDurNameInput: function (e) {
+      var card = $(e.target).closest("[data-dur]");
+      card.attr("data-name-edited", "1");
+      card.find("[data-dur-title]").text($.trim(card.find("[data-dur-name]").val()) || "Duration");
+      this.updatePreview();
+    },
+
+    // The interval value ("day"/"week"/"month"/"year") from a card's cadence
+    // picker — the adv-select's hidden input.
+    durInterval: function (card) {
+      return card.find("[data-dur-interval] input[type=hidden]").val() || "month";
+    },
+
+    // Refresh the auto name from the billing period (unless the user edited it)
+    // and mirror the name into the card header.
+    syncDurName: function (card, force) {
+      var auto = this.durationName(card.find("[data-dur-freq]").val(), this.durInterval(card));
+      if (force || card.attr("data-name-edited") !== "1") {
+        card.find("[data-dur-name]").val(auto);
+      }
+      card.find("[data-dur-title]").text($.trim(card.find("[data-dur-name]").val()) || auto);
+    },
+
+    refreshDurControls: function () {
+      var count = $("#subscrpt-durations [data-dur]").length;
+      $("#subscrpt-durations").toggleClass("has-multiple", count > 1);
+      // The preview has 3 duration slots — no more durations past that.
+      $("#subscrpt-btn-add-duration").toggle(count < this.MAX_DURATIONS);
+    },
+
+    collectDurations: function () {
+      var self = this;
+      var out = [];
+      $("#subscrpt-durations [data-dur]").each(function () {
+        var $c = $(this);
+        var freq = parseInt($c.find("[data-dur-freq]").val(), 10) || 1;
+        var interval = self.durInterval($c);
+        var name = $.trim($c.find("[data-dur-name]").val()) || self.durationName(freq, interval);
+        out.push({ freq: freq, interval: interval, name: name });
+      });
+      return out;
     },
 
     createPlan: function (e) {
@@ -239,55 +401,63 @@
         return;
       }
 
-      var freq = parseInt($("#subscrpt_billing_frequency").val(), 10) || 1;
-      var interval = $("input[name='subscrpt_billing_interval']").val() || "month";
-      var trial = $.trim($("#subscrpt_free_trial").val());
-      var trialInterval = $("input[name='subscrpt_trial_interval']").val() || "day";
-      var signupFee = this.cfg.is_pro ? $.trim($("#subscrpt_signup_fee").val()) : "";
+      var durations = this.collectDurations();
+      if (!durations.length) {
+        window.alert("Please add at least one duration.");
+        return;
+      }
 
       if ($btn.hasClass("is-loading")) {
         return;
       }
       $btn.addClass("is-loading").prop("disabled", true);
 
-      var termBody = {
-        type: type,
-        title: title,
-        billing_frequency: freq,
-        billing_interval: INTERVAL_TO_INT[interval] || 3,
-        billing_length: 0,
-        free_trial: trial || "",
-        signup_fee: { amount: signupFee || "" },
-        status: "active",
-        data: { free_trial_interval: trialInterval },
+      var termBody = function (dur, groupId) {
+        return {
+          plan_group_id: groupId,
+          type: type,
+          title: dur.name,
+          billing_frequency: dur.freq,
+          billing_interval: INTERVAL_TO_INT[dur.interval] || 3,
+          billing_length: 0,
+          free_trial: "",
+          signup_fee: { amount: "" },
+          status: "active",
+          data: { free_trial_interval: "day" },
+        };
       };
 
-      // 1) Create the plan group. 2) Reuse the auto-seeded draft term (or create
-      // one) with the chosen duration.
-      this.api("POST", "/groups", {
-        title: title,
-        type: type,
-        product_type: 1,
-        status: "active",
-      })
+      // 1) Create the plan group. 2) Create one term per duration — reusing the
+      // auto-seeded draft term for the first, creating the rest.
+      this.api("POST", "/groups", { title: title, type: type, product_type: 1, status: "active" })
         .then(function (group) {
           self.groupId = group.id;
           self.planTitle = title;
-          self.billingText = "every " + self.unitLabel(interval, freq);
-          termBody.plan_group_id = group.id;
+          self.billingText = durations[0].name;
 
           var seeded = group.plans && group.plans.length ? group.plans[0] : null;
-          if (seeded && seeded.id) {
-            return self.api("PUT", "/terms/" + seeded.id, termBody).then(function () {
-              return seeded.id;
+          var termIds = [];
+
+          var chain = durations.reduce(function (promise, dur, idx) {
+            return promise.then(function () {
+              var body = termBody(dur, group.id);
+              if (idx === 0 && seeded && seeded.id) {
+                return self.api("PUT", "/terms/" + seeded.id, body).then(function () {
+                  termIds.push(seeded.id);
+                });
+              }
+              return self.api("POST", "/terms", body).then(function (term) {
+                termIds.push(term.id);
+              });
             });
-          }
-          return self.api("POST", "/terms", termBody).then(function (term) {
-            return term.id;
+          }, Promise.resolve());
+
+          return chain.then(function () {
+            return termIds;
           });
         })
-        .then(function (termId) {
-          self.termId = termId;
+        .then(function (termIds) {
+          self.termIds = termIds;
           $btn.removeClass("is-loading").prop("disabled", false);
           self.switchSection(3);
         })
@@ -444,18 +614,23 @@
 
     createRelation: function (productId, productName, price, $btn) {
       var self = this;
-      this.api("POST", "/relations", {
-        plan_id: this.termId,
-        oid: parseInt(productId, 10),
-        vid: 0,
-        type: 1,
-        status: "active",
-        exclude: false,
-        data: { regular_price: price, sale_price: "", discount_value: 0 },
-      })
+      // Connect the product to every duration so customers can pick any of them.
+      var calls = (this.termIds || []).map(function (tid) {
+        return self.api("POST", "/relations", {
+          plan_id: tid,
+          oid: parseInt(productId, 10),
+          vid: 0,
+          type: 1,
+          status: "active",
+          exclude: false,
+          data: { regular_price: price, sale_price: "", discount_value: 0 },
+        });
+      });
+
+      Promise.all(calls)
         .then(function () {
           $btn.removeClass("is-loading").prop("disabled", false);
-          self.showDone(productName, price);
+          self.showDone(productName);
         })
         .catch(function (err) {
           $btn.removeClass("is-loading").prop("disabled", false);
@@ -484,14 +659,21 @@
         },
         function () {
           self.groupId = 0;
-          self.termId = 0;
+          self.termIds = [];
           self.planTitle = "";
           self.billingText = "";
-          $("#subscrpt_free_trial, #subscrpt_signup_fee, #subscrpt_connect_price, #subscrpt_new_product_name").val("");
-          $("#subscrpt_billing_frequency").val("1");
+          $("#subscrpt_connect_price, #subscrpt_new_product_name").val("");
+          $("#subscrpt-durations").empty();
+          self.initDurations();
           self.clearProduct();
-          // Reset the preview product node back to its placeholder.
+          // Reset the preview nodes back to their placeholders.
           $("#subscrpt-preview-prod").text("Product");
+          self.reachedDurations = false;
+          $("#subscrpt-preview-graph [data-preview-dur]")
+            .addClass("wpsubs-p1-node--ghost")
+            .find(".wpsubs-p1-node__title")
+            .text("Duration");
+          $("#subscrpt-preview-graph [data-preview-dur] .wpsubs-p1-node__sub").text("Add more");
           self.switchSection(1);
         },
       );

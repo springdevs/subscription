@@ -60,19 +60,19 @@ $plan_types = array(
 $interval_options = array(
 	array(
 		'value' => 'day',
-		'label' => __( 'Day', 'subscription' ),
+		'label' => __( 'Day(s)', 'subscription' ),
 	),
 	array(
 		'value' => 'week',
-		'label' => __( 'Week', 'subscription' ),
+		'label' => __( 'Week(s)', 'subscription' ),
 	),
 	array(
 		'value' => 'month',
-		'label' => __( 'Month', 'subscription' ),
+		'label' => __( 'Month(s)', 'subscription' ),
 	),
 	array(
 		'value' => 'year',
-		'label' => __( 'Year', 'subscription' ),
+		'label' => __( 'Year(s)', 'subscription' ),
 	),
 );
 
@@ -115,7 +115,7 @@ $subscrpt_icon_plan = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor
 		<div class="wpsubs-wizard-stepper__line"></div>
 		<div class="wpsubs-wizard-stepper__step" data-step="2">
 			<div class="wpsubs-wizard-stepper__num">2</div>
-			<div class="wpsubs-wizard-stepper__label"><?php esc_html_e( 'Frequency', 'subscription' ); ?></div>
+			<div class="wpsubs-wizard-stepper__label"><?php esc_html_e( 'Durations', 'subscription' ); ?></div>
 		</div>
 		<div class="wpsubs-wizard-stepper__line"></div>
 		<div class="wpsubs-wizard-stepper__step" data-step="3">
@@ -184,66 +184,49 @@ $subscrpt_icon_plan = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor
 			<!-- PAGE 2: Set Frequency (duration) -->
 			<div class="wpsubs-wizard-section" data-page="2" id="subscrpt-section-2">
 				<div class="wpsubs-wizard-card">
-					<h1 class="wpsubs-p2-page-title"><?php esc_html_e( 'Set the billing frequency', 'subscription' ); ?></h1>
-					<p class="wpsubs-p2-page-subtitle"><?php esc_html_e( 'How often customers are charged once they subscribe. You can add more durations later.', 'subscription' ); ?></p>
+					<h1 class="wpsubs-p2-page-title"><?php esc_html_e( 'Add billing durations', 'subscription' ); ?></h1>
+					<p class="wpsubs-p2-page-subtitle"><?php esc_html_e( 'A duration is how often a customer is charged. Add one or more — the customer picks which to subscribe on.', 'subscription' ); ?></p>
 
-					<div class="wpsubs-p2-form-grid">
-						<div class="wpsubs-form-row">
-							<label><?php esc_html_e( 'Billing every', 'subscription' ); ?></label>
-							<div class="wpsubs-input-group wpsubs-p2-billing-group">
-								<input type="number" id="subscrpt_billing_frequency" class="wpsubs-input wpsubs-p2-billing-per-input" autocomplete="off" min="1" value="1">
-								<?php
+					<div id="subscrpt-durations" data-durations></div>
+
+					<button type="button" id="subscrpt-btn-add-duration" class="wpsubs-btn wpsubs-btn--outline" style="width:100%;justify-content:center;margin-top:4px;">
+						<span class="dashicons dashicons-plus-alt2" style="font-size:15px;width:15px;height:15px;line-height:1;"></span>
+						<?php esc_html_e( 'Add another duration', 'subscription' ); ?>
+					</button>
+
+					<template id="subscrpt-duration-tpl">
+						<div class="wpsubs-dur is-open" data-dur>
+							<div class="wpsubs-dur__head" data-dur-toggle>
+								<span class="wpsubs-dur__icon"><?php echo $subscrpt_icon_cal; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- trusted static SVG. ?></span>
+								<span class="wpsubs-dur__title" data-dur-title></span>
+								<button type="button" class="wpsubs-dur__remove" data-dur-remove title="<?php esc_attr_e( 'Remove duration', 'subscription' ); ?>" aria-label="<?php esc_attr_e( 'Remove duration', 'subscription' ); ?>">&times;</button>
+								<svg class="wpsubs-dur__chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"></polyline></svg>
+							</div>
+							<div class="wpsubs-dur__body">
+								<div class="wpsubs-form-row">
+									<label><?php esc_html_e( 'Billing every', 'subscription' ); ?></label>
+									<div class="wpsubs-p2-billing-group">
+										<input type="number" class="wpsubs-input wpsubs-p2-billing-per-input" autocomplete="off" min="1" value="1" data-dur-freq>
+<?php
 								wpsubs_render_adv_select(
 									array(
-										'name'    => 'subscrpt_billing_interval',
-										'id'      => 'subscrpt-billing-interval-select',
+										'name'    => 'subscrpt_dur_interval',
 										'value'   => 'month',
 										'options' => $interval_options,
+										'class'   => 'wpsubs-dur__interval',
+										'attrs'   => array( 'data-dur-interval' => '1' ),
 									)
 								);
 								?>
+									</div>
+								</div>
+								<div class="wpsubs-form-row" style="margin-bottom:0;">
+									<label><?php esc_html_e( 'Name', 'subscription' ); ?></label>
+									<input type="text" class="wpsubs-input" autocomplete="off" data-dur-name placeholder="<?php esc_attr_e( 'e.g. Every Month', 'subscription' ); ?>">
+								</div>
 							</div>
-							<p class="wpsubs-p2-field-hint"><?php esc_html_e( 'How often the customer is charged.', 'subscription' ); ?></p>
 						</div>
-
-						<div class="wpsubs-form-row">
-							<label for="subscrpt_free_trial"><?php esc_html_e( 'Free trial', 'subscription' ); ?> <span class="wpsubs-p2-label-optional"><?php esc_html_e( 'Optional', 'subscription' ); ?></span></label>
-							<div class="wpsubs-input-group wpsubs-p2-billing-group">
-								<input type="number" id="subscrpt_free_trial" class="wpsubs-input wpsubs-p2-billing-per-input" autocomplete="off" min="0" placeholder="0">
-								<?php
-								wpsubs_render_adv_select(
-									array(
-										'name'    => 'subscrpt_trial_interval',
-										'id'      => 'subscrpt-trial-interval-select',
-										'value'   => 'day',
-										'options' => $interval_options,
-									)
-								);
-								?>
-							</div>
-							<p class="wpsubs-p2-field-hint"><?php esc_html_e( 'Free period before the first charge. Leave empty for none.', 'subscription' ); ?></p>
-						</div>
-					</div>
-
-					<div class="wpsubs-form-row <?php echo $is_pro ? '' : 'wpsubs-p2-field-pro-locked'; ?>" style="max-width:280px;margin-bottom:0;">
-						<label for="subscrpt_signup_fee">
-							<?php esc_html_e( 'Sign-up fee', 'subscription' ); ?>
-							<?php if ( ! $is_pro ) : ?>
-								<span class="wpsubs-p2-pro-badge" title="<?php esc_attr_e( 'WPSubscription Pro required', 'subscription' ); ?>"><?php esc_html_e( 'Pro', 'subscription' ); ?></span>
-							<?php else : ?>
-								<span class="wpsubs-p2-label-optional"><?php esc_html_e( 'Optional', 'subscription' ); ?></span>
-							<?php endif; ?>
-						</label>
-						<div class="wpsubs-p2-input-wrap">
-							<span class="wpsubs-p2-input-prefix"><?php echo esc_html( $currency_symbol ); ?></span>
-							<input type="text" id="subscrpt_signup_fee" class="wpsubs-input" autocomplete="off" style="padding-left:24px!important;" placeholder="0.00" <?php echo $is_pro ? '' : 'disabled'; ?>>
-						</div>
-						<?php if ( ! $is_pro ) : ?>
-							<p class="wpsubs-p2-field-hint"><?php esc_html_e( 'One-time charge at checkout. Upgrade to Pro to enable.', 'subscription' ); ?></p>
-						<?php else : ?>
-							<p class="wpsubs-p2-field-hint"><?php esc_html_e( 'One-time charge on the first payment.', 'subscription' ); ?></p>
-						<?php endif; ?>
-					</div>
+					</template>
 				</div>
 			</div>
 
@@ -434,21 +417,21 @@ $subscrpt_icon_plan = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor
 						</span>
 					</div>
 
-					<div class="wpsubs-p1-node wpsubs-p1-node--dur wpsubs-p1-node--ghost" data-group="dur" style="left:0%;top:26.2%;">
+					<div class="wpsubs-p1-node wpsubs-p1-node--dur wpsubs-p1-node--ghost" data-group="dur" data-preview-dur="1" style="left:0%;top:26.2%;">
 						<span class="wpsubs-p1-node__icon"><?php echo $subscrpt_icon_cal; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- trusted static SVG. ?></span>
 						<span class="wpsubs-p1-node__text">
 							<span class="wpsubs-p1-node__title"><?php esc_html_e( 'Duration', 'subscription' ); ?></span>
 							<span class="wpsubs-p1-node__sub"><?php esc_html_e( 'Add more', 'subscription' ); ?></span>
 						</span>
 					</div>
-					<div class="wpsubs-p1-node wpsubs-p1-node--dur" data-group="dur" style="left:35%;top:33.3%;">
+					<div class="wpsubs-p1-node wpsubs-p1-node--dur wpsubs-p1-node--ghost" data-group="dur" data-preview-dur="0" style="left:35%;top:33.3%;">
 						<span class="wpsubs-p1-node__icon"><?php echo $subscrpt_icon_cal; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- trusted static SVG. ?></span>
 						<span class="wpsubs-p1-node__text">
 							<span class="wpsubs-p1-node__title"><?php esc_html_e( 'Duration', 'subscription' ); ?></span>
-							<span class="wpsubs-p1-node__sub" id="subscrpt-preview-dur"><?php esc_html_e( 'Every month', 'subscription' ); ?></span>
+							<span class="wpsubs-p1-node__sub"><?php esc_html_e( 'Add more', 'subscription' ); ?></span>
 						</span>
 					</div>
-					<div class="wpsubs-p1-node wpsubs-p1-node--dur wpsubs-p1-node--ghost" data-group="dur" style="left:70%;top:26.2%;">
+					<div class="wpsubs-p1-node wpsubs-p1-node--dur wpsubs-p1-node--ghost" data-group="dur" data-preview-dur="2" style="left:70%;top:26.2%;">
 						<span class="wpsubs-p1-node__icon"><?php echo $subscrpt_icon_cal; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- trusted static SVG. ?></span>
 						<span class="wpsubs-p1-node__text">
 							<span class="wpsubs-p1-node__title"><?php esc_html_e( 'Duration', 'subscription' ); ?></span>
