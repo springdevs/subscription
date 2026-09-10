@@ -1,9 +1,9 @@
 /* --------------------------------------------------------------------------
    Vertical nav  (wpsubs-vnav)
 
-   Broad-category rail for settings-style pages. Borderless and minimal: the
-   active item is marked by a left accent bar and brand-coloured text, not a
-   filled pill. Pair with `wpsubs-tabs` for a second, more explicit level.
+   Section rail for settings-style pages. Borderless and minimal: the active
+   item is marked by a left accent bar and brand-coloured text, not a filled
+   pill. It is the only level of navigation on a page that uses it.
    -------------------------------------------------------------------------- */
 .wpsubs-vnav {
   display: flex;

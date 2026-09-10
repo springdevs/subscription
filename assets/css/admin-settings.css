@@ -153,7 +153,47 @@
 }
 
 /* ──────────────────────────────────────────────────────────────────────────
-   Sidebar tabs
+   Page header — title, save action, description, rule. Same shape as the
+   Plans and Reports screens so the admin reads as one product.
+   ────────────────────────────────────────────────────────────────────────── */
+
+.subscrpt-settings__head {
+  margin-bottom: 20px;
+}
+
+.subscrpt-settings__head-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0 0 6px;
+}
+
+.subscrpt-settings__title {
+  font-size: 1.375rem !important;
+  font-weight: 700 !important;
+  color: var(--wpsubs-text, #374151);
+  margin: 0 !important;
+  padding: 0 !important;
+  line-height: 1.2;
+}
+
+.subscrpt-settings__desc {
+  font-size: 13px;
+  color: var(--wpsubs-text-muted, #6b7280);
+  margin: 0 0 12px;
+  line-height: 1.5;
+}
+
+.subscrpt-settings__head-rule {
+  border-top: 1px dashed #d0d3d7;
+}
+
+.subscrpt-settings__save {
+  flex: 0 0 auto;
+}
+
+/* ──────────────────────────────────────────────────────────────────────────
+   Rail and panels
    Every panel is in the DOM on every request, because the form posts to
    options.php and an unrendered field is a field that saves nothing.
    ────────────────────────────────────────────────────────────────────────── */
@@ -165,11 +205,14 @@
   align-items: start;
 }
 
+/* The rail and the panel share a top edge, but their text does not: a field
+   label sits under the card's 1px border and 20px padding, a rail label under
+   the item's own 7px. The 14px difference is that gap closed, so the first
+   section name and the first setting's label land on the same line. */
 .subscrpt-settings__sidebar {
   position: sticky;
   top: 104px;
-  /* Small top offset so the rail's first item sits a little below the save row. */
-  padding-top: 10px;
+  padding-top: 14px;
   max-height: calc(100vh - 140px);
   overflow-y: auto;
   overscroll-behavior: contain;
@@ -199,22 +242,6 @@
 .subscrpt-settings__rule {
   border-top: 1px solid var(--wpsubs-border, #f1f5f9);
   margin: 16px 0;
-}
-
-/* The save button's row. It keeps the full-width rule the tab lists used to
-   share, so the panel below still reads as hanging off a header. */
-.subscrpt-settings__toolbar {
-  display: flex;
-  align-items: flex-end;
-  justify-content: flex-end;
-  gap: 16px;
-  border-bottom: 1px solid var(--wpsubs-border, #e5e7eb);
-  margin-bottom: 20px;
-}
-
-.subscrpt-settings__save {
-  flex: 0 0 auto;
-  margin-bottom: 8px;
 }
 
 @media screen and (max-width: 960px) {

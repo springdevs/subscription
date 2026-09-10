@@ -38,6 +38,19 @@ $subscrpt_settings_base = admin_url( 'admin.php?page=wp-subscription-settings' )
 		<?php settings_fields( 'wp_subscription_settings' ); ?>
 		<?php do_settings_sections( 'wp_subscription_settings' ); ?>
 
+		<?php // Page header: title, save on the right, one line of description, rule. ?>
+		<div class="subscrpt-settings__head">
+			<div class="subscrpt-settings__head-row">
+				<h1 class="subscrpt-settings__title"><?php esc_html_e( 'Settings', 'subscription' ); ?></h1>
+				<span class="wpsubs-toolbar__spacer"></span>
+				<button type="submit" class="wpsubs-btn wpsubs-btn--primary subscrpt-settings__save">
+					<?php esc_html_e( 'Save changes', 'subscription' ); ?>
+				</button>
+			</div>
+			<p class="subscrpt-settings__desc"><?php esc_html_e( 'Configure how subscriptions renew, charge and behave for your customers.', 'subscription' ); ?></p>
+			<div class="subscrpt-settings__head-rule"></div>
+		</div>
+
 		<div class="subscrpt-settings__layout">
 
 			<aside class="subscrpt-settings__sidebar">
@@ -63,17 +76,6 @@ $subscrpt_settings_base = admin_url( 'admin.php?page=wp-subscription-settings' )
 			</aside>
 
 			<div class="subscrpt-settings__content">
-
-				<?php
-				// The save button gets the row the tab lists used to share, and keeps
-				// the rule under it so the panel below still reads as hanging off a
-				// header.
-				?>
-				<div class="subscrpt-settings__toolbar">
-					<button type="submit" class="wpsubs-btn wpsubs-btn--primary subscrpt-settings__save">
-						<?php esc_html_e( 'Save changes', 'subscription' ); ?>
-					</button>
-				</div>
 
 				<div class="subscrpt-settings__panels">
 					<?php foreach ( $category_groups as $subscrpt_cat_id => $subscrpt_cat_group_ids ) : ?>
