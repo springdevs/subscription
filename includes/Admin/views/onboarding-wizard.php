@@ -574,7 +574,7 @@ $subscrpt_icon_plan = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor
 						<?php esc_html_e( 'Go to products', 'subscription' ); ?>
 					</a>
 				</div>
-				<a href="#" id="subscrpt-btn-finish" class="wpsubs-btn wpsubs-btn--primary" hidden>
+				<a href="<?php echo esc_url( admin_url( 'admin.php?page=wp-subscription' ) ); ?>" id="subscrpt-btn-finish" class="wpsubs-btn wpsubs-btn--primary" hidden>
 					<?php esc_html_e( 'Finish', 'subscription' ); ?>
 				</a>
 			</div>

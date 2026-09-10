@@ -48,7 +48,6 @@
       this.initDurations();
       $("#subscrpt-link-plans").attr("href", this.cfg.plans_url || "#");
       $("#subscrpt-link-products").attr("href", this.cfg.products_url || "#");
-      $("#subscrpt-btn-finish").attr("href", this.cfg.subscriptions_url || "#");
       // Start on the welcome page (normalises stepper, footer nav and preview).
       this.switchSection(0);
     },

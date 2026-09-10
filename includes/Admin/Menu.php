@@ -114,6 +114,7 @@ class Menu {
 			array(
 				'ajax_url'          => admin_url( 'admin-ajax.php' ),
 				'subscriptions_url' => admin_url( 'admin.php?page=wp-subscription' ),
+				'dashboard_url'     => admin_url( 'admin.php?page=wp-subscription' ),
 				'products_url'      => admin_url( 'edit.php?post_type=product' ),
 				'plans_url'         => admin_url( 'admin.php?page=wp-subscription-plans' ),
 				'rest_url'          => rest_url( 'wpsubscription/v1/plans' ),
