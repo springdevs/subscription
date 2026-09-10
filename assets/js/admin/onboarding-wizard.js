@@ -32,7 +32,6 @@
     billingText: "",
     finalProductId: "",
     finalProductName: "",
-    finalPrice: "",
     relationsCreated: false,
     finalizeRunning: false,
     // Durations show as placeholder ghost cards in the preview until the user
@@ -94,6 +93,8 @@
       // Page 3 (product).
       $(document).on("click", "#subscrpt-btn-back-2", $.proxy(this.goToPage, this, 2));
       $(document).on("click", ".wpsubs-connect-mode-card", $.proxy(this.selectConnectMode, this));
+      $(document).on("change", "[data-connect-enabled]", $.proxy(this.onConnectToggle, this));
+      $(document).on("input", "[data-connect-price]", $.proxy(this.updatePreview, this));
       $(document).on("click", "#subscrpt-btn-next-3", $.proxy(this.nextFromProduct, this));
       $(document).on("focus", "#subscrpt-product-search-input", this.openProductSearch);
       $(document).on("input", "#subscrpt-product-search-input", this.filterProducts);
@@ -140,6 +141,11 @@
 
       $(".wpsubs-wizard-section").removeClass("active");
       $("#subscrpt-section-" + pageNum).addClass("active");
+
+      // Build the per-duration pricing rows from the durations set on step 2.
+      if (pageNum === 3) {
+        this.renderConnectDurations();
+      }
 
       // Swap the footer nav to this step's buttons.
       $(".wpsubs-wizard-nav").attr("hidden", "hidden");
@@ -203,7 +209,10 @@
       var graph = $("#subscrpt-preview-graph");
       var groups = [
         { sel: "#subscrpt_plan_title", group: "plan" },
-        { sel: "#subscrpt-product-search-input, #subscrpt_new_product_name, #subscrpt_connect_price", group: "prod" },
+        {
+          sel: "#subscrpt-product-search-input, #subscrpt_new_product_name, #subscrpt-connect-durations [data-connect-price]",
+          group: "prod",
+        },
       ];
       groups.forEach(function (g) {
         $(document).on("focusin", g.sel, function () {
@@ -236,6 +245,37 @@
       return $.trim($("#subscrpt_new_product_name").val());
     },
 
+    // Show the price range (min–max of the toggled-on durations' prices) on the
+    // product node's subtitle; falls back to "Subscribable" when no price set.
+    updateProductPriceSub: function () {
+      var sym = this.cfg.currency_symbol || "$";
+      var prices = [];
+      $("#subscrpt-connect-durations [data-connect-row]").each(function () {
+        if (!$(this).find("[data-connect-enabled]").is(":checked")) {
+          return;
+        }
+        var raw = $.trim($(this).find("[data-connect-price]").val());
+        if (raw === "") {
+          return;
+        }
+        var n = parseFloat(raw);
+        if (!isNaN(n) && n >= 0) {
+          prices.push(n);
+        }
+      });
+
+      var fmt = function (v) {
+        return sym + v.toFixed(2);
+      };
+      var text = "Price";
+      if (prices.length) {
+        var min = Math.min.apply(null, prices);
+        var max = Math.max.apply(null, prices);
+        text = min === max ? fmt(min) : fmt(min) + " - " + fmt(max);
+      }
+      $("#subscrpt-preview-prod-sub").text(text);
+    },
+
     // Fill the persistent preview graph from the current form state. Each step
     // updates its own node; empty fields keep the placeholder label.
     updatePreview: function () {
@@ -265,17 +305,26 @@
       if (prod) {
         $("#subscrpt-preview-prod").text(prod);
       }
+      // The product node's subtitle shows the price range from the set pricing.
+      this.updateProductPriceSub();
+
+      // Which durations are toggled on for the product (page 3). If the rows
+      // aren't rendered yet, treat every duration as on.
+      var enabled = {};
+      $("#subscrpt-connect-durations [data-connect-row]").each(function () {
+        enabled[parseInt($(this).data("connect-dur"), 10)] = $(this).find("[data-connect-enabled]").is(":checked");
+      });
 
       // Connector lines: muted by default. A plan->duration line colours in
       // once its duration is filled; a duration->product line also needs a
-      // product to be added.
+      // product to be added and that duration's toggle to be on.
       var hasProduct = !!prod;
       $("#subscrpt-preview-graph [data-line-dur]").each(function () {
         var $line = $(this);
         var idx = parseInt($line.data("line-dur"), 10) || 0;
         var active = !!durations[idx];
         if ($line.attr("data-line-to") === "prod") {
-          active = active && hasProduct;
+          active = active && hasProduct && enabled[idx] !== false;
         }
         $line.toggleClass("is-active", active);
       });
@@ -472,6 +521,10 @@
 
     onProductPick: function (e) {
       var item = $(e.currentTarget);
+      // Products already attached to a plan can't be picked.
+      if (item.attr("data-connected") === "1") {
+        return;
+      }
       var id = String(item.data("id"));
       var name = item.data("name") || "";
       var price = item.data("price") != null ? String(item.data("price")) : "";
@@ -497,8 +550,14 @@
       $("#subscrpt-product-select-wrap").hide();
       $("#subscrpt-selected-product-chip").show();
 
-      if (price && !$.trim($("#subscrpt_connect_price").val())) {
-        $("#subscrpt_connect_price").val(parseFloat(price).toFixed(2));
+      // Prefill any empty duration price with the product's price as a starting
+      // point; leave prices the user already typed alone.
+      if (price) {
+        $("#subscrpt-connect-durations [data-connect-price]").each(function () {
+          if (!$.trim($(this).val())) {
+            $(this).val(parseFloat(price).toFixed(2));
+          }
+        });
       }
 
       this.selectedProductName = name;
@@ -514,15 +573,58 @@
       this.selectedProductName = "";
     },
 
-    // Nothing is created here either — validate the product choice/price and
-    // move to the final step, which does all the work.
-    nextFromProduct: function (e) {
-      e.preventDefault();
-      var price = $.trim($("#subscrpt_connect_price").val());
-      if (price && (isNaN(parseFloat(price)) || parseFloat(price) < 0)) {
-        window.alert("Please enter a valid price.");
+    // Snapshot the current price/toggle of each duration row, keyed by index,
+    // so re-rendering doesn't lose what the user typed.
+    readConnectState: function () {
+      var state = {};
+      $("#subscrpt-connect-durations [data-connect-row]").each(function () {
+        var idx = parseInt($(this).data("connect-dur"), 10);
+        state[idx] = {
+          price: $(this).find("[data-connect-price]").val(),
+          enabled: $(this).find("[data-connect-enabled]").is(":checked"),
+        };
+      });
+      return state;
+    },
+
+    // Build one pricing row per duration (from step 2), preserving any values
+    // already entered. All rows connect to the single product.
+    renderConnectDurations: function () {
+      var self = this;
+      var tpl = document.getElementById("subscrpt-connect-dur-tpl");
+      if (!tpl || !tpl.content) {
         return;
       }
+      var prev = this.readConnectState();
+      var durations = this.collectDurations();
+      var $wrap = $("#subscrpt-connect-durations").empty();
+
+      durations.forEach(function (dur, idx) {
+        var $frag = $(tpl.content.cloneNode(true));
+        var $row = $frag.find("[data-connect-row]");
+        $row.attr("data-connect-dur", idx);
+        $row.find("[data-connect-name]").text(dur.name);
+        $row.find("[data-connect-billing]").text("Billing every " + self.billingEvery(dur.freq, dur.interval));
+        if (prev[idx]) {
+          $row.find("[data-connect-price]").val(prev[idx].price);
+          $row.find("[data-connect-enabled]").prop("checked", prev[idx].enabled);
+        }
+        $row.toggleClass("is-off", !$row.find("[data-connect-enabled]").is(":checked"));
+        $wrap.append($frag);
+      });
+    },
+
+    onConnectToggle: function (e) {
+      var $row = $(e.target).closest("[data-connect-row]");
+      $row.toggleClass("is-off", !$(e.target).is(":checked"));
+      this.updatePreview();
+    },
+
+    // Nothing is created here either — validate the product choice and the
+    // per-duration prices, then move to the final step which does all the work.
+    nextFromProduct: function (e) {
+      e.preventDefault();
+
       if (this.currentConnectMode() === "existing") {
         if (!$("#subscrpt-existing-product-hidden").val()) {
           window.alert("Please select a product.");
@@ -532,6 +634,27 @@
         window.alert("Please enter a product name.");
         return;
       }
+
+      var rows = $("#subscrpt-connect-durations [data-connect-row]");
+      var enabledRows = rows.filter(function () {
+        return $(this).find("[data-connect-enabled]").is(":checked");
+      });
+      if (!enabledRows.length) {
+        window.alert("Please keep at least one duration on.");
+        return;
+      }
+      var badPrice = false;
+      enabledRows.each(function () {
+        var p = $.trim($(this).find("[data-connect-price]").val());
+        if (p && (isNaN(parseFloat(p)) || parseFloat(p) < 0)) {
+          badPrice = true;
+        }
+      });
+      if (badPrice) {
+        window.alert("Please enter valid prices.");
+        return;
+      }
+
       this.switchSection(4);
       this.finalize();
     },
@@ -659,10 +782,10 @@
         });
     },
 
-    // Resolve the product id — an existing selection, or a newly created one.
+    // Resolve the product id — an existing selection, or a newly created one
+    // (name only; each duration carries its own price on the relation).
     ensureProduct: function () {
       var self = this;
-      this.finalPrice = $.trim($("#subscrpt_connect_price").val());
       if (this.finalProductId) {
         return Promise.resolve();
       }
@@ -682,7 +805,6 @@
             action: "subscrpt_create_wizard_product",
             nonce: $("#subscrpt_wizard_nonce").val(),
             product_name: name,
-            product_price: self.finalPrice,
           },
           function (response) {
             if (response && response.success) {
@@ -700,19 +822,30 @@
       });
     },
 
-    // Connect the product to every duration so customers can pick any of them.
+    // Connect the product to each toggled-on duration, using that duration's
+    // own price. Durations toggled off get no relation.
     createRelations: function () {
       var self = this;
-      var calls = (this.termIds || []).map(function (tid) {
-        return self.api("POST", "/relations", {
-          plan_id: tid,
-          oid: parseInt(self.finalProductId, 10),
-          vid: 0,
-          type: 1,
-          status: "active",
-          exclude: false,
-          data: { regular_price: self.finalPrice || "", sale_price: "", discount_value: 0 },
-        });
+      var rows = $("#subscrpt-connect-durations [data-connect-row]");
+      var calls = [];
+      (this.termIds || []).forEach(function (tid, idx) {
+        var $row = rows.filter('[data-connect-dur="' + idx + '"]');
+        var enabled = $row.length ? $row.find("[data-connect-enabled]").is(":checked") : true;
+        if (!enabled) {
+          return;
+        }
+        var price = $row.length ? $.trim($row.find("[data-connect-price]").val()) : "";
+        calls.push(
+          self.api("POST", "/relations", {
+            plan_id: tid,
+            oid: parseInt(self.finalProductId, 10),
+            vid: 0,
+            type: 1,
+            status: "active",
+            exclude: false,
+            data: { regular_price: price, sale_price: "", discount_value: 0 },
+          }),
+        );
       });
       return Promise.all(calls);
     },
@@ -744,7 +877,6 @@
           self.billingText = "";
           self.finalProductId = "";
           self.finalProductName = "";
-          self.finalPrice = "";
           self.relationsCreated = false;
           self.finalizeRunning = false;
           // Reset the final step back to its progress state for a fresh run.
@@ -752,7 +884,8 @@
           $("#subscrpt-finalize-progress").removeAttr("hidden");
           $("[data-finalize-step]").removeClass("is-doing is-done");
           $("#subscrpt-link-plans, #subscrpt-link-products").attr("hidden", "hidden");
-          $("#subscrpt_connect_price, #subscrpt_new_product_name").val("");
+          $("#subscrpt_new_product_name").val("");
+          $("#subscrpt-connect-durations").empty();
           $("#subscrpt-durations").empty();
           self.initDurations();
           self.clearProduct();

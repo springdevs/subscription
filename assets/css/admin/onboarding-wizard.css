@@ -372,6 +372,72 @@
   margin-top: 5px;
   line-height: 1.4;
 }
+
+/* Page 3: per-duration pricing rows (name + price + on/off toggle) --------- */
+.wpsubs-connect-dur {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  border: 1px solid var(--wpsubs-border, #e5e7eb);
+  border-radius: var(--wpsubs-radius, 8px);
+  background: var(--wpsubs-surface, #fff);
+  margin-bottom: 8px;
+}
+.wpsubs-connect-dur:last-child {
+  margin-bottom: 0;
+}
+.wpsubs-connect-dur__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  background: var(--wpsubs-brand-light, #fff1eb);
+  color: var(--wpsubs-brand, #ff4d00);
+}
+.wpsubs-connect-dur__icon svg {
+  width: 15px;
+  height: 15px;
+}
+.wpsubs-connect-dur__text {
+  flex: 1;
+  min-width: 0;
+}
+.wpsubs-connect-dur__name {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--wpsubs-text, #374151);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.wpsubs-connect-dur__billing {
+  margin: 0;
+  font-size: 11.5px;
+  color: var(--wpsubs-text-muted, #6b7280);
+}
+.wpsubs-connect-dur__price {
+  flex-shrink: 0;
+  width: 104px;
+}
+.wpsubs-connect-dur__price .wpsubs-input {
+  width: 100%;
+}
+.wpsubs-connect-dur__switch {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  cursor: pointer;
+}
+/* Dim the price of a duration that's toggled off. */
+.wpsubs-connect-dur.is-off .wpsubs-connect-dur__text,
+.wpsubs-connect-dur.is-off .wpsubs-connect-dur__price {
+  opacity: 0.5;
+}
 .wpsubs-p2-label-optional {
   font-weight: 400;
   color: var(--wpsubs-text-subtle);
@@ -524,6 +590,26 @@
 .wpsubs-p2-product-search__item--locked {
   opacity: 0.55;
   cursor: not-allowed;
+}
+/* A product already attached to a plan — not selectable. */
+.wpsubs-p2-product-search__item--disabled {
+  cursor: not-allowed;
+}
+.wpsubs-p2-product-search__item--disabled:hover {
+  background: transparent;
+}
+.wpsubs-p2-product-search__item--disabled .wpsubs-p2-product-search__avatar,
+.wpsubs-p2-product-search__item--disabled .wpsubs-p2-product-search__info {
+  opacity: 0.5;
+}
+/* Inline "Added to another plan" note next to the product name (matches the
+   Plans admin product tab). */
+.wpsubs-p2-product-search__connected {
+  margin-left: 8px;
+  font-size: 12px;
+  font-weight: 400;
+  font-style: italic;
+  color: var(--wpsubs-text-muted, #6b7280);
 }
 /* Billing every group — number input + standalone adv-select, matching the
    plan duration editor (two separate controls with an 8px gap). */
@@ -1298,6 +1384,13 @@
   border-style: dashed;
   box-shadow: none;
 }
+/* The product card stays muted on the plan/duration steps and only comes to
+   life on the connect step (and after). */
+.wpsubs-p1-graph:not([data-active="prod"]):not([data-active="done"]) .wpsubs-p1-node--prod:not(.wpsubs-p1-node--ghost) {
+  opacity: 0.45;
+  border-style: dashed;
+  box-shadow: none;
+}
 
 /* The group belonging to the current step gets a brand ring. Ghosts never
    light up — only the node the step actually fills in. */
@@ -1312,6 +1405,19 @@
 /* Keep the subtitle readable on the tinted background. */
 .wpsubs-p1-graph[data-active="dur"] .wpsubs-p1-node--dur:not(.wpsubs-p1-node--ghost) .wpsubs-p1-node__sub,
 .wpsubs-p1-graph[data-active="prod"] .wpsubs-p1-node--prod:not(.wpsubs-p1-node--ghost) .wpsubs-p1-node__sub {
+  color: var(--wpsubs-brand-dark, #d93f00);
+}
+/* Past the durations step, the set duration cards keep a static brand tint
+   (no pulse) — the same way the plan card stays coloured after step 1. */
+.wpsubs-p1-graph[data-active="prod"] .wpsubs-p1-node--dur:not(.wpsubs-p1-node--ghost),
+.wpsubs-p1-graph[data-active="done"] .wpsubs-p1-node--dur:not(.wpsubs-p1-node--ghost),
+.wpsubs-p1-graph[data-active="done"] .wpsubs-p1-node--prod:not(.wpsubs-p1-node--ghost) {
+  border-color: var(--wpsubs-brand, #ff4d00);
+  background: var(--wpsubs-brand-light, #fff1eb);
+}
+.wpsubs-p1-graph[data-active="prod"] .wpsubs-p1-node--dur:not(.wpsubs-p1-node--ghost) .wpsubs-p1-node__sub,
+.wpsubs-p1-graph[data-active="done"] .wpsubs-p1-node--dur:not(.wpsubs-p1-node--ghost) .wpsubs-p1-node__sub,
+.wpsubs-p1-graph[data-active="done"] .wpsubs-p1-node--prod:not(.wpsubs-p1-node--ghost) .wpsubs-p1-node__sub {
   color: var(--wpsubs-brand-dark, #d93f00);
 }
 @keyframes wpsubs-p1-pulse {
@@ -1382,6 +1488,24 @@
 }
 .wpsubs-p2-option-card__text {
   min-width: 0;
+}
+
+/* Compact option cards (connect step): horizontal icon + title, no description,
+   so the two choices stay small. */
+.wpsubs-p2-option-cards--compact .wpsubs-p2-option-card {
+  flex-direction: row;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+}
+.wpsubs-p2-option-cards--compact .wpsubs-p2-option-card__icon {
+  width: 28px;
+  height: 28px;
+  margin-bottom: 0;
+  flex-shrink: 0;
+}
+.wpsubs-p2-option-cards--compact .wpsubs-p2-option-card__title {
+  font-size: 12.5px;
 }
 
 /* Durations accordion (step 2). */
