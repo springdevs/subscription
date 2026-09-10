@@ -2,6 +2,10 @@
 /**
  * Reusable "Upgrade to Pro" modal — shown on load over a Pro feature preview page.
  *
+ * Contained (`--contained`): the dim covers this plugin's screen only, not the
+ * admin bar or the admin menu. A paywall that greys out Plugins and Users reads
+ * like the site broke rather than like a feature is locked.
+ *
  * Including file must set, before the include:
  *   string $modal_title — heading, e.g. "Unlock Subscription Health".
  *   string $modal_desc  — supporting copy.
@@ -17,7 +21,7 @@ $modal_desc  = isset( $modal_desc ) ? $modal_desc : __( 'This feature requires W
 $upgrade_url = isset( $upgrade_url ) ? $upgrade_url : 'https://wpsubscription.co/?utm_source=plugin&utm_medium=admin&utm_campaign=upgrade_pro';
 ?>
 
-<div class="wpsubs-modal" id="subscrpt-pro-modal" role="dialog" aria-modal="true" aria-labelledby="subscrpt-pro-modal-title" data-wpsubs-modal-autoopen hidden>
+<div class="wpsubs-modal wpsubs-modal--contained" id="subscrpt-pro-modal" role="dialog" aria-modal="true" aria-labelledby="subscrpt-pro-modal-title" data-wpsubs-modal-autoopen hidden>
 	<div class="wpsubs-modal__backdrop" data-wpsubs-modal-close style="backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);"></div>
 	<div class="wpsubs-modal__dialog" role="document" style="width:min(440px,calc(100vw - 40px));">
 		<button type="button" class="wpsubs-modal__close" data-wpsubs-modal-close aria-label="<?php esc_attr_e( 'Close', 'subscription' ); ?>" style="position:absolute;top:12px;right:14px;">&times;</button>

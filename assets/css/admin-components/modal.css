@@ -16,6 +16,31 @@
   display: none;
 }
 
+/* Contained: the overlay stops at this plugin's screen instead of covering
+   WordPress. Insets mirror #wpcontent's own margins so the admin bar and the
+   admin menu stay usable behind a feature lock. */
+.wpsubs-modal--contained {
+  top: var(--wp-admin--admin-bar--height, 32px);
+  left: 160px;
+}
+
+.folded .wpsubs-modal--contained {
+  left: 36px;
+}
+
+@media screen and (max-width: 960px) {
+  .auto-fold .wpsubs-modal--contained {
+    left: 36px;
+  }
+}
+
+@media screen and (max-width: 782px) {
+  .wpsubs-modal--contained,
+  .auto-fold .wpsubs-modal--contained {
+    left: 0;
+  }
+}
+
 .wpsubs-modal__backdrop {
   position: absolute;
   inset: 0;
