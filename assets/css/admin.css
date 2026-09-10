@@ -721,7 +721,7 @@ body[class*="wpsubscription_page_wp-subscription"] #wpcontent {
 .subscrpt-int-layout {
   display: grid;
   grid-template-columns: 232px minmax(0, 1fr);
-  gap: 48px;
+  gap: 32px;
   align-items: start;
 }
 
@@ -773,8 +773,14 @@ body[class*="wpsubscription_page_wp-subscription"] #wpcontent {
 }
 
 /* Below this the rail would squeeze the card grid to one column, so it goes
-   back on top and stops sticking. */
-@media screen and (max-width: 1200px) {
+   back on top and stops sticking.
+
+   Measured against WordPress's own fold point rather than a round number: at
+   960px the admin menu collapses to 36px, so the content gains 124px exactly
+   as the viewport loses room, and the rail plus two card columns still fit.
+   The previous 1200px threshold fired on an ordinary laptop — a 1196px window
+   put the filters back on top with 756px of space going spare beside them. */
+@media screen and (max-width: 960px) {
   .subscrpt-int-layout {
     grid-template-columns: minmax(0, 1fr);
   }
