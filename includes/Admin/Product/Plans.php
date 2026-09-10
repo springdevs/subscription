@@ -495,9 +495,14 @@ class Plans {
 							</span>
 							<div style="flex:1 1 auto;min-width:0;display:flex;align-items:center;gap:8px;">
 								<strong style="font-size:13.5px;color:var(--wpsubs-text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"><?php echo esc_html( $group['title'] ); ?></strong>
-								<span class="wpsubs-badge wpsubs-badge--active" style="font-weight:500;"><?php esc_html_e( 'Connected', 'subscription' ); ?></span>
-								<a href="<?php echo esc_url( admin_url( 'admin.php?page=wp-subscription-plans&view=detail&plan=' . (int) $subscrpt_gid ) ); ?>" target="_blank" rel="noopener" title="<?php esc_attr_e( 'Manage this plan', 'subscription' ); ?>" aria-label="<?php esc_attr_e( 'Manage this plan', 'subscription' ); ?>" style="flex:0 0 auto;display:inline-flex;align-items:center;color:var(--wpsubs-text-subtle);text-decoration:none;">
+								<?php
+								// No "Connected" badge: the card only exists when the product is
+								// connected, so the badge restated its own container. The link keeps
+								// its label instead — an icon alone did not say where it went.
+								?>
+								<a href="<?php echo esc_url( admin_url( 'admin.php?page=wp-subscription-plans&view=detail&plan=' . (int) $subscrpt_gid ) ); ?>" target="_blank" rel="noopener" title="<?php esc_attr_e( 'Open this plan on the Plans screen', 'subscription' ); ?>" style="flex:0 0 auto;display:inline-flex;align-items:center;gap:4px;font-size:12.5px;color:var(--wpsubs-text-muted);text-decoration:none;white-space:nowrap;">
 									<span class="dashicons dashicons-external" style="font-size:15px;width:15px;height:15px;line-height:1;"></span>
+									<?php esc_html_e( 'Edit in Plan', 'subscription' ); ?>
 								</a>
 							</div>
 							<div style="flex:0 0 auto;display:flex;align-items:center;gap:8px;">
