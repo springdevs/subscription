@@ -767,10 +767,11 @@ $subscrpt_details_ctx = array(
 </div>
 
 <style>
-/* Page sits on WP admin gray; the cards are the white surfaces (matches list/health pages). */
+/* Page sits on WP admin gray; the cards are the white surfaces (matches list/health pages).
+	No `padding: 0` here — that overrode `.list-page`'s own `0 24px` and ran the
+	whole page flush into the admin menu and the right edge of the window. */
 .wp-subscription-admin-content.list-page.subscrpt-subs-details {
 	background: transparent;
-	padding: 0;
 	border-radius: 0;
 	margin-top: 24px;
 	margin-bottom: 32px;
